@@ -1,0 +1,70 @@
+{% extends 'customer/base.html' %}
+{% block title %}Sneakee | Shipping Address{% endblock %}
+{% load static%}
+{% block content%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/shippingaddress.css' %}">
+</head>
+<body>
+  <main>
+      <div class="form-box">
+        <h2>Add new shipping Address</h2>
+        <form>
+        <div>
+            <label>Full name</label>
+            <input type="text" placeholder="Enter your first and last name">
+        </div>
+        <div>
+            <label>Region</label>
+            <select>
+            <option>Please choose your region</option>
+            </select>
+        </div>
+        <div>
+            <label>Phone Number</label>
+            <input type="text" placeholder="Please enter your phone number">
+        </div>
+        <div>
+            <label>City</label>
+            <select>
+            <option>Please choose your city</option>
+            </select>
+        </div>
+        <div>
+            <label>Building / House No / Floor / Street</label>
+            <input type="text" placeholder="Please enter">
+        </div>
+        <div>
+            <label>Area</label>
+            <select>
+            <option>Please choose your area</option>
+            </select>
+        </div>
+        <div>
+            <label>Colony / Suburb / Locality / Landmark</label>
+            <input type="text" placeholder="Please enter">
+        </div>
+        <div>
+            <label>Address</label>
+            <input type="text" placeholder="For Example: House# 123, Street# 123, ABC Road">
+        </div>
+
+        {% comment %} <div class="address-labels">
+            <div class="label-btn office">🏢 OFFICE</div>
+            <div class="label-btn home">🏠 HOME</div>
+        </div> {% endcomment %}
+
+        <div class="form-actions">
+            <button type="button" class="btn cancel">CANCEL</button>
+            <button type="submit" class="btn save">SAVE</button>
+        </div>
+        </form>
+    </div>
+  </main>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'customer/base.html' %}
+{% block title %}Sneakee | Product Detail{% endblock %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
+
+<main>
+<div class="product-detail-container">
+  <div class="product-gallery">
+    <div class="main-image">
+      <img src="{% static 'images/sneakeelogo.png' %}" alt="Main Product">
+    </div>
+    <div class="thumbnail-row">
+      <img src="{% static 'images/shoe1.png' %}" alt="Thumb">
+      <img src="{% static 'images/shoe2.png' %}" alt="Thumb">
+      <img src="{% static 'images/shoe3.png' %}" alt="Thumb">
+      <img src="{% static 'images/shoe4.png' %}" alt="Thumb">
+    </div>
+  </div>
+
+  <div class="product-info">
+    {% comment %} <p class="breadcrumb">Home / Fashion / Men / Shoes / LaceUp /</p> {% endcomment %}
+    <h1>Caliber Shoes Coffee Casual Sneakers For Men ( RAPHAEL 570R )</h1>
+    <p class="price">NPR 4,450.00</p>
+    <ul class="product-specs">
+      <li><strong>Color:</strong> Coffee</li>
+      <li><strong>Sole Material:</strong> PU/RUBBER</li>
+      <li><strong>Closing:</strong> Lace-Up</li>
+      <li><strong>Fit:</strong> Regular</li>
+      <li><strong>Heel Shape:</strong> Flat</li>
+    </ul>
+
+    <div class="size-options">
+      <p><strong>Size:</strong></p>
+      <div class="sizes">
+        <span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span>
+      </div>
+    </div>
+
+    <div class="product-action">
+      <div class="quantity-box">
+        <button onclick="changeQty(-1)">-</button>
+        <input type="text" value="1" id="qty" readonly>
+        <button onclick="changeQty(1)">+</button>
+      </div>
+      <button class="add-to-cart">ADD TO CART</button>
+      <button class="buy-now">BUY NOW</button>
+    </div>
+
+    <div class="meta-info">
+      <p><strong>SKU:</strong> N/A</p>
+      <p><strong>Categories:</strong> Fashion, LaceUp, Men, Shoes, Sneakers & Casual</p>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+  function changeQty(change) {
+    let qty = document.getElementById('qty');
+    let value = parseInt(qty.value);
+    if (value + change > 0) {
+      qty.value = value + change;
+    }
+  }
+</script>
+{% endblock %}

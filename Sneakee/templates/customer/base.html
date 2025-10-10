@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Sneakee{% endblock %}</title>
+</head>
+<body>
+    {% include "customer/header.html" %}
+
+    {% block content%}
+
+    {% endblock %}
+
+    {% include "customer/footer.html" %}
+</body>
+</html>

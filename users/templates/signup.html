@@ -1,0 +1,43 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Register{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/register.css' %}">
+
+<div class="form-container">
+  <div class="form-box">
+    <h2>Create Account</h2>
+
+    {% if messages %}
+      <div class="message-container">
+        {% for message in messages %}
+          <div class="alert {{ message.tags }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'signup' %}">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username" value="{{username}}"/>
+      <input type="text" name="email" placeholder="Email" value="{{email}}"/>
+      <input type="password" name="password" placeholder="Password" value="{{password}}"/>
+      <input type="text" name="address" placeholder="Address" value="{{address}}"/>
+      <input type="tel" name="phone" placeholder="Phone Number" value="{{phone}}"/>
+
+      <button type="submit" class="btn-register">Sign Up</button>
+    </form>
+    <p class="link">Already have an account? <a href="{% url 'signin' %}">Sign In</a></p>
+  </div>
+</div>
+
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
+
+{% endblock %}

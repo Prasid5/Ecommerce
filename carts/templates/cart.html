@@ -1,0 +1,62 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title%}Sneakee | Cart{%endblock%}
+{% block content%}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+<div class="cart-container">
+    <div class="cart-items">
+        <div class="cart-heading">
+            <span style="width:75%">Items</span>
+            <span style="width:12.5%; text-align:center">Quantity</span>
+            <span style="width:12.5%; text-align:center">Price</span>
+        </div>
+        
+        <div class="cart-item">
+            <img src="{% static 'images/sneakeelogo.png' %}" alt="Shoe" class="item-img">
+
+            <div class="item-details">
+                <p class="item-name">Abros Clara Black/Fushia – Women’s Running Shoes</p>
+                <p>Size: UK5/EU38</p>
+                <p class="item-price">Price: <strong>Rs.1,399.00</strong></p>
+                <button class="remove-btn">Remove</button>
+            </div>
+
+            <div class="item-quantity">
+                <button class="qty-btn" onclick="decreaseQty(this)">-</button>
+                <input type="text" value="1" readonly class="qty-input">
+                <button class="qty-btn" onclick="increaseQty(this)">+</button>
+            </div>
+
+            <div class="item-amount">Rs.1,399.00</div>
+        </div>
+        
+        <div class="cart-item">
+            
+            <img src="{% static 'images/sneakeelogo.png' %}" alt="Shoe" class="item-img">
+
+            <div class="item-details">
+                <p class="item-name">Abros Clara Black/Fushia – Women’s Running Shoes</p>
+                <p>Size: UK5/EU38</p>
+                <p class="item-price">Price: <strong>Rs.1,399.00</strong></p>
+                <button class="remove-btn">Remove</button>
+            </div>
+            <div class="item-quantity">
+                <button class="qty-btn" onclick="decreaseQty(this)">-</button>
+                <input type="text" value="1" readonly class="qty-input">
+                <button class="qty-btn" onclick="increaseQty(this)">+</button>
+            </div>
+            <div class="item-amount">Rs.1,399.00</div>
+        </div>
+    </div>
+
+<div class="cart-summary">
+    <h3>Subtotal (1 Item)</h3>
+    <p class="subtotal">Rs.1,399.00</p>
+    <p class="note">Shipping and taxes will be calculated at checkout</p>
+    <button class="checkout-btn">Checkout</button>
+    <a href="#" class="continue-link">Continue Shopping</a>
+</div>
+</div>
+
+<script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}

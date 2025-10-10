@@ -1,0 +1,83 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title></title>
+        <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    </head>
+<body>
+    <nav class="navbar">
+        <!-- Left: Logo and Links -->
+        <div class="nav-left">
+            <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo" />
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'categories' %}">Categories</a>
+            <a href="{% url 'brands' %}">Brands</a>
+            <a href="#">Offers</a>
+        </div>
+        
+        <!-- Center: Search -->
+        <div class="nav-center">
+            <div class="search-box">
+                <input type="text" placeholder="Search products..." />
+                <button type="submit">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+                </svg>
+                </button>      
+
+            </div>
+        </div>
+        
+        <!-- Right: Cart and Account Links -->
+        <div class="nav-right">
+            
+            <a href="{% url 'cart' %}">🛒 Add to Cart</a>
+            
+            {% if user.is_authenticated %}
+                <div class="profile-dropdown" id="profileDropdown">
+                    <!-- Person Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+                    </svg>
+                    <!-- Down Arrow -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M7 10l5 5 5-5z"/>
+                    </svg>
+                </div>
+
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="#">Profile</a>
+                    <a href="{% url 'signout' %}">Logout</a>
+                </div>
+                {% comment %} <a href="{% url 'signout' %}">Sign Out</a> {% endcomment %}
+            {% else %}
+                <a href="{% url 'signin' %}">Sign In</a>
+                <a href="{% url 'signup' %}">Sign Up</a>
+            {% endif %}
+            {% comment %} <a href="#">
+                <svg class="person-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 12c2.7 0 4.5-1.8 4.5-4.5S14.7 3 12 3 7.5 4.8 7.5 7.5 9.3 12 12 12zM4 21c0-3 4.5-5 8-5s8 2 8 5v1H4v-1z"/>
+                </svg>
+                Profile
+            </a>
+            <a href="#">Logout</a> {% endcomment %}
+    </div>
+</nav>
+</body>
+<script>
+    const profileDropdown = document.getElementById("profileDropdown");
+    const dropdownMenu = document.getElementById("dropdownMenu");
+    profileDropdown.addEventListener("click", () => {
+        dropdownMenu.classList.toggle("show");
+    });
+    document.addEventListener("click", (e) => {
+        if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.remove("show");
+        }
+    });
+</script>
+</html>

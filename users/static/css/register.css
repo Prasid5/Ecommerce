@@ -1,0 +1,118 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.form-box {
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff;
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.form-box h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #100d22;
+}
+
+.form-box input {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.btn-register {
+  width: 100%;
+  background-color: #100d22;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 15px;
+}
+
+.btn-register:hover {
+  background-color: #fff;
+  color: #100d22;
+  border: 1px solid #100d22;
+}
+
+.link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.link a {
+  color: #100d22;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+
+/* === Message Alert Styling === */
+.message-container {
+  margin-bottom: 20px;
+}
+
+.alert {
+  padding: 12px 15px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+/* Message types (Bootstrap-like colors but Sneakee-styled) */
+.alert.success {
+  background-color: #e6f9ed;
+  color: #20734d;
+  border-left: 4px solid #1e824c;
+}
+
+.alert.error,
+.alert.danger {
+  background-color: #fdecea;
+  color: #d93025;
+  border-left: 4px solid #d93025;
+}
+
+.alert.warning {
+  background-color: #fff8e5;
+  color: #9a7b00;
+  border-left: 4px solid #ffcd3c;
+}
+
+.alert.info {
+  background-color: #e7f3fe;
+  color: #084298;
+  border-left: 4px solid #007bff;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

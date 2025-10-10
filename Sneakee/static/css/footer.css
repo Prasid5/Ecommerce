@@ -1,0 +1,92 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    box-sizing: border-box;
+}
+
+.custom-footer {
+  background-color: #222;
+  color: #ddd;
+  padding: 40px 20px 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 30px;
+}
+
+.footer-container > .footer-column-logo-column img{
+    width:125px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.footer-column span {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+  color: #ccc;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footer-column ul li a:hover {
+  color: #fff;
+}
+
+.logo-column img {
+  height: 40px;
+  margin-bottom: 10px;
+}
+
+.footer-column p {
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.footer-column form input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 4px;
+}
+
+.footer-column form button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #00bcd4;
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.footer-column form button:hover {
+  background-color: #0097a7;
+}
+
+.footer-bottom {
+  text-align: center;
+  border-top: 1px solid #444;
+  margin-top: 40px;
+  padding-top: 15px;
+  font-size: 13px;
+  color: #aaa;
+}

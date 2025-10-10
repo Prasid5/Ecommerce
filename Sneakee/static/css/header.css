@@ -1,0 +1,183 @@
+ /* * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    } */
+    
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 30px;
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    }
+    
+    .nav-left,
+    .nav-center,
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        /* border:1px solid red; */
+    }
+    
+    .nav-left img {
+        margin-right: 1rem;
+        width: 100px;
+        height: 40px;
+        object-fit: contain;
+    }
+    
+    .nav-left a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        font-size: 16px;
+        margin-right: 1rem;
+    }
+    
+    /* Center: Search Bar */
+    .search-box {
+        position: relative;
+        width: 300px;
+        display: flex;
+        align-items: center;
+        
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .search-box input {
+        flex: 1;
+        padding: 10px 40px 10px 16px;
+        border: none;
+        font-size: 14px;
+        outline: none;
+        background: transparent;
+        color: #333;
+    }
+    
+    /* Magnifying glass icon */
+.search-box button {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.search-box svg {
+    width: 18px;
+    height: 18px;
+    fill: #666;
+    transition: fill 0.3s ease;
+}
+
+.search-box input:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    border-color: #007bff;
+}
+
+.search-box input:focus + button svg {
+    fill: #007bff;
+}
+    
+    /* Right: Cart + Account Links */
+    .nav-right .icon {
+        font-size: 20px;
+        cursor: pointer;
+    }
+    
+    .nav-right a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+    }
+    
+    /* Person icon style */
+    .person-icon {
+        width: 18px;
+        height: 18px;
+        fill: #333;
+    }
+    
+        .profile-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .profile-dropdown svg {
+            width: 22px;
+            height: 22px;
+            fill: #333;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 6px;
+            width: 150px;
+            display: none;
+            flex-direction: column;
+            z-index: 200;
+        }
+
+        .dropdown-menu a {
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .dropdown-menu a:hover {
+            background: #f0f0f0;
+        }
+
+        .dropdown-menu.show {
+            display: flex;
+        }
+
+    @media (max-width: 992px) {
+        .navbar {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 10px 20px;
+        }
+        
+        .nav-left, .nav-center, .nav-right {
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .search-box {
+            width: 90%;
+        }
+    }

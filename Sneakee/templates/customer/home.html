@@ -1,0 +1,165 @@
+{% extends 'customer/base.html' %}
+{%load static%}
+{% block title %}Sneakee | Home{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="{% static 'css/home.css' %}">
+        <script src="{% static 'js/home.js' %}"></script>
+    </head>
+    
+    <body>
+    <!-- Hero Slider -->
+    <section class="hero-slider">
+            <div class="slides">
+                <div class="slide active">
+                    <img src="{% static 'images/slider1.png' %}" alt="Slide 1" />
+                    <div class="caption">
+                        <h2>Step into Style</h2>
+                        <p>Discover the latest trends in footwear.</p>
+                        <a href="#" class="btn">Shop Now</a>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="{% static 'images/slider2.png' %}" alt="Slide 2" />
+                    <div class="caption">
+                        <h2>Comfort Meets Fashion</h2>
+                        <p>Experience unmatched comfort with our new collection.</p>
+                        <a href="#" class="btn">Explore</a>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="{% static 'images/slider3.png' %}" alt="Slide 2" />
+                    <div class="caption">
+                        <h2>Comfort Meets Fashion</h2>
+                        <p>Experience unmatched comfort with our new collection.</p>
+                        <a href="#" class="btn">Explore</a>
+                    </div>
+                </div>
+                <div class="slide">
+                    <img src="{% static 'images/slider4.png' %}" alt="Slide 2" />
+                    <div class="caption">
+                        <h2>Comfort Meets Fashion</h2>
+                        <p>Experience unmatched comfort with our new collection.</p>
+                        <a href="#" class="btn">Explore</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Add more slides as needed -->
+            <div class="navigation">
+                <span class="prev">&#10094;</span>
+                <span class="next">&#10095;</span>
+            </div>
+        </section>
+        
+        <!-- Brand Showcase -->
+        <section class="brand-showcase">
+            <h2>Popular Brands</h2>
+            <div class="brands">
+                <a href="nike/">
+                    <img src="{% static 'images/nike_logo.png' %}" alt="Nike" />
+                </a>
+                <a href="adidas/">
+                    <img src="{% static 'images/adidas_logo.png' %}" alt="Adidas" />
+                </a>
+                <a href="puma/">
+                    <img src="{% static 'images/puma_logo.png' %}" alt="Puma" />
+                </a>
+                <a href="erke/">
+                    <img src="{% static 'images/erke_logo.png' %}" alt="Erke" />
+                </a>
+                <a href="caliber/">
+                    <img src="{% static 'images/caliber_logo.png' %}" alt="Caliber" />
+                </a>
+                <a href="goldstar/">
+                    <img src="{% static 'images/goldstar_logo.png' %}" alt="Goldstar" />
+                </a>
+                <!-- Add more brands as needed -->
+            </div>
+        </section>
+        
+        
+        <!-- New Arrivals -->
+        <section class="new-arrivals">
+            <h2>New Arrivals</h2>
+            <div class="products">
+                <div class="product-grid">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+                        </div>
+                        <div class="product-info">
+                            <h3>AirMax One</h3>
+                            <p>Best Sports wear</p>
+                            <p class="price">₹1,499</p>
+                            <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+                        </div>
+                        <div class="product-info">
+                            <h3>AirMax One</h3>
+                            <p class="price">₹1,499</p>
+                            <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+                        </div>
+                        <div class="product-info">
+                            <h3>AirMax One</h3>
+                            <p class="price">₹1,499</p>
+                            <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+                        </div>
+                    </div>
+                    
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+                        </div>
+                        <div class="product-info">
+                            <h3>AirMax One</h3>
+                            <p class="price">₹1,499</p>
+                            <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!-- Sneakee Lifestyle Picks -->
+<section class="lifestyle-picks">
+    <div class="pick-card urban">
+        <div class="pick-content">
+      <h3>Urban Essentials</h3>
+      <p>Designed for daily hustle, crafted for city comfort.</p>
+      <a href="{% url 'productdetails' %}" class="btn urban-btn">Shop Casual</a>
+    </div>
+    <div class="pick-img">
+        <img src="{% static 'images/sneakeelogo.png' %}" alt="Urban Sneakers" />
+    </div>
+  </div>
+  
+  <div class="pick-card outdoor">
+    <div class="pick-content">
+      <h3>Outdoor Explorer</h3>
+      <p>Built for adventure. Conquer every terrain in style.</p>
+      <a href="{% url 'productdetails' %}" class="btn outdoor-btn">Shop Outdoor</a>
+    </div>
+    <div class="pick-img">
+      <img src="{% static 'images/sneakeelogo.png' %}" alt="Outdoor Sneakers" />
+    </div>
+</div>
+</section>
+
+    </body> 
+    </html>
+    {% endblock %}

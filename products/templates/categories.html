@@ -1,0 +1,175 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Categories{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/categories.css' %}">
+  <script src="{% static 'js/categories.js' %}"></script>
+</head>
+<body>
+
+    <h1>Categories</h1>
+
+  <main>
+    <!-- Casual Shoes Section -->
+    <section class="category-section">
+      <p>Casual Shoes</p>
+      <button class="arrow left" onclick="slide(this, -1)">&#10094;</button>
+      <button class="arrow right" onclick="slide(this, 1)">&#10095;</button>
+      <section class="products">
+        <div class="product-grid">
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+            </div>
+            <div class="product-info">
+              <h3>AirMax One</h3>
+              <p>Best Casual Wear</p>
+              <p class="price">₹1,499</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 2" />
+            </div>
+            <div class="product-info">
+              <h3>Urban Step</h3>
+              <p>Comfortable Daily Shoes</p>
+              <p class="price">₹1,299</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 3" />
+            </div>
+            <div class="product-info">
+              <h3>Street Glide</h3>
+              <p>Stylish and Versatile</p>
+              <p class="price">₹1,599</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 4" />
+            </div>
+            <div class="product-info">
+              <h3>Casual Pro</h3>
+              <p>Everyday Comfort</p>
+              <p class="price">₹1,399</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+    </section>
+
+    <!-- Running Shoes Section -->
+    <section class="category-section">
+      <p>Running Shoes</p>
+      <button class="arrow left" onclick="slide(this, -1)">&#10094;</button>
+      <button class="arrow right" onclick="slide(this, 1)">&#10095;</button>
+      <section class="products">
+        <div class="product-grid">
+          
+        <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+            </div>
+            <div class="product-info">
+              <h3>Speed Runner</h3>
+              <p>Best Sports Wear</p>
+              <p class="price">₹1,799</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div> 
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+            </div>
+            <div class="product-info">
+              <h3>Speed Runner</h3>
+              <p>Best Sports Wear</p>
+              <p class="price">₹1,799</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 2" />
+            </div>
+            <div class="product-info">
+              <h3>Marathon Pro</h3>
+              <p>Lightweight and Durable</p>
+              <p class="price">₹1,999</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 3" />
+            </div>
+            <div class="product-info">
+              <h3>Trail Blaze</h3>
+              <p>For Off-Road Running</p>
+              <p class="price">₹2,099</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 4" />
+            </div>
+            <div class="product-info">
+              <h3>Sprint Master</h3>
+              <p>High Performance</p>
+              <p class="price">₹1,899</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- Sports Shoes Section -->
+    <section class="category-section">
+      <p>Sports Shoes</p>
+      <button class="arrow left" onclick="slide(this, -1)">&#10094;</button>
+      <button class="arrow right" onclick="slide(this, 1)">&#10095;</button>
+      <section class="products">
+        <div class="product-grid">
+          <div class="product-card">
+            <div class="product-image">
+              <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+            </div>
+            <div class="product-info">
+              <h3>Athlete Pro</h3>
+              <p>Multi-Sport Design</p>
+              <p class="price">₹1,699</p>
+              <a href="{% url 'productdetails' %}" class="btn">Quick View</a>
+            </div>
+          </div>
+          <!-- Add more product cards here if needed -->
+        </div>
+      </section>
+    </section>
+  </main>
+
+
+</body>
+</html>
+{% endblock %}

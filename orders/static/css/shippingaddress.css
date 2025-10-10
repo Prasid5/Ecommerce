@@ -1,0 +1,126 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+main {
+      height: 100vh;
+      width: 90%;
+      margin: 0px auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .form-box{
+        width:75%;
+        padding: 30px 40px;
+
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    form {  
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 25px;
+    }
+
+    label {
+      font-size: 14px;
+      margin-bottom: 5px;
+      display: block;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    /* Full-width fields */
+    .full {
+      grid-column: span 2;
+    }
+    
+    /* Label buttons */
+    .address-labels {
+      display: flex;
+      gap: 15px;
+      grid-column: span 2;
+      margin-top: 10px;
+    }
+    
+    .label-btn {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+
+    .label-btn.office {
+      border-color: #00aaff;
+      color: #00aaff;
+    }
+
+    .label-btn.home {
+      border-color: #ff5c5c;
+      color: #ff5c5c;
+    }
+    
+    .label-btn:hover {
+        background: #f2f2f2;
+    }
+    
+    /* Footer buttons */
+    .form-actions {
+        grid-column: span 2;
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 12px 30px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .btn.cancel {
+      background: #eaeaea;
+      color: #333;
+    }
+
+    .btn.save {
+      background: #080033;
+      color: #fff;
+    }
+
+.btn:hover {
+    color: #100d22;
+    border: 1px solid #cecece;
+    background-color: #fff;
+}

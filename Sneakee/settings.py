@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'Sneakee',
     'users',
     'products',
-    'cart',
+    'carts',
     'orders',
     'payments',
 ]
@@ -61,8 +62,8 @@ ROOT_URLCONF = 'Sneakee.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [],      # <-- empty list, or remove this line entirely
+        'APP_DIRS': True,  # important to find templates inside app folders
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
@@ -73,7 +74,11 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'Sneakee.wsgi.application'
+LOGIN_URL='signin'
+LOGIN_REDIRECT_URL='home'
+LOGOUT_REDIRECT_URL='signin'
 
 
 # Database
