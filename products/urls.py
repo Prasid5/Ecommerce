@@ -6,4 +6,4 @@ urlpatterns = [
     path('productdetails/', views.productdetails, name="productdetails"),
     path('categories/', views.categories, name="categories"),
     path('brands/', views.brands, name="brands"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIAROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

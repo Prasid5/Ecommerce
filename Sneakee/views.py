@@ -9,4 +9,4 @@ def home(request):
 @never_cache
 @login_required
 def admindashboard(request):
-    return render(request, "admin/dashboard2.html")
+    return render(request, "admin/dashboard.html")

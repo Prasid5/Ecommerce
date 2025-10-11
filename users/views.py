@@ -11,10 +11,11 @@ def signup(request):
     email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     phone_pattern1 = r"^98\d{8}$"
     phone_pattern2 = r"^97\d{8}$"
+    no_space= r"^\S+$"
 
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        email = request.POST.get('email', '').strip()
+        username = request.POST.get('username', '').strip().lower()
+        email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password', '').strip()
         address = request.POST.get('address', '').strip()
         phone = request.POST.get('phone', '').strip()
@@ -31,6 +32,10 @@ def signup(request):
             messages.error(request, "All fields are required.")
             return render(request, 'signup.html', context)
         
+        elif not re.match(no_space,username):
+            messages.error(request, "Username cannot contain spaces.")
+            return render(request, 'signup.html', context)
+        
         elif not re.match(email_pattern, email):
             messages.error(request, "Please enter a valid email address.")
             return render(request, 'signup.html', context)
@@ -39,7 +44,7 @@ def signup(request):
             messages.error(request, "Password must be at least 6 characters long.")
             return render(request, 'signup.html', context)
         
-        elif not re.match(phone_pattern1, phone) or re.match(phone_pattern2, phone):
+        elif not (re.match(phone_pattern1, phone) or re.match(phone_pattern2, phone)):
             messages.error(request, "Invalid phone number. Must start with 97 or 98 and be 10 digits long.")
             return render(request,'signup.html', context)
         
@@ -69,7 +74,7 @@ def signup(request):
 @never_cache
 def signin(request):
     if request.method == 'POST':
-        login_input=request.POST.get('login_input','').strip()
+        login_input=request.POST.get('login_input','').strip().lower()
         password=request.POST.get('password','').strip()
         context={
             'login_input':login_input,
