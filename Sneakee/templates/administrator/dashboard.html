@@ -2,32 +2,29 @@
 {% block title %}Admin Dashboard - Home{% endblock %}
 
 {% block content %}
-<main class="content-area">
+  <main class="content-area">
     <h1>Welcome to the Admin Dashboard</h1>
     <p>This area is intentionally left blank for dashboard content.</p>
-</main>
+  </main>
 
-<style>
-    .content-area {
-        padding: 2rem;
-        text-align: center;
-        color: #333;
-        background-color: #f9fafb;
-        min-height: calc(100vh - 60px);
-    }
-
-    .content-area h1 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-    }
-
-    .content-area p {
-        font-size: 1rem;
-        color: #666;
-    }
-</style>
+  <!-- close the headerbar + container -->
+  </div> <!-- .headerbar -->
+</div> <!-- .dashboard-container -->
 
 <script>
-    console.log("Dashboard content loaded successfully!");
+  const toggleBtn = document.getElementById("toggleBtn");
+  const sidebar = document.getElementById("sidebar");
+  const profileDropdown = document.getElementById("profileDropdown");
+  const dropdownMenu = document.getElementById("dropdownMenu");
+
+  toggleBtn.addEventListener("click", () => sidebar.classList.toggle("hide"));
+  profileDropdown.addEventListener("click", () => dropdownMenu.classList.toggle("show"));
+  document.addEventListener("click", (e) => {
+    if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+      dropdownMenu.classList.remove("show");
+    }
+  });
+
+  console.log("Dashboard content loaded successfully!");
 </script>
 {% endblock %}
