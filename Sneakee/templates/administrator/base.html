@@ -1,15 +1,15 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}{% endblock %}</title>
-  {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% include "administrator/header.html" %}
 
-    {% block content %}
+    {% block content%}
+
     {% endblock %}
 
     {% include "customer/footer.html" %}
