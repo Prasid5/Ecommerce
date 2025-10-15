@@ -117,19 +117,7 @@
     .dropdown-menu a:hover { background: #f0f0f0; }
     .dropdown-menu.show { display: flex; }
 
-    /* === Content Area (Separate, outside headerbar) === */
-    .content-area {
-        position: absolute;
-        top: 60px; /* below header */
-        left: 250px; /* beside sidebar */
-        right: 0;
-        bottom: 0;
-        background: #fff;
-        overflow-y: auto;
-        padding: 2rem;
-        transition: left 0.3s ease;
-    }
-    .sidebar.hide ~ .content-area { left: 0; }
+
 </style>
 </head>
 
@@ -178,12 +166,6 @@
             </div>
         </div>
     </header>
-
-    <!-- Content Area (Outside headerbar) -->
-    <div class="content-area">
-        <h1>Welcome to the Admin Dashboard</h1>
-        <p>This content area is now *outside* the headerbar but visually identical.</p>
-    </div>
 
     <script>
         const toggleBtn = document.getElementById("toggleBtn");
