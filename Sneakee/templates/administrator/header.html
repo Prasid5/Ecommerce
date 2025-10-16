@@ -7,7 +7,11 @@
 <title></title>
 <link rel="icon" href="{% static 'images/favicon.png' %}">
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { 
+        margin: 0; 
+        padding: 0; 
+        box-sizing: border-box; 
+    }
     body {
         font-family: 'Segoe UI', sans-serif;
         display: flex;
@@ -40,10 +44,15 @@
         padding: 0 1.5rem;
     }
     .brand img {
-        width: 100px; height: 40px; object-fit: contain;
+        width: 100px; 
+        height: 40px; 
+        object-fit: contain;
         transition: opacity 0.3s ease;
     }
-    .sidebar.hide .brand img { opacity: 0; pointer-events: none; }
+    .sidebar.hide .brand img { 
+        opacity: 0; 
+        pointer-events: none; 
+    }
 
     .sidebar-menu {
         display: flex;
@@ -52,14 +61,20 @@
         padding: 0 1.5rem;
     }
     .sidebar-menu a {
-        display: flex; align-items: center; gap: 12px;
-        padding: 10px; border-radius: 6px;
-        font-weight: 500; font-size: 16px;
-        color: #333; text-decoration: none;
+        display: flex; 
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 16px;
+        color: #333;
+        text-decoration: none;
         transition: background 0.3s, color 0.3s;
     }
     .sidebar-menu a:hover, .sidebar-menu a.active {
-        background-color: #222; color: #fff;
+        background: #f0f0f0;
+        color: #333;
     }
     .sidebar.hide .sidebar-menu a span { display: none; }
     .sidebar.hide .sidebar-menu a { justify-content: center; }
@@ -83,24 +98,43 @@
     .sidebar.hide ~ .headerbar { left: 0; }
 
     .headerbar .left {
-        display: flex; align-items: center; gap: 1rem;
+        display: flex; 
+        align-items: center; 
+        gap: 1rem;
     }
-    .toggle-btn { font-size: 22px; cursor: pointer; }
+    .toggle-btn { 
+        font-size: 22px; 
+        cursor: pointer; }
 
     .search-box {
-        position: relative; width: 300px;
-        display: flex; align-items: center;
-        border: 1px solid #ddd; border-radius: 25px; overflow: hidden;
+        position: relative;
+        width: 300px;
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        overflow: hidden;
     }
     .search-box input {
-        flex: 1; padding: 10px 40px 10px 16px;
-        border: none; font-size: 14px; outline: none; background: transparent;
+        flex: 1;
+        padding: 10px 40px 10px 16px;
+        border: none;
+        font-size: 14px;
+        outline: none;
+        background: transparent;
     }
     .search-box button {
-        position: absolute; right: 10px;
-        background: none; border: none; cursor: pointer;
+        position: absolute; 
+        right: 10px;
+        background: none; 
+        border: none; 
+        cursor: pointer;
     }
-    .search-box svg { width: 18px; height: 18px; fill: #666; }
+    .search-box svg { 
+        width: 18px; 
+        height: 18px; 
+        fill: #666; 
+    }
 
     /* === Profile dropdown === */
     .right {
@@ -158,11 +192,11 @@
             <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo">
         </div>
         <nav class="sidebar-menu">
-            <a href="{% url 'admindashboard' %}"><span>Dashboard</span></a>
-            <a href="{% url 'productdashboard' %}"><span>Product Management</span></a>
+           <a href="{% url 'admindashboard' %}" class="{% if request.path == '/admindashboard/' %}active{% endif %}"><span>Dashboard</span></a>
+            <a href="{% url 'productdashboard' %}" class="{% if request.path == '/productdashboard/' %}active{% endif %}"><span>Product Management</span></a>
             <a href="#"><span>Order Management</span></a>
             <a href="#"><span>Sales Report</span></a>
-            <a href="#"><span>Customers</span></a>
+            <a href="{% url 'userdashboard' %}" class="{% if request.path == '/userdashboard/' %}active{% endif %}"><span>User Management</span></a>
         </nav>
     </aside>
 

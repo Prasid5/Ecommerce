@@ -22,6 +22,7 @@ urlpatterns = [
     path('home/',views.home, name="home"),
     path('admindashboard/',views.admindashboard, name="admindashboard"),
     path('productdashboard/',views.productdashboard, name="productdashboard"),
+    path('userdashboard/',views.userdashboard, name="userdashboard"),
 
     path('',include('users.urls')),#No prefix
     path('',include('carts.urls')),
