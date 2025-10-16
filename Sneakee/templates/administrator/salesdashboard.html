@@ -1,35 +1,118 @@
 {% extends 'administrator/base.html' %}
-{%load static%}
-{% block title %}Sneakee | Admin{% endblock %}
+{% load static %}
+{% block title %}Sneakee | Sales Dashboard{% endblock %}
+
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-            /* === Content Area === */
-    /* === Content Area (Separate, outside headerbar) === */
-    .content-area {
-        position: absolute;
-        top: 60px; /* below header */
-        left: 250px; /* beside sidebar */
-        right: 0;
-        bottom: 0;
-        background: #fff;
-        overflow-y: auto;
-        padding: 2rem;
-        transition: left 0.3s ease;
-    }
-    .sidebar.hide ~ .content-area { left: 0; }
-    </style>
-</head>
-<body>
-        <!-- Content Area -->
-    <div class="content-area">
-        <h1>Welcome to the Admin Dashboard</h1>
-        <p>This content area expands to full width when the sidebar collapses — smoothly animated.</p>
+<div class="content-area">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1>Sales Dashboard</h1>
+        <p>View reports and monitor sales performance at a glance.</p>
     </div>
-</body>
-</html>
-{%endblock%}
+
+    <!-- Quick Stats -->
+<div class="quick-stats">
+    <div class="dashboard-boxes quick-stats-grid">
+        <div class="dashboard-box quick-stat">
+            <div class="icon">💰</div>
+            <h3>Total Revenue</h3>
+            <p>${{ total_revenue }}</p>
+        </div>
+        <div class="dashboard-box quick-stat">
+            <div class="icon">🛒</div>
+            <h3>Total Orders</h3>
+            <p>{{ total_orders }}</p>
+        </div>
+        <div class="dashboard-box quick-stat">
+            <div class="icon">📦</div>
+            <h3>Products Sold</h3>
+            <p>{{ total_products_sold }}</p>
+        </div>
+    </div>
+</div>
+    <!-- Sales Dashboard Boxes -->
+    <div class="dashboard-boxes">
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">🧾</div>
+            <h3>Sales List</h3>
+            <p>View all completed sales with details.</p>
+        </div>
+
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">📅</div>
+            <h3>Monthly Report</h3>
+            <p>Analyze sales by month and trends.</p>
+        </div>
+
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">🏆</div>
+            <h3>Top Products</h3>
+            <p>See which products are selling the most.</p>
+        </div>
+
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">👥</div>
+            <h3>Top Customers</h3>
+            <p>Identify your most valuable customers.</p>
+        </div>
+
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">📊</div>
+            <h3>Revenue Analytics</h3>
+            <p>Visualize sales trends and key metrics.</p>
+        </div>
+    </div>
+
+</div>
+
+<style>
+/* Reuse existing styles */
+.content-area { position:absolute; top:60px; left:250px; right:0; bottom:0; background:#f5f5f5; overflow-y:auto; padding:2rem; transition:left 0.3s ease;}
+.sidebar.hide ~ .content-area { left:0; }
+.dashboard-boxes { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px,1fr)); gap:1.5rem; }
+.dashboard-box { background:#fff; border-radius:10px; padding:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.08); text-align:center; transition: transform 0.2s ease, box-shadow 0.3s ease; cursor:pointer; }
+.dashboard-box:hover { transform:translateY(-5px); box-shadow:0 4px 12px rgba(0,0,0,0.12);}
+.dashboard-box .icon { width:50px; height:50px; background:#fff; border:1px solid rgba(0,0,0,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:24px;}
+.dashboard-box h3 { margin:0.5rem 0; font-size:18px; color:#222;}
+.dashboard-box p { color:#666; font-size:14px;}
+/* Quick Stats specific styling */
+.quick-stats {
+    margin-top: 2rem; /* vertical gap from header */
+    margin-bottom: 2rem; /* space before main dashboard boxes */
+}
+
+.quick-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.quick-stat {
+    background: #f9f9f9; /* subtle gray */
+    border: 1px solid #e0e0e0; /* soft border */
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quick-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.quick-stat .icon {
+    background: #fff; /* icon circle remains white */
+    border:1px solid rgba(0,0,0,0.12);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 1rem;
+}
+@media (max-width:768px) { .content-area { left:0; top:100px; } }
+</style>
+{% endblock %}

@@ -20,3 +20,8 @@ def productdashboard(request):
 @login_required
 def userdashboard(request):
     return render(request, "administrator/userdashboard.html")
+
+@never_cache
+@login_required
+def salesdashboard(request):
+    return render(request, "administrator/salesdashboard.html")
