@@ -10,3 +10,8 @@ def home(request):
 @login_required
 def admindashboard(request):
     return render(request, "administrator/dashboard.html")
+
+@never_cache
+@login_required
+def productdashboard(request):
+    return render(request, "administrator/productdashboard.html")

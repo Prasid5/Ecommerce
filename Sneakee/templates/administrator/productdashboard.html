@@ -1,0 +1,135 @@
+{% extends 'administrator/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Admin Dashboard{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* === Content Area === */
+    .content-area {
+        position: absolute;
+        top: 60px; /* below headerbar */
+        left: 250px; /* beside sidebar */
+        right: 0;
+        bottom: 0;
+        background: #f5f5f5;
+        overflow-y: auto;
+        padding: 2rem;
+        transition: left 0.3s ease;
+    }
+    .sidebar.hide ~ .content-area { left: 0; }
+
+    /* === Dashboard Overview === */
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    .dashboard-header h1 {
+        font-size: 28px;
+        color: #222;
+        margin-bottom: 0.5rem;
+    }
+    .dashboard-header p {
+        color: #555;
+    }
+
+    /* === Dashboard Boxes === */
+    .dashboard-boxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .dashboard-box {
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+    .dashboard-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .dashboard-box .icon {
+        width: 50px;
+        height: 50px;
+        background: #fff;
+        border:1px solid rgba(0,0,0,0.12);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 24px;
+    }
+
+    .dashboard-box h3 {
+        margin: 0.5rem 0;
+        font-size: 18px;
+        color: #222;
+    }
+
+    .dashboard-box p {
+        color: #666;
+        font-size: 14px;
+    }
+
+    /* Responsive fix */
+    @media (max-width: 768px) {
+      .content-area {
+          left: 0;
+          top: 100px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content-area">
+    <div class="dashboard-header">
+        <h1>Product Management Dashboard</h1>
+        <p>Manage products, categories, and meta tags efficiently.</p>
+    </div>
+
+    <div class="dashboard-boxes">
+        <!-- Product List -->
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">🧾</div>
+            <h3>Product List</h3>
+            <p>View and manage all your products.</p>
+        </div>
+
+        <!-- Add Product -->
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">➕</div>
+            <h3>Add Product</h3>
+            <p>Create and publish a new product listing.</p>
+        </div>
+
+        <!-- Add Category -->
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">🏷️</div>
+            <h3>Add Category</h3>
+            <p>Organize your products by categories.</p>
+        </div>
+
+        <!-- Add Meta Tag -->
+        <div class="dashboard-box" onclick="window.location.href='#'">
+            <div class="icon">🧩</div>
+            <h3>Add Meta Tag</h3>
+            <p>Optimize SEO with relevant meta tags.</p>
+        </div>
+    </div>
+  </div>
+</body>
+</html>
+{% endblock %}

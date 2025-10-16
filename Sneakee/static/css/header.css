@@ -121,48 +121,44 @@ body {
         fill: #333;
     }
     
-        .profile-dropdown {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            user-select: none;
-        }
+    .profile-dropdown {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        padding: 5px 10px;
+        border-radius: 20px;
+        transition: background 0.3s;
+    }
+    .profile-dropdown:hover {
+        background: #f0f0f0;
+    }
+    .profile-dropdown svg {
+        width: 24px; height: 24px;
+        fill: #333;
+    }
 
-        .profile-dropdown svg {
-            width: 22px;
-            height: 22px;
-            fill: #333;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 55px;
-            right: 0;
-            background: #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-radius: 6px;
-            width: 150px;
-            display: none;
-            flex-direction: column;
-            z-index: 200;
-        }
-
-        .dropdown-menu a {
-            padding: 10px 15px;
-            text-decoration: none;
-            color: #333;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-
-        .dropdown-menu a:hover {
-            background: #f0f0f0;
-        }
-
-        .dropdown-menu.show {
-            display: flex;
-        }
+    .dropdown-menu {
+        position: absolute;
+        top: 55px;
+        right: 0;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-radius: 6px;
+        width: 150px;
+        display: none;
+        flex-direction: column;
+        z-index: 200;
+    }
+    .dropdown-menu a {
+        padding: 10px 15px;
+        text-decoration: none;
+        color: #333;
+        font-size: 14px;
+        transition: background 0.3s;
+    }
+    .dropdown-menu a:hover { background: #f0f0f0; }
+    .dropdown-menu.show { display: flex; }
 
     @media (max-width: 992px) {
         .navbar {
