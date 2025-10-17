@@ -24,17 +24,17 @@ class SEO(models.Model):
 # CATEGORY MODEL
 # -------------------------
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    category_name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.category_name)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return self.category_name
 
 
 # -------------------------
