@@ -10,23 +10,24 @@
         <p>View reports and monitor sales performance at a glance.</p>
     </div>
 
-    <!-- Quick Stats -->
-<div class="quick-stats">
-    <div class="dashboard-boxes quick-stats-grid">
-        <div class="dashboard-box quick-stat">
-            <div class="icon">💰</div>
+<!-- Quick Stats Horizontal Box -->
+<div class="quick-stats-horizontal">
+    <div class="quick-stats-item">
+        <div class="stat-info">
             <h3>Total Revenue</h3>
-            <p>${{ total_revenue }}</p>
+            <p>Rs. 10000000</p>
         </div>
-        <div class="dashboard-box quick-stat">
-            <div class="icon">🛒</div>
+    </div>
+    <div class="quick-stats-item">
+        <div class="stat-info">
             <h3>Total Orders</h3>
-            <p>{{ total_orders }}</p>
+            <p>5000</p>
         </div>
-        <div class="dashboard-box quick-stat">
-            <div class="icon">📦</div>
+    </div>
+    <div class="quick-stats-item">
+        <div class="stat-info">
             <h3>Products Sold</h3>
-            <p>{{ total_products_sold }}</p>
+            <p>10000</p>
         </div>
     </div>
 </div>
@@ -75,43 +76,41 @@
 .dashboard-box .icon { width:50px; height:50px; background:#fff; border:1px solid rgba(0,0,0,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-size:24px;}
 .dashboard-box h3 { margin:0.5rem 0; font-size:18px; color:#222;}
 .dashboard-box p { color:#666; font-size:14px;}
-/* Quick Stats specific styling */
-.quick-stats {
-    margin-top: 2rem; /* vertical gap from header */
-    margin-bottom: 2rem; /* space before main dashboard boxes */
-}
-
-.quick-stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-}
-
-.quick-stat {
-    background: #f9f9f9; /* subtle gray */
-    border: 1px solid #e0e0e0; /* soft border */
+.quick-stats-horizontal {
+    display: flex;
+    justify-content: space-between;
+    background: #ffffff; /* subtle background */
+    border: 1px solid #e0e0e0;
     border-radius: 10px;
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0; /* vertical gap from header */
     box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    text-align: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.quick-stat:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.quick-stat .icon {
-    background: #fff; /* icon circle remains white */
-    border:1px solid rgba(0,0,0,0.12);
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
+.quick-stats-item {
     display: flex;
     align-items: center;
+    flex: 1;
     justify-content: center;
-    font-size: 24px;
-    margin: 0 auto 1rem;
+    text-align: center;
+    padding: 0 1rem;
+    border-right: 1px solid #e0e0e0;
+}
+
+.quick-stats-item:last-child {
+    border-right: none;
+}
+
+.quick-stats-item h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #222;
+}
+
+.quick-stats-item p {
+    margin: 0;
+    font-size: 16px;
+    color: #666;
 }
 @media (max-width:768px) { .content-area { left:0; top:100px; } }
 </style>

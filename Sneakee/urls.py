@@ -24,6 +24,7 @@ urlpatterns = [
     path('productdashboard/',views.productdashboard, name="productdashboard"),
     path('userdashboard/',views.userdashboard, name="userdashboard"),
     path('salesdashboard/',views.salesdashboard, name="salesdashboard"),
+    path('orderdashboard/', views.orderdashboard, name="orderdashboard"),
 
     path('',include('users.urls')),#No prefix
     path('',include('carts.urls')),
