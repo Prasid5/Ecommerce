@@ -54,8 +54,7 @@ class ProductVariant(models.Model):
     stock = models.PositiveIntegerField(default=0)
     sku = models.CharField(max_length=100, unique=True, blank=True, null=True)
 
-    # Images (5 angles)
-    front_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
+    # Images (4 angles)
     top_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
     right_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
     left_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
