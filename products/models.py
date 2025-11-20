@@ -4,23 +4,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 
 # -------------------------
-# GENERIC SEO MODEL
-# -------------------------
-class SEO(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    meta_title = models.CharField(max_length=70, blank=True, null=True)
-    meta_description = models.TextField(max_length=160, blank=True, null=True)
-    meta_keywords = models.CharField(max_length=255, blank=True, null=True)
-    slug = models.SlugField(unique=True, blank=True, null=True)
-
-    def __str__(self):
-        return f"SEO for {self.content_object}"
-
-
-# -------------------------
 # CATEGORY MODEL
 # -------------------------
 class Category(models.Model):
