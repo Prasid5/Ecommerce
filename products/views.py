@@ -11,6 +11,12 @@ def categories(request):
 def brands(request):
     return render(request, 'brands.html')
 
+def addproduct(request):
+    return render(request,'addproduct.html')
+
+def addproductvariant(request):
+    return render(request, 'addproductvariant.html')
+
 def addcategory(request):
     context={}
     if request.method == 'POST':

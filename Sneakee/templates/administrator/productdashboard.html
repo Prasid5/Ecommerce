@@ -29,7 +29,7 @@
         </a>
 
         <!-- Add Product -->
-        <a href="#" class="dashboard-box-link">
+        <a href="{% url 'addproduct' %}" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">➕</div>
                 <h3>Add Product</h3>
@@ -38,7 +38,7 @@
         </a>
 
         <!-- Add Product Variant -->
-        <a href="#" class="dashboard-box-link">
+        <a href="{% url 'addproductvariant' %}" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">➕</div>
                 <h3>Add Product Variant</h3>
@@ -46,14 +46,14 @@
             </div>
         </a>
 
-        <!-- Add Meta Tag -->
+        {% comment %} <!-- Add Meta Tag -->
         <a href="#" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">🧩</div>
                 <h3>Add Meta Tag</h3>
                 <p>Optimize SEO with relevant meta tags.</p>
             </div>
-        </a>
+        </a> {% endcomment %}
     </div>
 </div>
 

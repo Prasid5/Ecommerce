@@ -3,6 +3,15 @@
 {% block title %}Sneakee | Add Category{% endblock %}
 
 {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/addcategory.css' %}">
+    <script src="{% static 'js/addcategory.js' %}"></script>
+</head>
+<body>
 <div class="content-area">
     <div class="form-container">
         <div class="form-box">
@@ -43,174 +52,6 @@
         </div>
     </div>
 </div>
-
-<style>
-/* === Content Area Styling === */
-.content-area {
-    position: absolute;
-    top: 60px; 
-    left: 250px; 
-    right: 0;
-    bottom: 0;
-    background: #fff;
-    overflow-y: auto;
-    padding: 2rem;
-    transition: left 0.3s ease;
-}
-.sidebar.hide ~ .content-area { left: 0; }
-
-/* === Form Styling === */
-.form-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2rem 0;
-}
-
-.form-box {
-    width: 100%;
-    max-width: 500px;
-    background: #ffffff;
-    padding: 40px 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-}
-
-/* Heading row with back link */
-.form-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.form-header h2 {
-    margin: 0;
-    color: #100d22;
-}
-
-.back-link {
-    text-decoration: none;
-    color: #100d22;
-    font-weight: bold;
-}
-
-.back-link:hover {
-    color: #555;
-}
-
-.form-box input,
-.form-box textarea {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-.form-box textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.btn-submit {
-    width: 100%;
-    background-color: #100d22;
-    color: #fff;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    margin-top: 15px;
-}
-
-.btn-submit:hover {
-    background-color: #fff;
-    color: #100d22;
-    border: 1px solid #100d22;
-}
-
-.error-message {
-    display: block;
-    color: #d93025;
-    font-size: 0.85rem;
-    margin-top: 2px;
-}
-
-/* Message Alerts */
-.message-container {
-    margin-bottom: 20px;
-}
-
-.alert {
-    padding: 12px 15px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    text-align: center;
-    animation: fadeIn 0.4s ease;
-}
-
-.alert.success {
-    background-color: #e6f9ed;
-    color: #20734d;
-    border-left: 4px solid #1e824c;
-}
-
-.alert.error,
-.alert.danger {
-    background-color: #fdecea;
-    color: #d93025;
-    border-left: 4px solid #d93025;
-}
-
-.alert.warning {
-    background-color: #fff8e5;
-    color: #9a7b00;
-    border-left: 4px solid #ffcd3c;
-}
-
-.alert.info {
-    background-color: #e7f3fe;
-    color: #084298;
-    border-left: 4px solid #007bff;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .content-area {
-        left: 0;
-        padding: 1rem;
-    }
-
-    .form-box {
-        padding: 30px 20px;
-    }
-
-    .form-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .back-link {
-        margin-top: 10px;
-    }
-}
-</style>
-
-<script>
-setTimeout(() => {
-    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
-}, 4000);
-</script>
+</body>
+</html>
 {% endblock %}

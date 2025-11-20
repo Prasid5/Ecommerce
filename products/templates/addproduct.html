@@ -1,0 +1,101 @@
+{% extends 'administrator/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Add Product{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/addproduct.css' %}">
+    <script src="{% static 'js/addproduct.js' %}"></script>
+</head>
+<body>
+<div class="content-area">
+    <div class="form-container">
+        <div class="form-box">
+
+            <!-- Heading with Back Link -->
+            <div class="form-header">
+                <h2>Add New Product</h2>
+                <a href="#" class="back-link">&larr; Back</a>
+            </div>
+
+            {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" enctype="multipart/form-data" action="#">
+                {% csrf_token %}
+
+                <!-- Row 1: Category + Slug -->
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <select name="category" required>
+                            <option value="">Select Category</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="error-message" id="category_error"></span>
+                    </div>
+
+                    <div class="form-group half-width">
+                        <input type="text" name="slug" placeholder="Slug (URL friendly)" value="{{ slug }}">
+                        <span class="error-message" id="slug_error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 2: Name + Brand -->
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <input type="text" name="name" placeholder="Product Name" value="{{ name }}">
+                        <span class="error-message" id="name_error"></span>
+                    </div>
+
+                    <div class="form-group half-width">
+                        <input type="text" name="brand" placeholder="Brand" value="{{ brand }}">
+                        <span class="error-message" id="brand_error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 3: Material + Base Price -->
+                <div class="form-row">
+                    <div class="form-group half-width">
+                        <input type="text" name="material" placeholder="Material" value="{{ material }}">
+                        <span class="error-message" id="material_error"></span>
+                    </div>
+
+                    <div class="form-group half-width">
+                        <input type="number" step="0.01" name="base_price" placeholder="Base Price" value="{{ base_price }}">
+                        <span class="error-message" id="base_price_error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 4: Main Image -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Main Product Image</label>
+                        <input type="file" name="main_image">
+                        <span class="error-message" id="main_image_error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 5: Description -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <textarea name="description" placeholder="Product Description">{{ description }}</textarea>
+                        <span class="error-message" id="description_error"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">Add Product</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
