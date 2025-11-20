@@ -59,7 +59,7 @@ def signup(request):
         user= User.objects.create_user(
             username=username,
             email=email,
-            password=make_password(password),
+            password=password,
             address=address,
             phone=phone
         )
@@ -73,33 +73,34 @@ def signup(request):
 @never_cache
 def signin(request):
     if request.method == 'POST':
-        login_input=request.POST.get('login_input','').strip().lower()
-        password=request.POST.get('password','').strip()
-        context={
-            'login_input':login_input,
-            'password':password
-        }
+        login_input = request.POST.get('login_input', '').strip().lower()
+        password = request.POST.get('password', '').strip()
+        context = {'login_input': login_input}
 
+        user_obj = None
+
+        # Try login_input as email
         try:
             user_obj = User.objects.get(email=login_input)
-            user = authenticate(request, email=user_obj.email, password=password)
-
         except User.DoesNotExist:
+            # Try login_input as username
             try:
                 user_obj = User.objects.get(username=login_input)
-                user = authenticate(request, email=user_obj.email, password=password)
             except User.DoesNotExist:
-                user = None
+                user_obj = None
 
-        if user is not None:
-            login(request, user)
-            if user.is_staff:
-                return redirect('admindashboard')
-            else:
-                return redirect('home')
-        else:
-            messages.error(request, "Invalid email or password")
-            return render(request, 'signin.html', context)
+        if user_obj:
+            # username= maps to USERNAME_FIELD which is email in your model
+            user = authenticate(request, username=user_obj.email, password=password)
+            if user is not None:
+                login(request, user)
+                if user.is_staff:
+                    return redirect('admindashboard')
+                else:
+                    return redirect('home')
+
+        messages.error(request, "Invalid email/username or password")
+        return render(request, 'signin.html', context)
 
     return render(request, 'signin.html')
 
