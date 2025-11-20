@@ -36,9 +36,9 @@
                 <div class="form-row">
                     <div class="form-group half-width">
                         <select name="category" required>
-                            <option value="">Select Category</option>
-                            {% for cat in categories %}
-                            <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                            <option disabled selected>Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.category_name }}</option>
                             {% endfor %}
                         </select>
                         <span class="error-message" id="category_error"></span>

@@ -61,8 +61,7 @@ def signup(request):
             email=email,
             password=make_password(password),
             address=address,
-            phone=phone,
-            role='customer'
+            phone=phone
         )
 
         user.save()

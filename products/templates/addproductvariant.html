@@ -33,15 +33,13 @@
 
             <form method="POST" enctype="multipart/form-data" action="#">
                 {% csrf_token %}
-
                 <!-- Row 1: Select Product + Variant Name -->
                 <div class="form-row">
                     <div class="form-group half-width">
                         <select name="product" required>
                             <option disabled selected>Select Product</option>
-                            <option>Select Product</option>
-                            {% for p in products %}
-                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
                             {% endfor %}
                         </select>
                         <span class="error-message" id="product_error"></span>
