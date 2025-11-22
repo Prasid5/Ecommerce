@@ -174,4 +174,11 @@ def addproductvariant(request):
         messages.success(request, "Product Variant added successfully")
         return redirect('addproductvariant')
     return render(request, 'addproductvariant.html', {'products':products})
+
+def productlist(request):
+    products = Product.objects.all()  # Fetch all products
+    context = {
+        'products': products
+    }
+    return render(request, 'productlist.html', context)
 # Create your views here.

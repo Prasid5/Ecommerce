@@ -1,0 +1,87 @@
+.content-area {
+    padding: 20px;
+    background: #fff;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-header h2 {
+    font-size: 22px;
+    color: #100d22;
+}
+
+.add-new-btn {
+    padding: 8px 14px;
+    background-color: #100d22;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.add-new-btn:hover {
+    background-color: #555;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.product-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.product-table th,
+.product-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+}
+
+.product-table th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.product-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.btn {
+    padding: 6px 10px;
+    background-color: #100d22;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-right: 4px;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: #555;
+}
+
+.message-container {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}

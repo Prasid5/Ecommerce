@@ -8,5 +8,6 @@ urlpatterns = [
     path('brands/', views.brands, name="brands"),
     path('addcategory/', views.addcategory, name="addcategory"),
     path('addproduct/', views.addproduct, name="addproduct"),
-    path('addproductvariant/', views.addproductvariant, name="addproductvariant")
+    path('addproductvariant/', views.addproductvariant, name="addproductvariant"),
+    path('productlist/', views.productlist, name="productlist")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

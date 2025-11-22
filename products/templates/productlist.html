@@ -1,0 +1,68 @@
+{% extends 'administrator/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Products{% endblock %}
+
+{% block content %}
+<div class="content-area">
+
+    <div class="dashboard-header">
+        <h2>All Products</h2>
+        <a href="{% url 'addproduct' %}" class="btn add-new-btn">+ Add New Product</a>
+    </div>
+
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Brand</th>
+                    <th>Base Price</th>
+                    <th>Variants</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>
+                        <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="product-thumb">
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.category.category_name }}</td>
+                    <td>{{ product.brand }}</td>
+                    <td>NPR {{ product.base_price }}</td>
+                    <td>
+                        {% for variant in product.variants.all %}
+                            {{ variant.variant_name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            No Variants
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <a href="{% url 'addproductvariant' %}?product={{ product.id }}" class="btn">Add Variant</a>
+                        <a href="{% url 'productdetails' product.id %}" class="btn">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center;">No products found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
