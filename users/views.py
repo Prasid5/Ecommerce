@@ -104,6 +104,68 @@ def signin(request):
 
     return render(request, 'signin.html')
 
+@never_cache
+def addadmin(request):
+    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    phone_pattern1 = r"^98\d{8}$"
+    phone_pattern2 = r"^97\d{8}$"
+    no_space= r"^\S+$"
+
+    if request.method=='POST':
+        username = request.POST.get('username', '').strip().lower()
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password', '').strip()
+        phone = request.POST.get('phone', '').strip()
+
+        context={
+            'username':username,
+            'email':email,
+            'phone':phone
+        }
+        
+        if not username or not email or not password or not phone:
+            messages.error(request,"All field are required.")
+            return render(request, 'addadmin.html',context)
+        
+        elif not re.match(no_space, username):
+            messages.error(request, "Username cannot contain spaces.")
+            return render(request, 'addadmin.html', context)
+        
+        elif not re.match(email_pattern, email):
+            messages.error(request, "Invalid Email")
+            return render(request, 'addadmin.html', context)
+        
+        elif not len(password)>=6:
+            messages.error(request, "Password must be atleast 6 characters long.")
+            return render(request, 'addadmin.html', context)
+        
+        elif not (re.match(phone_pattern1, phone) or re.match(phone_pattern2, phone)):
+            messages.error(request, "Invalid phone number. Must start with 97 or 98 and be 10 digits long.")
+            return render(request,'addadmin.html', context)
+        
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "User already exists.")
+            return render(request, 'addadmin.html', context)
+        
+        if User.objects.filter(phone=phone).exists():
+            messages.error(request, "Phone already exists.")
+            return render(request, 'addadmin.html', context)
+        
+        user= User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            phone=phone
+        )
+
+        user.save()
+        messages.success(request, "Admin Created")
+        return render(request, 'signin.html')
+    
+    return render(request, 'addadmin.html')
+
+
+
 def signout(request):
     logout(request)
     return redirect('signin')
