@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from users.models import User
 from django.views.decorators.cache import never_cache
+from django.core.paginator import Paginator
 
 @never_cache
 def signup(request):
@@ -155,7 +156,8 @@ def addadmin(request):
             username=username,
             email=email,
             password=password,
-            phone=phone
+            phone=phone,
+            is_staff=True
         )
 
         user.save()
@@ -165,7 +167,35 @@ def addadmin(request):
     return render(request, 'addadmin.html')
 
 
+def adminlist(request):
+    admins = User.objects.filter(is_staff=True)
+    return render(request, "adminlist.html", {"admins": admins})
+
 
 def signout(request):
     logout(request)
     return redirect('signin')
+
+
+
+def userlist(request, mode=None):
+    query = request.GET.get("query", "")
+    if mode == "customer":
+        users = User.objects.filter(is_staff=False)
+    elif mode == "admin":
+        users=User.objects.filter(is_staff=True)
+    
+    users=users.order_by("created_at")#for descending order:-created_at
+
+    if query:
+        users = users.filter(username__icontains=query) | users.filter(email__icontains=query) | users.filter(phone__icontains=query)#__icontains for case insensitive
+
+    paginator = Paginator(users, 2)
+    page_number = request.GET.get("page")#for first-time page load, request.get={}
+    page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
+
+    return render(request, "userlist.html", {
+        "page_obj": page_obj,
+        "query": query,
+        "mode":mode,
+    })

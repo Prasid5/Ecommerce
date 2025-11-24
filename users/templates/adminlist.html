@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+
+    <style>
+        body{
+            font-family: Arial;
+             margin: 20px;
+            background:#f1f5f9;
+        }
+        h1{
+            margin-bottom: 10px;
+        }
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            background:white;
+        }
+        th, td{
+            padding: 10px;
+             border-bottom: 1px solid #e2e8f0;
+              text-align: left;
+        }
+        th{
+            background:#e2e8f0;
+        }
+        tr:hover{
+            background:#f8fafc;
+        }
+        .topbar{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-bottom: 12px;
+        }
+        input[type=text]{
+            padding:8px 10px;
+            border-radius:5px;
+            border:1px solid #cbd5e1;
+        }
+        .pagination{
+            margin-top: 12px;
+            display:flex;
+            gap: 6px;
+            align-items:center;
+        }
+        .page-btn{
+            padding:6px 10px;
+            background:white;
+            border:1px solid #cbd5e1;
+            border-radius:5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Users</h1>
+
+<div class="topbar">
+    <form action="{% url 'adminlist' %}" method="get">
+        <input type="text" name="query" value="{{ query }}" placeholder="Search users...">
+        <button type="submit" class="page-btn">Search</button>
+    </form>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>User_ID</th>
+            <th>Email</th>
+            <th>Username</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Created</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for user in page_obj %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.phone|default:"-" }}</td>
+            <td>{{ user.address|default:"-" }}</td>
+            <td>{{ user.created_at|date:"Y-m-d" }}</td>
+            <td>
+                {% if user.is_active %}
+                    Active
+                {% else %}
+                    Inactive
+                {% endif %}
+            </td>
+        </tr>
+
+        {% empty %}
+        <tr><td colspan="7">No users found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
+    {% endif %}
+
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+    {% if page_obj.has_next %}
+        <a class="page-btn" href="?q={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+</div>
+
+</body>
+</html>
