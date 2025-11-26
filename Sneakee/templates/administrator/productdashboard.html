@@ -11,11 +11,20 @@
 
     <div class="dashboard-boxes">
         <!-- Product List -->
-        <a href="#" class="dashboard-box-link">
+        <a href="{% url 'productlist' %}" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">🧾</div>
                 <h3>Product List</h3>
                 <p>View and manage all your products.</p>
+            </div>
+        </a>
+
+        <!-- Add Brand -->
+        <a href="{% url 'addbrand' %}" class="dashboard-box-link">
+            <div class="dashboard-box">
+                <div class="icon">🏷️</div>
+                <h3>Add Brand</h3>
+                <p>Add Different Brands.</p>
             </div>
         </a>
 

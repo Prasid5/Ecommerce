@@ -50,29 +50,24 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Name + Brand -->
+                <!-- Row 2: Name + Base Price -->
                 <div class="form-row">
                     <div class="form-group half-width">
-                        <input type="text" name="name" placeholder="Product Name" value="{{ name }}">
+                        <input type="text" name="product_name" placeholder="Product Name" value="{{ name }}">
                         <span class="error-message" id="name_error"></span>
-                    </div>
-
-                    <div class="form-group half-width">
-                        <input type="text" name="brand" placeholder="Brand" value="{{ brand }}">
-                        <span class="error-message" id="brand_error"></span>
-                    </div>
-                </div>
-
-                <!-- Row 3: Material + Base Price -->
-                <div class="form-row">
-                    <div class="form-group half-width">
-                        <input type="text" name="material" placeholder="Material" value="{{ material }}">
-                        <span class="error-message" id="material_error"></span>
                     </div>
 
                     <div class="form-group half-width">
                         <input type="number" step="0.01" name="base_price" placeholder="Base Price" value="{{ base_price }}">
                         <span class="error-message" id="base_price_error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 3: Material -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <input type="text" name="material" placeholder="Material" value="{{ material }}">
+                        <span class="error-message" id="material_error"></span>
                     </div>
                 </div>
 

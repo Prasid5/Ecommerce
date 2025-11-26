@@ -1,4 +1,8 @@
+{% extends 'administrator/base.html' %}
 {% load static %}
+{% block title %}Sneakee | User List{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,11 +11,32 @@
     <title>User List</title>
 
     <style>
-        body{
-            font-family: Arial;
-             margin: 20px;
-            background:#f1f5f9;
+        .content-area {
+            position: absolute;
+            top: 60px;          /* below header */
+            left: 250px;        /* beside sidebar */
+            right: 0;
+            bottom: 0;
+            background: #f9fafb;
+            overflow-y: auto;
+            padding: 2rem;
+            transition: left 0.1s ease;
         }
+        .sidebar.hide ~ .content-area { left: 0; }
+
+        .message-container {
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .alert.success { background-color: #d1fae5; color: #065f46; }
+        .alert.error { background-color: #fee2e2; color: #b91c1c; }
+
         h1{
             margin-bottom: 10px;
         }
@@ -20,6 +45,7 @@
         .topbar{
             display:flex;
             align-items:center;
+            justify-content:space-between;
             gap:10px;
             margin-bottom: 12px;
         }
@@ -45,8 +71,8 @@
         }
 
         thead tr{
-            background: #f8fafc;
-            color: #64748b;
+            background: #ffffffff;
+            color: #000000ff;
             font-weight: 600;
         }
 
@@ -54,13 +80,13 @@
             padding: 14px 16px;
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
-            font-size: 13px;
+            font-size: 16px;
         }
 
         td{
             text-align: center;
             vertical-align: middle;
-            padding: 16px;
+            padding: 12px;
             border-bottom: 1px solid #f1f5f9;
         }
 
@@ -125,96 +151,134 @@
             display:flex;
             gap: 6px;
             align-items:center;
+
+            display:flex;
+            align-items:center;
+            justify-content:center;
         }
         .page-btn{
             padding:6px 10px;
+            text-decoration:none;
+            color:black;
+
             background:white;
             border:1px solid #cbd5e1;
             border-radius:5px;
+            cursor:default;
+
         }
     </style>
 </head>
 <body>
-
-<h1>Users</h1>
-
-<div class="topbar">
-    <form action="{% url 'customerlist' %}" method="get">
-        <input type="hidden" name ="type">
-        <input type="text" name="query" value="{{ query }}" placeholder="Search users...">
-        <button type="submit" class="page-btn">Search</button>
-    </form>
-</div>
-
-<div class="table-wrapper">
-    <table>
-        <thead>
-            <tr>
-                <th>User_ID</th>
-                <th>Email</th>
-                <th>Username</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Created</th>
-                <th>Status</th>
-                <th>Edit</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            {% for user in page_obj %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.phone|default:"-" }}</td>
-                <td>{{ user.address|default:"-" }}</td>
-                <td>{{ user.created_at|date:"Y-m-d" }}</td>
-
-                <td>
-                    <div class="status-badge">
-                        {% if user.is_active %}
-                            <span class="dot active-dot"></span> Active
-                        {% else %}
-                            <span class="dot inactive-dot"></span> Inactive
-                        {% endif %}
+    
+<div class="content-area">
+        {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">
+                        {{ message }}
                     </div>
-                </td>
+                {% endfor %}
+            </div>
+        {% endif %}
+    <div class="topbar">
+    <h1>
+        {% if mode == "admin" %}
+        Admin List
+        {% elif mode == "customer" %}
+        Customer List
+        {% endif %}
+    </h1>
+        <form action="{% if mode == 'admin' %}{% url 'adminlist' %}{% else %}{% url 'customerlist' %}{% endif %}"" method="get">
+            <input type="text" name="query" value="{{ query }}" placeholder="Search users...">
+            <input type="hidden" name="page" value="{{ page_obj.number }}">
+            <button type="submit" class="page-btn">Search</button>
+        </form>
+    </div>
 
-                <td>
-                    <div class="actions">
-                        <!-- Edit Button -->
-                        <a class="action-btn" href="#">
-                            <img src="{% static 'images/Pencil.png' %}" alt="Edit">
-                        </a>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>User_ID</th>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
 
-                        <!-- Delete Button -->
-                        <a class="action-btn" href="#">
-                            <img src="{% static 'images/Bin.png' %}" alt="Delete">
-                        </a>
-                    </div>
-                </td>
-            </tr>
+            <tbody>
+                {% for user in page_obj %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.phone|default:"-" }}</td>
+                    <td>{{ user.address|default:"-" }}</td>
 
-            {% empty %}
-            <tr><td colspan="8">No users found.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    <td>
+                        <div class="status-badge">
+                            {% if user.is_active %}
+                                <span class="dot active-dot"></span> Active
+                            {% else %}
+                                <span class="dot inactive-dot"></span> Inactive
+                            {% endif %}
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="actions">
+                            <!-- Edit Button -->
+                            <form action="{% url 'edituserform' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{user.id}}">
+                                <button type="submit" class="action-btn">
+                                    <img src="{% static 'images/Pencil.png' %}" alt="Edit">
+                                </button>
+                            </form>
+
+                            <!-- Delete Button -->
+                            <form action="{% url 'deleteuser' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="user_id" value="{{user.id}}">
+                                <button type="submit" class="action-btn">
+                                    <img src="{% static 'images/Bin.png' %}" alt="Delete">
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr><td colspan="8">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
+        {% endif %}
+
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="?q={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
 </div>
 
-
-<div class="pagination">
-    {% if page_obj.has_previous %}
-        <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
-    {% endif %}
-
-    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-
-    {% if page_obj.has_next %}
-        <a class="page-btn" href="?q={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
-    {% endif %}
-</div>
-
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
 </body>
 </html>
+{%endblock%}

@@ -1,0 +1,65 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Brands{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/brands.css' %}">
+    <script src="{% static 'js/categories.js' %}"></script>
+</head>
+<body>
+<section class="brand-img">
+    {% if brand.brand_picture %}
+        <img src="{{ brand.brand_picture.url }}" alt="{{ brand.brand_name }}">
+    {% else %}
+        <img src="{% static 'images/default_brand.png' %}" alt="Brand Image">
+    {% endif %}
+</section>
+
+<main>
+    {% for category in categories %}
+        <section class="category-section">
+
+            <!-- Category Name -->
+            <p>{{ category.category_name }}</p>
+
+            <button class="arrow left" onclick="slide(this, -1)">&#10094;</button>
+            <button class="arrow right" onclick="slide(this, 1)">&#10095;</button>
+
+            <section class="products">
+                <div class="product-grid">
+                    {% for product in category.products.all %}
+                        <div class="product-card">
+
+                            <div class="product-image">
+                                {% if product.main_image %}
+                                    <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}">
+                                {% else %}
+                                    <img src="{% static 'images/default_product.png' %}" alt="{{ product.product_name }}">
+                                {% endif %}
+                            </div>
+
+                            <div class="product-info">
+                                <h3>{{ product.product_name }}</h3>
+                                <p class="price">₹{{ product.base_price }}</p>
+                                <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
+                            </div>
+
+                        </div>
+                    {% empty %}
+                        <p class="no-products">No products in this category.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </section>
+    {% empty %}
+        <p>No categories available for this brand.</p>
+    {% endfor %}
+</main>
+
+</body>
+</html>
+{% endblock %}

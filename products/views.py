@@ -1,36 +1,108 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from products.models import Category, Product, ProductVariant
+from django.core.paginator import Paginator
+from django.db.models import Q
 
-def productdetails(request, product_id):
-    # Get the product or 404 if not found
-    product = get_object_or_404(Product, id=product_id)
-    # The template will access product.variants.all() for variants
+from products.models import Brand, Category, Product, ProductVariant
+
+from django.shortcuts import get_object_or_404, render
+from .models import Product
+
+def productdetails(request, slug):
+    """
+    Fetch product by slug
+    """
+    product = get_object_or_404(Product, slug=slug)
+
     context = {
         'product': product
     }
     return render(request, 'productdetails.html', context)
 
+
 def categories(request):
     return render(request,'categories.html')
 
-def brands(request):
-    return render(request, 'brands.html')
+# def brand(request):
+#     return render(request, 'brand.html')
 
-def addcategory(request):
+from django.shortcuts import render, get_object_or_404
+from .models import Brand, Category
+
+def brand_view(request, brand_slug):
+    # Fetch the brand
+    brand = get_object_or_404(Brand, slug=brand_slug)
+
+    # Get all categories that include this brand
+    categories = Category.objects.filter(brands=brand).prefetch_related('products')
+
+    context = {
+        'brand': brand,
+        'categories': categories,
+    }
+
+    return render(request, 'brand.html', context)
+
+
+def addbrand(request):
     context={}
     if request.method == 'POST':
+        brand_name=request.POST.get('brand_name','').strip()
+        slug=request.POST.get('slug','').strip()
+        brand_logo=request.FILES.get('brand_logo')
+        brand_picture=request.FILES.get('brand_picture')
+
+        context = {
+            'brand_name': brand_name,
+            'slug': slug,
+        }
+
+        if not brand_name:
+            messages.error(request, "All fields are required.")
+            return render(request, 'addbrand.html', context)
+        
+        if Brand.objects.filter(brand_name=brand_name):
+            messages.error(request,"Brand name already exists")
+            return render(request, 'addbrand.html', context)
+        
+        if Brand.objects.filter(slug=slug):
+            messages.error(request,"Slug already exists.")
+            return render(request, 'addbrand.html', context)
+
+        brand=Brand.objects.create(
+            brand_name=brand_name,
+            slug=slug,
+            brand_logo=brand_logo,
+            brand_picture=brand_picture,
+        )
+
+        brand.save()
+        messages.success(request, "Brand created successfully")
+
+        brands=Brand.objects.all()
+        context ={
+            'brands':brands
+        }
+        return render(request,'addcategory.html',context)
+    return render(request, 'addbrand.html')
+
+def addcategory(request):
+    brands=Brand.objects.all()
+    context={}
+    if request.method == 'POST':
+        brand_id=request.POST.get('brand')
         category_name=request.POST.get('category_name','').strip()
         slug=request.POST.get('slug','').strip()
         description=request.POST.get('description','').strip()
 
         context = {
+            'brands':brands,
             'category_name': category_name,
             'slug': slug,
             'description': description
         }
 
-        if not category_name or not slug or not description:
+        if not category_name or not description:
             messages.error(request, "All fields are required.")
             return render(request, 'addcategory.html', context)
         
@@ -42,25 +114,31 @@ def addcategory(request):
             messages.error(request,"Slug already exists.")
             return render(request, 'addcategory.html', context)
 
-        category=Category.objects.create(
+        # Step 1: create category WITHOUT brands
+        category = Category.objects.create(
             category_name=category_name,
             slug=slug,
             description=description
         )
 
+        # Step 2: add brand to ManyToMany field
+        category.brands.add(brand_id)
+
         category.save()
         messages.success(request, "Category created successfully")
-        context ={}
-        redirect(addcategory)
-    return render(request, 'addcategory.html')
+        categories =  Category.objects.all()
+        context ={
+            'categories':categories
+        }
+        return render(request, 'addproduct.html', context)
+    return render(request, 'addcategory.html',{'brands':brands})
 
 def addproduct(request):
     categories =  Category.objects.all()#Used to render all categories in the form
     if request.method == 'POST':
         category_id=request.POST.get('category')
         slug=request.POST.get('slug','').strip()
-        name=request.POST.get('name','').strip()
-        brand=request.POST.get('brand','').strip()
+        product_name=request.POST.get('product_name','').strip()
         material=request.POST.get('material','').strip()
         base_price=request.POST.get('base_price','').strip()
         main_image=request.FILES.get('main_image')
@@ -69,14 +147,13 @@ def addproduct(request):
         context = {
             'categories': categories,
             'slug': slug,
-            'name': name,
-            'brand': brand,
+            'product_name': product_name,
             'material': material,
             'base_price': base_price,
             'description': description
         }
 
-        if not category_id or not name or not brand or not material or not base_price or not description:
+        if not category_id or not product_name or not material or not base_price or not description:
             messages.error(request, "All fields are required")
             return render(request, 'addproduct.html', context)
 
@@ -97,8 +174,7 @@ def addproduct(request):
         product=Product.objects.create(
             category=category,
             slug=slug,
-            name=name,
-            brand=brand,
+            product_name=product_name,
             material=material,
             base_price=base_price,
             description=description,
@@ -106,13 +182,16 @@ def addproduct(request):
         )    
 
         messages.success(request, "Product added successfully")
-        return redirect('addproductvariant')
+        products=Product.objects.all()
+        context={
+            'products':products
+        }
+        return render(request, 'addproductvariant.html', context)
     
     return render(request,'addproduct.html',{'categories':categories})
 
 def addproductvariant(request):
     products=Product.objects.all()
-
     if request.method == 'POST':
         product_id=request.POST.get('product')
         variant_name=request.POST.get('variant_name','').strip()
@@ -120,7 +199,6 @@ def addproductvariant(request):
         size=request.POST.get('size','').strip()
         stock=request.POST.get('stock','').strip()
         sku=request.POST.get('sku','').strip()
-        front_image=request.FILES.get('front_image')
         top_image=request.FILES.get('top_image')
         right_image=request.FILES.get('right_image')
         left_image=request.FILES.get('left_image')
@@ -172,13 +250,61 @@ def addproductvariant(request):
         )
 
         messages.success(request, "Product Variant added successfully")
-        return redirect('addproductvariant')
+        return redirect('productlist')
     return render(request, 'addproductvariant.html', {'products':products})
 
 def productlist(request):
-    products = Product.objects.all()  # Fetch all products
+    query = request.GET.get("query", "")
+    products=Product.objects.all().order_by("-created_at")#for descending order:-created_at
+
+    if query:
+        if query.isdigit():
+            products = products.filter(Q(id=int(query)) | Q(product_name__icontains=query))
+        else:
+            products = products.filter(product_name__icontains=query)
+    paginator = Paginator(products, 1)
+    page_number = request.GET.get("page")#for first-time page load, request.get={}
+    page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
+
+    return render(request, "productlist.html", {
+        "page_obj": page_obj,
+        "query": query,
+    })
+
+
+from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
+from .models import Product, ProductVariant
+
+def variantlist(request, product_slug=None):
+    """
+    Shows:
+    - All variants (if no product_slug)
+    - Only variants of a specific product (if product_slug given)
+    """
+
+    query = request.GET.get("query", "")
+
+    if product_slug:
+        product = get_object_or_404(Product, slug=product_slug)
+        variants = product.variants.all().order_by("-id")
+    else:
+        product = None
+        variants = ProductVariant.objects.all().order_by("-id")
+
+    # Search logic
+    if query:
+        variants = variants.filter(variant_name__icontains=query)
+
+    paginator = Paginator(variants, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'products': products
+        "page_obj": page_obj,
+        "query": query,
+        "product": product,
     }
-    return render(request, 'productlist.html', context)
+    return render(request, "variantlist.html", context)
+
 # Create your views here.

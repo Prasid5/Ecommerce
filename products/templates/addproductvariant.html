@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/addproduct.css' %}">
-    <script src="{% static 'js/addproductvariant.js' %}"></script>
+    <script src="{% static 'js/addproduct.js' %}"></script>
 </head>
 <body>
 
@@ -39,7 +39,7 @@
                         <select name="product" required>
                             <option disabled selected>Select Product</option>
                             {% for product in products %}
-                            <option value="{{ product.id }}">{{ product.name }}</option>
+                            <option value="{{ product.id }}">{{ product.product_name }}</option>
                             {% endfor %}
                         </select>
                         <span class="error-message" id="product_error"></span>

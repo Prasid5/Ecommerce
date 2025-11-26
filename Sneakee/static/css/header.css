@@ -40,7 +40,7 @@ body {
         object-fit: contain;
     }
     
-    .nav-left a {
+    .nav-left-option {
         text-decoration: none;
         color: #333;
         font-weight: 500;
@@ -103,7 +103,7 @@ body {
         cursor: pointer;
     }
     
-    .nav-right a {
+    .nav-right-option {
         text-decoration: none;
         color: #333;
         font-weight: 500;
@@ -114,46 +114,63 @@ body {
         cursor: pointer;
     }
     
-    /* Person icon style */
-    .person-icon {
+    /* Person icon style it is commented in HTML */
+    /* .person-icon {
         width: 18px;
         height: 18px;
         fill: #333;
-    }
+    } */
     
-    .profile-dropdown {
+    #profileDropdownButton {
         display: flex;
         align-items: center;
         gap: 5px;
-        cursor: pointer;
         padding: 5px 10px;
         border-radius: 20px;
         transition: background 0.3s;
     }
-    .profile-dropdown:hover {
+    #profileDropdownButton:hover {
         background: #f0f0f0;
     }
-    .profile-dropdown svg {
+    #profileDropdownButton svg {
         width: 24px; height: 24px;
         fill: #333;
     }
 
-    .dropdown-menu {
-        position: absolute;
-        top: 55px;
-        right: 0;
-        background: #fff;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        border-radius: 6px;
-        width: 150px;
-        display: none;
-        flex-direction: column;
-        z-index: 200;
+    /* UNIVERSAL DROPDOWN BASE STYLE */
+    .dropdown {
+        position: relative;
     }
+
+    .dropdown .dropdown-btn {
+        cursor: pointer;
+    }
+
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px); /* always just below the button */
+    left: 0;                /* align left edge by default */
+    background: #fff;
+    border-radius: 6px;
+    width: 150px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 200;
+}
+
+/* Profile dropdown aligns to right edge of button */
+#profileDropdown .dropdown-menu {
+    left: auto;
+    right: 0;
+}
+
     .dropdown-menu a {
         padding: 10px 15px;
         text-decoration: none;
         color: #333;
+        font-weight: 500;
         font-size: 14px;
         transition: background 0.3s;
     }

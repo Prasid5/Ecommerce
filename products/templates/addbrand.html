@@ -18,7 +18,7 @@
 
             <!-- Heading with Back Link on Top-Right -->
             <div class="form-header">
-                <h2>Add New Category</h2>
+                <h2>Add New Brand</h2>
                 <a href="#" class="back-link">&larr; Back</a>
             </div>
 
@@ -30,18 +30,10 @@
             </div>
             {% endif %}
 
-            <form method="POST" action="#">
+            <form method="POST" action="{% url 'addbrand' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="form-group">
-                    <select name="brand" required>
-                        <option disabled selected>Select Brand</option>
-                        {% for brand in brands %}
-                        <option value="{{ brand.id }}">{{ brand.brand_name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="text" name="category_name" placeholder="Category Name" value="{{ category_name }}">
+                    <input type="text" name="brand_name" placeholder="Brand Name" value="{{ brand_name }}">
                     <span class="error-message" id="category_name_error"></span>
                 </div>
 
@@ -51,11 +43,18 @@
                 </div>
 
                 <div class="form-group">
-                    <textarea name="description" placeholder="Category Description">{{ description }}</textarea>
-                    <span class="error-message" id="description_error"></span>
+                    <label>Brand Logo</label>
+                    <input type="file" name="brand_logo">
+                    <span class="error-message" id="brand_logo_error"></span>
                 </div>
 
-                <button type="submit" class="btn-submit">Add Category</button>
+                <div class="form-group">
+                    <label>Brand Picture (1080 X 900)px</label>
+                    <input type="file" name="brand_picture">
+                    <span class="error-message" id="brand_picture_error"></span>
+                </div>
+
+                <button type="submit" class="btn-submit">Add Brand</button>
             </form>
         </div>
     </div>

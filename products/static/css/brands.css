@@ -5,17 +5,19 @@ body {
     color: #333;
 }
 
-.brand-img{
-    height: 100vh;
-    position: relative;
+.brand-img {
+    width: 100%;
+    height: 92vh;
+    margin: 0 auto; /* centers the banner */
     overflow: hidden;
 }
 
 .brand-img img {
     width: 100%;
-    display: block;
-    box-sizing: border-box;
+    height: 100%;
+    object-fit: cover;
 }
+
 
     /*header {
       background-color: #fff;
@@ -130,8 +132,7 @@ body {
   padding: 8px 12px;
   margin: 5px auto;
   min-width: 80%;
-  background-color:      margin: 0px auto;
-;
+  background-color: #080033;
   color: #fff;
   text-decoration: none;
   border-radius: 5px;

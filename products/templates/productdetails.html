@@ -3,6 +3,7 @@
 {% block content %}
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
+<link rel="canonical" href="{% url 'productdetails' product.slug %}" />
 
 <main>
 <div class="product-detail-container">
@@ -41,7 +42,8 @@
 
   <div class="product-info">
     {% comment %} <p class="breadcrumb">Home / Fashion / Men / Shoes / LaceUp /</p> {% endcomment %}
-    <h1>{{ product.variants.first.variant_name }}</h1>
+    {% comment %} <h1>{{ product.variants.first.variant_name }}</h1> {% endcomment %}
+    <h1>{{ product.product_name }}</h1>
     <p class="price">NPR {{ product.base_price|floatformat:2 }}</p>
     <ul class="product-specs">
       {% for variant in product.variants.all %}

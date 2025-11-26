@@ -12,10 +12,35 @@
         <!-- Left: Logo and Links -->
         <div class="nav-left">
             <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo" />
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'categories' %}">Categories</a>
-            <a href="{% url 'brands' %}">Brands</a>
-            <a href="#">Offers</a>
+            <a href="{% url 'home' %}" class="nav-left-option">Home</a>
+            <!-- Categories Dropdown -->
+            <div class="dropdown" id="categoriesDropdown">
+                <div class="dropdown-btn">
+                    <a href="#" class="nav-left-option">Categories ▾</a>
+                </div>
+                <div class="dropdown-menu">
+                    {% for category in home_categories %}
+                        <a href="#">{{ category.category_name }}</a>
+                    {% empty %}
+                        <span style="padding: 10px;">No categories</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Brands Dropdown -->
+            <div class="dropdown" id="brandsDropdown">
+                <div class="dropdown-btn">
+                    <a href="#" class="nav-left-option">Brands ▾</a>
+                </div>
+                <div class="dropdown-menu">
+                    {% for brand in home_brands %}
+                        <a href="{% url 'brand' brand.slug %}">{{ brand.brand_name }}</a>
+                    {% empty %}
+                        <span style="padding: 10px;">No brands</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="#" class="nav-left-option">Offers</a>
         </div>
         
         <!-- Center: Search -->
@@ -34,29 +59,29 @@
         <!-- Right: Cart and Account Links -->
         <div class="nav-right">
             
-            <a href="{% url 'cart' %}">🛒 Add to Cart</a>
+            <a href="{% url 'cart' %}" class="nav-right-option">🛒 Add to Cart</a>
             
             {% if user.is_authenticated %}
-                <div class="profile-dropdown" id="profileDropdown">
-                    <!-- Person Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
-                    </svg>
-                    <!-- Down Arrow -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M7 10l5 5 5-5z"/>
-                    </svg>
-                </div>
+                <div class="dropdown" id="profileDropdown">
+                    <div class="dropdown-btn" id="profileDropdownButton">
+                        <!-- Person Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
+                        </svg>
+                        <!-- Down Arrow -->
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </div>
 
-                <!-- Dropdown Menu -->
-                <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="#">Profile</a>
-                    <a href="{% url 'signout' %}">Logout</a>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#">Profile</a>
+                        <a href="{% url 'signout' %}">Logout</a>
+                    </div>
                 </div>
-                {% comment %} <a href="{% url 'signout' %}">Sign Out</a> {% endcomment %}
             {% else %}
-                <a href="{% url 'signin' %}">Sign In</a>
-                <a href="{% url 'signup' %}">Sign Up</a>
+                <a href="{% url 'signin' %}" class="nav-right-option">Sign In</a>
+                <a href="{% url 'signup' %}" class="nav-right-option">Sign Up</a>
             {% endif %}
             {% comment %} <a href="#">
                 <svg class="person-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -69,15 +94,33 @@
 </nav>
 </body>
 <script>
-    const profileDropdown = document.getElementById("profileDropdown");
-    const dropdownMenu = document.getElementById("dropdownMenu");
-    profileDropdown.addEventListener("click", () => {
-        dropdownMenu.classList.toggle("show");
+document.addEventListener("DOMContentLoaded", () => {
+    const dropdowns = document.querySelectorAll(".dropdown");
+
+    dropdowns.forEach(dropdown => {
+        const btn = dropdown.querySelector(".dropdown-btn");
+        const menu = dropdown.querySelector(".dropdown-menu");
+
+        btn.addEventListener("click", (e) => {
+            e.preventDefault(); // if using href="#", avoid jump
+            e.stopPropagation(); // keep event from bubbling up to document click
+
+            // Close any other open dropdown menus
+            document.querySelectorAll(".dropdown-menu.show").forEach(openMenu => {
+                if (openMenu !== menu) openMenu.classList.remove("show");
+            });
+
+            // Toggle this dropdown menu
+            menu.classList.toggle("show");
+        });
     });
-    document.addEventListener("click", (e) => {
-        if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
-            dropdownMenu.classList.remove("show");
-        }
+
+    // Close all dropdowns when clicking anywhere outside
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".dropdown-menu").forEach(menu => {
+            menu.classList.remove("show");
+        });
     });
+});
 </script>
 </html>
