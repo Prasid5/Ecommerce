@@ -58,11 +58,11 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, blank=True)
 
     @property
-    def total_variants(self):
-        return self.variants.count()
+    def total_productvariants(self):
+        return self.productvariants.count()
     @property
     def total_stocks(self):
-        return sum(variant.stock for variant in self.variants.all())
+        return sum(productvariant.stock for productvariant in self.productvariants.all())
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -77,7 +77,7 @@ class Product(models.Model):
 # PRODUCT VARIANT MODEL
 # -------------------------
 class ProductVariant(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='productvariants')
     variant_name = models.CharField(max_length=100, default="Standard Variant")
     color = models.CharField(max_length=50)
     size = models.CharField(max_length=10)

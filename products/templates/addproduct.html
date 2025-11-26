@@ -29,16 +29,24 @@
             </div>
             {% endif %}
 
-            <form method="POST" enctype="multipart/form-data" action="#">
+            <form method="POST" enctype="multipart/form-data"
+                action="{% if edit_mode %}{% url 'editproduct' %}{% else %}{% url 'addproduct' %}{% endif %}">
                 {% csrf_token %}
+
+                {% if edit_mode %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                {% endif %}
 
                 <!-- Row 1: Category + Slug -->
                 <div class="form-row">
                     <div class="form-group half-width">
                         <select name="category" required>
-                            <option disabled selected>Select Category</option>
+                            <option disabled {% if not product %}selected{% endif %}>Select Category</option>
                             {% for category in categories %}
-                            <option value="{{ category.id }}">{{ category.category_name }}</option>
+                                <option value="{{ category.id }}"
+                                {% if edit_mode and product.category.id == category.id %}selected{% endif %}>
+                                    {{ category.category_name }}
+                                </option>
                             {% endfor %}
                         </select>
                         <span class="error-message" id="category_error"></span>
@@ -72,6 +80,17 @@
                 </div>
 
                 <!-- Row 4: Main Image -->
+                {% if edit_mode and product.main_image %}
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Current Main Image:</label><br>
+                        <img src="{{ product.main_image.url }}" width="150" style="border-radius:5px;">
+                    </div>
+                </div>
+                {% endif %}
+                {% if edit_mode %}
+                    <strong>Upload Main Product Image In Order To Update:</strong><br>
+                {% endif %}
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label>Main Product Image</label>
@@ -88,7 +107,10 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit">Add Product</button>
+                <button type="submit" name="save_changes" class="btn-submit">
+                    {% if edit_mode %}Update Product{% else %}Add Product{% endif %}
+                </button>
+
             </form>
         </div>
     </div>

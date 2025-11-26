@@ -1,6 +1,6 @@
 {% extends 'administrator/base.html' %}
 {% load static %}
-{% block title %}Sneakee | User List{% endblock %}
+{% block title %}Sneakee | Category List{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -11,8 +11,8 @@
     <style>
         .content-area {
             position: absolute;
-            top: 60px;          /* below header */
-            left: 250px;        /* beside sidebar */
+            top: 60px;
+            left: 250px;
             right: 0;
             bottom: 0;
             background: #f9fafb;
@@ -43,12 +43,10 @@
     /* ---------- Top Bar ---------- */
         .topbar{
             display:flex;
-            align-items:center;
             justify-content:space-between;
-            gap:10px;
-            margin-bottom: 12px;
+            align-items:center;
+            margin-bottom:15px;
         }
-
         .add-btn{
             background-color: #080033;
             color: #fff;
@@ -64,6 +62,7 @@
             border-radius:5px;
             border:1px solid #cbd5e1;
         }
+
     /* ---------- TABLE CONTAINER ---------- */
         .table-wrapper{
             background: #ffffff;
@@ -72,32 +71,10 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
-        table{
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            font-size: 14px;
-        }
+        table{ width:100%; border-collapse:separate; border-spacing:0; }
+        thead tr{ background:#fff; font-weight:600; }
+        th, td{ padding:14px; border-bottom:1px solid #e2e8f0; text-align:center; }
 
-        thead tr{
-            background: #ffffffff;
-            color: #000000ff;
-            font-weight: 600;
-        }
-
-        th{
-            padding: 14px 16px;
-            text-align: center;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 16px;
-        }
-
-        td{
-            text-align: center;
-            vertical-align: middle;
-            padding: 12px;
-            border-bottom: 1px solid #f1f5f9;
-        }
         td .product-img{
             height:75px;
             width:75px;
@@ -105,30 +82,8 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s ease; /* smooth hover effect */
         }
-        
-        tbody tr:hover{
-            background: #f8fafc;
-            cursor: pointer;
-        }
 
-        /* Status dots */
-        .status-badge{
-            display: flex;
-            align-items: center;
-            justify-content:center;
-            gap: 6px;
-            font-weight: 500;
-        }
-
-        .dot{
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .active-dot { background:#10b981; }
-        .inactive-dot { background:#ef4444; }
+        tbody tr:hover{ background:#f8fafc; cursor:pointer; }
 
         .btn{
             background-color: #080033;
@@ -140,7 +95,8 @@
             border-radius: 5px;
         }
 
-        /* Action buttons (Edit/Delete) */
+
+    /* Action buttons (Edit/Delete) */
         .actions{
             display: flex;
             gap: 8px;
@@ -169,18 +125,14 @@
             width: 16px;
             height: 16px;
             opacity: 0.8;
-        }
+        }        
 
     /* ---------- Pagination ---------- */
         .pagination{
-            margin-top: 12px;
+            margin-top:15px;
             display:flex;
-            gap: 6px;
-            align-items:center;
-
-            display:flex;
-            align-items:center;
             justify-content:center;
+            gap:10px;
         }
         .page-btn{
             padding:6px 10px;
@@ -191,38 +143,39 @@
             border:1px solid #cbd5e1;
             border-radius:5px;
             cursor:default;
-
         }
     </style>
 </head>
+
 <body>
-    
 <div class="content-area">
-        {% if messages %}
-            <div class="message-container">
-                {% for message in messages %}
-                    <div class="alert {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+
+    {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <h1>
-        {% if category %}
-            Products of {{ category.category_name }}
+        {% if brand %}
+            Categories of {{ brand.brand_name }}
         {% else %}
-            Product List
+            Category List
         {% endif %}
     </h1>
 
     <div class="topbar">
-        <a href="{% url 'addproduct' %}" class="add-btn">
-            +&nbsp;Add Product
+
+        <a href="{% url 'addcategory' %}" class="add-btn">
+            +&nbsp;Add Category
         </a>
 
-        <form action="{% url 'productlist' %}" method="get">
-            <input type="text" name="query" value="{{ query }}" placeholder="Search products...">
+        <form method="get">
+            <input type="text" name="query" placeholder="Search variants..." value="{{ query }}">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
             <button type="submit" class="page-btn">Search</button>
         </form>
@@ -233,55 +186,39 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Image</th>
                     <th>Name</th>
-                    <th>Category</th>
-                    <th>Brand</th>
-                    <th>Base Price</th>
-                    <th>Total Variants</th>
-                    <th>Total Stock</th>
-                    <th>Variants</th>
-                    <th>Actions</th>
+                    <td>Brand</td>
+                    <th>Total Product</th>
+                    <th>Products</th>
+                    <th>Action</th>
                 </tr>
             </thead>
+
             <tbody>
-                {% for product in page_obj %}
+                {% for category in page_obj %}
                 <tr>
-                    <td>{{ product.id }}</td>
-                    <td>
-                        <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="product-img">
-                    </td>
-                    <td>{{ product.product_name }}</td>
-                    <td>{{ product.category.category_name }}</td>
-                    <td>{{ product.category.brands.first.brand_name }}</td>
-                    <td>NPR {{ product.base_price }}</td>
-                    <td>
-                        {{product.total_productvariants}}
-                        {% comment %} {% for variant in product.variants.all %}
-                            {{ variant.variant_name }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            No Variants
-                        {% endfor %} {% endcomment %}
-                    </td>
-                    <td>{{product.total_stocks}}</td>
+                    <td>{{ category.id }}</td>
+                    <td>{{ category.category_name }}</td>
+                    <td>{{ category.brands.first.brand_name }}</td>
+                    <td>{{ category.total_products }}</td>
                     <td>                        
-                        <a href="{% url 'productvariantlist_by_product' product.slug %}" class="btn">View</a>
+                        <a href="{% url 'productlist_by_category' category.slug %}" class="btn">View</a>
                     </td>
                     <td>
                         <div class="actions">
                             <!-- Edit Button -->
-                            <form action="{% url 'editproduct' %}" method="POST">
+                            <form action="{% url 'editcategory' %}" method="POST">
                                 {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{product.id}}">
+                                <input type="hidden" name="category_id" value="{{category.id}}">
                                 <button type="submit" class="action-btn">
                                     <img src="{% static 'images/Pencil.png' %}" alt="Edit">
                                 </button>
                             </form>
 
                             <!-- Delete Button -->
-                            <form action="{% url 'deleteproduct' %}" method="POST">
+                            <form action="{% url 'deletecategory' %}" method="POST">
                                 {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <input type="hidden" name="category_id" value="{{ category.id }}">
                                 <button type="submit" class="action-btn">
                                     <img src="{% static 'images/Bin.png' %}" alt="Delete">
                                 </button>
@@ -290,12 +227,11 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8">No products found.</td></tr>
+                <tr><td colspan="8">No Category found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-
 
     <div class="pagination">
         {% if page_obj.has_previous %}
@@ -305,11 +241,10 @@
         Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
 
         {% if page_obj.has_next %}
-            <a class="page-btn" href="?q={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+            <a class="page-btn" href="?query={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
         {% endif %}
     </div>
 </div>
-
 <script>
   // auto hide messages after 4 seconds
   setTimeout(() => {
@@ -318,4 +253,4 @@
 </script>
 </body>
 </html>
-{%endblock%}
+{% endblock %}

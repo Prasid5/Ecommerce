@@ -2,11 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+import os
 
 from products.models import Brand, Category, Product, ProductVariant
-
-from django.shortcuts import get_object_or_404, render
-from .models import Product
 
 def productdetails(request, slug):
     """
@@ -253,9 +251,63 @@ def addproductvariant(request):
         return redirect('productlist')
     return render(request, 'addproductvariant.html', {'products':products})
 
-def productlist(request):
+
+def brandlist(request):
     query = request.GET.get("query", "")
-    products=Product.objects.all().order_by("-created_at")#for descending order:-created_at
+    brands=Brand.objects.all().order_by("id")#for descending order:-created_at
+
+    if query:
+        if query.isdigit():
+            brands = brands.filter(Q(id=int(query)) | Q(brand_name__icontains=query))
+        else:
+            brands = brands.filter(brand_name__icontains=query)
+    paginator = Paginator(brands, 1)
+    page_number = request.GET.get("page")#for first-time page load, request.get={}
+    page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
+
+    context={
+        "page_obj": page_obj,
+        "query": query,
+    }
+    return render(request, "brandlist.html", context)
+
+
+def categorylist(request, brand_slug=None):
+    query = request.GET.get("query", "")
+
+    if brand_slug:
+        brand = get_object_or_404(Brand, slug=brand_slug)
+        categories = brand.categories.all().order_by("id")
+    else:
+        brand=None 
+        categories=Category.objects.all().order_by("id")
+
+    if query:
+        if query.isdigit():
+            categories = categories.filter(Q(id=int(query)) | Q(category_name__icontains=query))
+        else:
+            categories = categories.filter(category_name__icontains=query)
+    paginator = Paginator(categories, 1)
+    page_number = request.GET.get("page")#for first-time page load, request.get={}
+    page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
+
+    context={
+        "page_obj": page_obj,
+        "query": query,
+        "brand":brand,
+    }
+    return render(request, "categorylist.html",context)
+
+
+def productlist(request, category_slug=None):
+    query = request.GET.get("query", "")
+
+    if category_slug:
+        category=get_object_or_404(Category, slug=category_slug)
+        products=category.products.all().order_by("id")
+    else:
+        category=None
+        products=Product.objects.all().order_by("-created_at")#for descending order:-created_at
 
     if query:
         if query.isdigit():
@@ -266,17 +318,15 @@ def productlist(request):
     page_number = request.GET.get("page")#for first-time page load, request.get={}
     page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
 
-    return render(request, "productlist.html", {
+    context={
         "page_obj": page_obj,
         "query": query,
-    })
+        "category":category
+    }
+    return render(request, "productlist.html", context)
 
 
-from django.shortcuts import render, get_object_or_404
-from django.core.paginator import Paginator
-from .models import Product, ProductVariant
-
-def variantlist(request, product_slug=None):
+def productvariantlist(request, product_slug=None):
     """
     Shows:
     - All variants (if no product_slug)
@@ -287,7 +337,7 @@ def variantlist(request, product_slug=None):
 
     if product_slug:
         product = get_object_or_404(Product, slug=product_slug)
-        variants = product.variants.all().order_by("-id")
+        variants = product.productvariants.all().order_by("-id")
     else:
         product = None
         variants = ProductVariant.objects.all().order_by("-id")
@@ -305,6 +355,234 @@ def variantlist(request, product_slug=None):
         "query": query,
         "product": product,
     }
-    return render(request, "variantlist.html", context)
+    return render(request, "productvariantlist.html", context)
+
+
+def deletebrand(request):
+    if request.method == "POST":
+        brand_id = request.POST.get("brand_id")
+        brand = get_object_or_404(Brand, id=brand_id)
+
+        brand.categories.clear()
+        if brand.brand_logo:
+            if os.path.isfile(brand.brand_logo.path):
+                os.remove(brand.brand_logo.path)
+
+        if brand.brand_picture:
+            if os.path.isfile(brand.brand_picture.path):
+                os.remove(brand.brand_picture.path)
+
+        brand.delete()
+        messages.success(request, "Brand deleted successfully!")
+        return redirect("brandlist")
+    
+def deletecategory(request):
+    if request.method == "POST":
+        category_id = request.POST.get("category_id")
+        category = get_object_or_404(Category, id=category_id)
+
+        category.delete()
+        messages.success(request, "Category deleted successfully!")
+        return redirect("categorylist")
+
+def deleteproduct(request):
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        product = get_object_or_404(Product, id=product_id)
+
+        if product.main_image:
+            if os.path.isfile(product.main_image.path):
+                os.remove(product.main_image.path)
+
+        for productvariant in product.productvariants.all():
+            for img_field in ["top_image", "right_image", "left_image", "back_image"]:
+                img = getattr(productvariant, img_field)
+                if img:
+                    if os.path.isfile(img.path):
+                        os.remove(img.path)
+
+        product.delete()
+        messages.success(request, "Product and its variants deleted successfully!")
+        return redirect("productlist")
+    
+def deleteproductvariant(request):
+    if request.method == "POST":
+        productvariant_id = request.POST.get("productvariant_id")
+        productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
+
+        # Remove variant images
+        for img_field in ["top_image", "right_image", "left_image", "back_image"]:
+            img = getattr(productvariant, img_field)
+            if img:
+                if os.path.isfile(img.path):
+                    os.remove(img.path)
+
+        productvariant.delete()
+        messages.success(request, "Product variant deleted successfully!")
+        return redirect("productvariantlist")
+
+def editbrand(request):
+    if request.method == "POST":
+        brand_id = request.POST.get("brand_id")
+        brand = get_object_or_404(Brand, id=brand_id)
+
+        if "save_changes" in request.POST:
+            brand.brand_name = request.POST.get("brand_name")
+            brand.slug = request.POST.get("slug")
+
+            if request.FILES.get("brand_logo"):
+                if brand.brand_logo and os.path.isfile(brand.brand_logo.path):
+                    os.remove(brand.brand_logo.path)
+                brand.brand_logo = request.FILES["brand_logo"]
+
+            if request.FILES.get("brand_picture"):
+                if brand.brand_picture and os.path.isfile(brand.brand_picture.path):
+                    os.remove(brand.brand_picture.path)
+                brand.brand_picture = request.FILES["brand_picture"]
+
+            brand.save()
+            messages.success(request, "Brand updated successfully!")
+            return redirect("brandlist")
+
+        # First time opening edit page
+        return render(request, "addbrand.html", {
+            "edit_mode": True,
+            "brand": brand,
+            "brand_name": brand.brand_name,
+            "slug": brand.slug,
+        })
+
+    return redirect("brandlist")
+
+
+def editcategory(request):
+    if request.method == "POST":
+        category_id = request.POST.get("category_id")
+        category = get_object_or_404(Category, id=category_id)
+
+        if "save_changes" in request.POST:
+            category.category_name = request.POST.get("category_name")
+            category.slug = request.POST.get("slug")
+            category.description = request.POST.get("description")
+
+            # Updating the brand M2M
+            selected_brand = request.POST.get("brand")
+            if selected_brand:
+                category.brands.set([selected_brand])
+
+            category.save()
+            messages.success(request, "Category updated successfully!")
+            return redirect("categorylist")
+
+        # Render edit form
+        return render(request, "addcategory.html", {
+            "edit_mode": True,
+            "category": category,
+            "category_name": category.category_name,
+            "slug": category.slug,
+            "description": category.description,
+            "brands": Brand.objects.all(),
+            "selected_brand": category.brands.first().id if category.brands.exists() else None
+        })
+
+    return redirect("categorylist")
+
+def editproduct(request):
+    if request.method == "POST":
+        product_id = request.POST.get("product_id")
+        product = get_object_or_404(Product, id=product_id)
+
+        if "save_changes" in request.POST:
+            # Update text fields
+            product.product_name = request.POST.get("product_name")
+            product.description = request.POST.get("description")
+            product.material = request.POST.get("material")
+            product.base_price = request.POST.get("base_price")
+            product.slug = request.POST.get("slug")
+
+            # Update category if changed
+            category_id = request.POST.get("category")
+            if category_id:
+                product.category_id = category_id
+
+            # ---------------------------
+            # Handle main image replacement
+            # ---------------------------
+            if request.FILES.get("main_image"):
+                # Delete old image file
+                if product.main_image and os.path.isfile(product.main_image.path):
+                    os.remove(product.main_image.path)
+                # Assign new image
+                product.main_image = request.FILES["main_image"]
+
+            product.save()
+            messages.success(request, "Product updated successfully!")
+            return redirect("productlist")
+
+        # First time opening edit page
+        return render(request, "addproduct.html", {
+            "edit_mode": True,
+            "product": product,
+            "categories": Category.objects.all(),
+            "name": product.product_name,
+            "slug": product.slug,
+            "material": product.material,
+            "base_price": product.base_price,
+            "description": product.description,
+        })
+
+    return redirect("productlist")
+
+import os
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import ProductVariant, Product
+
+def editproductvariant(request):
+    if request.method == "POST":
+        variant_id = request.POST.get("variant_id")
+        variant = get_object_or_404(ProductVariant, id=variant_id)
+
+        if "save_changes" in request.POST:
+            # Update text fields
+            variant.variant_name = request.POST.get("variant_name")
+            variant.color = request.POST.get("color")
+            variant.size = request.POST.get("size")
+            variant.stock = request.POST.get("stock") or 0
+            variant.sku = request.POST.get("sku") or f"SKU-{variant.id}"
+
+            # Update linked product if changed
+            product_id = request.POST.get("product")
+            if product_id:
+                variant.product_id = int(product_id)
+
+            # ---------------------------
+            # Handle image replacements
+            # ---------------------------
+            for field_name in ["top_image", "right_image", "left_image", "back_image"]:
+                if request.FILES.get(field_name):
+                    old_file = getattr(variant, field_name)
+                    if old_file and os.path.isfile(old_file.path):
+                        os.remove(old_file.path)
+                    setattr(variant, field_name, request.FILES[field_name])
+
+            variant.save()
+            messages.success(request, "Product Variant updated successfully!")
+            return redirect("productvariantlist")
+
+        # First time opening edit page
+        return render(request, "addproductvariant.html", {
+            "edit_mode": True,
+            "variant": variant,
+            "products": Product.objects.all(),
+            "variant_name": variant.variant_name,
+            "color": variant.color,
+            "size": variant.size,
+            "stock": variant.stock,
+            "sku": variant.sku,
+        })
+
+    return redirect("productvariantlist")
 
 # Create your views here.

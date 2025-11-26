@@ -30,8 +30,12 @@
             </div>
             {% endif %}
 
-            <form method="POST" action="{% url 'addbrand' %}" enctype="multipart/form-data">
+            <form method="POST" action="{% if edit_mode %}{% url 'editbrand' %}{% else %}{% url 'addbrand' %}{% endif %}" enctype="multipart/form-data">
+
                 {% csrf_token %}
+                {% if edit_mode %}
+                    <input type="hidden" name="brand_id" value="{{ brand.id }}">
+                {% endif %}
                 <div class="form-group">
                     <input type="text" name="brand_name" placeholder="Brand Name" value="{{ brand_name }}">
                     <span class="error-message" id="category_name_error"></span>
@@ -41,20 +45,41 @@
                     <input type="text" name="slug" placeholder="Slug (URL friendly)" value="{{ slug }}">
                     <span class="error-message" id="slug_error"></span>
                 </div>
+                {% if edit_mode %}
+                    <div class="form-group">
 
+                        <div class="form-group-current-img">
+                            <div>
+                                <label>Current Brand Logo:</label><br>
+                                <img src="{{ brand.brand_logo.url }}" id="current-picture">
+                            </div>
+                            <div>
+                                <label>Current Brand Picture:</label><br>
+                                <img src="{{ brand.brand_picture.url }}" id="current-picture">
+                            </div>
+                        </div>
+
+                    </div>
+                {% endif %} 
+                {% if edit_mode %}
+                    <br><strong>Upload Brand Logo and Picture In Order To Update:</strong><br>
+                {% endif %}
                 <div class="form-group">
                     <label>Brand Logo</label>
                     <input type="file" name="brand_logo">
                     <span class="error-message" id="brand_logo_error"></span>
                 </div>
-
+                
                 <div class="form-group">
                     <label>Brand Picture (1080 X 900)px</label>
                     <input type="file" name="brand_picture">
                     <span class="error-message" id="brand_picture_error"></span>
                 </div>
 
-                <button type="submit" class="btn-submit">Add Brand</button>
+                <button type="submit" name="save_changes" class="btn-submit">
+                    {% if edit_mode %} Update Brand {% else %} Add Brand {% endif %}
+                </button>
+
             </form>
         </div>
     </div>

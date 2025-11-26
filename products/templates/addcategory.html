@@ -16,9 +16,8 @@
     <div class="form-container">
         <div class="form-box">
 
-            <!-- Heading with Back Link on Top-Right -->
             <div class="form-header">
-                <h2>Add New Category</h2>
+                <h2>{% if edit_mode %}Edit Category{% else %}Add New Category{% endif %}</h2>
                 <a href="#" class="back-link">&larr; Back</a>
             </div>
 
@@ -30,23 +29,36 @@
             </div>
             {% endif %}
 
-            <form method="POST" action="#">
+            <form method="POST" action="{% if edit_mode %}{% url 'editcategory' %}{% else %}{% url 'addcategory' %}{% endif %}">
                 {% csrf_token %}
+
+                {% if edit_mode %}
+                    <input type="hidden" name="category_id" value="{{ category.id }}">
+                {% endif %}
+
+                <!-- Brand MULTI select -->
                 <div class="form-group">
                     <select name="brand" required>
-                        <option disabled selected>Select Brand</option>
+                        <option disabled {% if not selected_brand %}selected{% endif %}>Select Brand</option>
+
                         {% for brand in brands %}
-                        <option value="{{ brand.id }}">{{ brand.brand_name }}</option>
+                        <option value="{{ brand.id }}"
+                            {% if brand.id == selected_brand %}selected{% endif %}>
+                            {{ brand.brand_name }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
+
                 <div class="form-group">
-                    <input type="text" name="category_name" placeholder="Category Name" value="{{ category_name }}">
+                    <input type="text" name="category_name" placeholder="Category Name"
+                           value="{{ category_name }}">
                     <span class="error-message" id="category_name_error"></span>
                 </div>
 
                 <div class="form-group">
-                    <input type="text" name="slug" placeholder="Slug (URL friendly)" value="{{ slug }}">
+                    <input type="text" name="slug" placeholder="Slug"
+                           value="{{ slug }}">
                     <span class="error-message" id="slug_error"></span>
                 </div>
 
@@ -55,8 +67,12 @@
                     <span class="error-message" id="description_error"></span>
                 </div>
 
-                <button type="submit" class="btn-submit">Add Category</button>
+                <button type="submit" name="save_changes" class="btn-submit">
+                    {% if edit_mode %}Update Category{% else %}Add Category{% endif %}
+                </button>
+
             </form>
+
         </div>
     </div>
 </div>

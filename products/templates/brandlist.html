@@ -1,6 +1,6 @@
 {% extends 'administrator/base.html' %}
 {% load static %}
-{% block title %}Sneakee | Variant List{% endblock %}
+{% block title %}Sneakee | Brand List{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -160,18 +160,12 @@
         </div>
     {% endif %}
 
-    <h1>
-        {% if product %}
-            Variants of {{ product.product_name }}
-        {% else %}
-            All Variants
-        {% endif %}
-    </h1>
+    <h1>Brand List</h1>
 
     <div class="topbar">
 
-        <a href="{% url 'addproduct' %}" class="add-btn">
-            +&nbsp;Add Variant
+        <a href="{% url 'addbrand' %}" class="add-btn">
+            +&nbsp;Add Brand
         </a>
 
         <form method="get">
@@ -186,47 +180,35 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Variant Image</th>
-                    <th>Variant Name</th>
-                    <th>Product</th>
-                    <th>SKU</th>
-                    <th>Color</th>
-                    <th>Size</th>
-                    <th>Price</th>
-                    <th>Stock</th>
+                    <th>Name</th>
+                    <th>Categories</th>
                     <th>Action</th>
                 </tr>
             </thead>
 
             <tbody>
-                {% for variant in page_obj %}
+                {% for brand in page_obj %}
                 <tr>
-                    <td>{{ variant.id }}</td>
-                    <td>
-                        <img src="{{ variant.left_image.url }}" alt="{{ variant.variant_name }}" class="product-img">
+                    <td>{{ brand.id }}</td>
+                    <td>{{ brand.brand_name }}</td>
+                    <td>                        
+                        <a href="{% url 'categorylist_by_brand' brand.slug %}" class="btn">View</a>
                     </td>
-                    <td>{{ variant.variant_name }}</td>
-                    <td>{{ variant.product.product_name }}</td>
-                    <td>{{variant.sku}}</td>
-                    <td>{{ variant.color }}</td>
-                    <td>{{ variant.size }}</td>
-                    <td>NPR {{ variant.price }}</td>
-                    <td>{{ variant.stock }}</td>
                     <td>
                         <div class="actions">
                             <!-- Edit Button -->
-                            <form action="{% url 'edituserform' %}" method="POST">
+                            <form action="{% url 'editbrand' %}" method="POST">
                                 {% csrf_token %}
-                                <input type="hidden" name="user_id" value="{{user.id}}">
+                                <input type="hidden" name="brand_id" value="{{ brand.id }}">
                                 <button type="submit" class="action-btn">
                                     <img src="{% static 'images/Pencil.png' %}" alt="Edit">
                                 </button>
                             </form>
 
                             <!-- Delete Button -->
-                            <form action="{% url 'deleteuser' %}" method="POST">
+                            <form action="{% url 'deletebrand' %}" method="POST">
                                 {% csrf_token %}
-                                <input type="hidden" name="user_id" value="{{user.id}}">
+                                <input type="hidden" name="brand_id" value="{{ brand.id }}">
                                 <button type="submit" class="action-btn">
                                     <img src="{% static 'images/Bin.png' %}" alt="Delete">
                                 </button>
@@ -235,7 +217,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8">No variants found.</td></tr>
+                <tr><td colspan="8">No Brand found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

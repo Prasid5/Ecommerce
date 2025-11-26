@@ -10,47 +10,35 @@
     </div>
 
     <div class="dashboard-boxes">
-        <!-- Product List -->
-        <a href="{% url 'productlist' %}" class="dashboard-box-link">
+
+        <a href="{% url 'brandlist' %}" class="dashboard-box-link">
             <div class="dashboard-box">
-                <div class="icon">🧾</div>
-                <h3>Product List</h3>
-                <p>View and manage all your products.</p>
+                <div class="icon">🏷️</div>
+                <h3>Brand Management</h3>
+                <p>Manage Brands.</p>
             </div>
         </a>
 
-        <!-- Add Brand -->
-        <a href="{% url 'addbrand' %}" class="dashboard-box-link">
+        <a href="{% url 'categorylist' %}" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">🏷️</div>
-                <h3>Add Brand</h3>
-                <p>Add Different Brands.</p>
-            </div>
-        </a>
-
-        <!-- Add Category -->
-        <a href="{% url 'addcategory' %}" class="dashboard-box-link">
-            <div class="dashboard-box">
-                <div class="icon">🏷️</div>
-                <h3>Add Category</h3>
+                <h3>Category Management</h3>
                 <p>Organize your products by categories.</p>
             </div>
         </a>
 
-        <!-- Add Product -->
-        <a href="{% url 'addproduct' %}" class="dashboard-box-link">
+        <a href="{% url 'productlist' %}" class="dashboard-box-link">
             <div class="dashboard-box">
-                <div class="icon">➕</div>
-                <h3>Add Product</h3>
-                <p>Add new product</p>
+                <div class="icon">🧾</div>
+                <h3>Product Management</h3>
+                <p>View and manage all your products.</p>
             </div>
         </a>
 
-        <!-- Add Product Variant -->
-        <a href="{% url 'addproductvariant' %}" class="dashboard-box-link">
+        <a href="{% url 'productvariantlist' %}" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">➕</div>
-                <h3>Add Product Variant</h3>
+                <h3>Variant Management</h3>
                 <p>Add new product variant.</p>
             </div>
         </a>
