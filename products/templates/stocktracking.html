@@ -1,0 +1,255 @@
+{% extends 'administrator/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Stock Tracking{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .content-area {
+            position: absolute;
+            top: 60px;
+            left: 250px;
+            right: 0;
+            bottom: 0;
+            background: #f9fafb;
+            overflow-y: auto;
+            padding: 2rem;
+            transition: left 0.1s ease;
+        }
+        .sidebar.hide ~ .content-area { left: 0; }
+
+        .message-container {
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .alert.success { background-color: #d1fae5; color: #065f46; }
+        .alert.error { background-color: #fee2e2; color: #b91c1c; }
+
+        .content-area h1{
+            margin-bottom: 10px;
+        }
+
+
+    /* ---------- Top Bar ---------- */
+        .topbar{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:15px;
+        }
+        .add-btn{
+            background-color: #080033;
+            color: #fff;
+            text-decoration:none;
+            padding: 8px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .topbar input[type=text]{
+            padding:8px 10px;
+            border-radius:5px;
+            border:1px solid #cbd5e1;
+        }
+
+    /* ---------- TABLE CONTAINER ---------- */
+        .table-wrapper{
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        table{ width:100%; border-collapse:separate; border-spacing:0; }
+        thead tr{ background:#fff; font-weight:600; }
+        th, td{ padding:14px; border-bottom:1px solid #e2e8f0; text-align:center; }
+
+        td .product-img{
+            height:75px;
+            width:75px;
+            object-fit: cover;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease; /* smooth hover effect */
+        }
+
+        tbody tr:hover{ background:#f8fafc; cursor:pointer; }
+
+        .btn{
+            background-color: #080033;
+            color: #fff;
+            text-decoration:none;
+            padding: 8px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+
+    /* Action buttons (Edit/Delete) */
+        .actions{
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content:center;
+        }
+
+        .action-btn{
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover{
+            background:#f1f5f9;
+        }
+
+        .action-btn img{
+            width: 16px;
+            height: 16px;
+            opacity: 0.8;
+        }        
+
+    /* ---------- Pagination ---------- */
+        .pagination{
+            margin-top:15px;
+            display:flex;
+            justify-content:center;
+            gap:10px;
+        }
+        .page-btn{
+            padding:6px 10px;
+            text-decoration:none;
+            color:black;
+
+            background:white;
+            border:1px solid #cbd5e1;
+            border-radius:5px;
+            cursor:default;
+        }
+    </style>
+</head>
+
+<body>
+<div class="content-area">
+
+    {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h1>
+            Stock Tracking
+    </h1>
+
+    <div class="topbar">
+
+        {% comment %} <a href="{% url 'addproductvariant' %}" class="add-btn">
+            +&nbsp;Add Product Variant
+        </a> {% endcomment %}
+
+        <form method="get">
+            <input type="text" name="query" placeholder="Search variants..." value="{{ query }}">
+            <input type="hidden" name="page" value="{{ page_obj.number }}">
+            <button type="submit" class="page-btn">Search</button>
+        </form>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sku</th>
+                    <th>Variant Name</th>
+                    <th>Color</th>
+                    <th>Size</th>
+                    <th>Low Stock Threshold</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for productvariant in page_obj %}
+                <tr>
+                    <td>{{ productvariant.sku }}</td>
+                    {% comment %} <td>
+                        <img src="{{ productvariant.left_image.url }}" alt="{{ productvariant.variant_name }}" class="product-img">
+                    </td> {% endcomment %}
+                    <td>{{ productvariant.variant_name }}</td>
+                    <td>{{ productvariant.color }}</td>
+                    <td>{{ productvariant.size }}</td>
+                    <td>{{ productvariant.low_stock_threshold }}</td>
+                    <td>{{ productvariant.stock }}</td>
+                    <td>
+                        {% if productvariant.stock == 0 %}
+                            Out of stock
+                        {% elif productvariant.stock <= productvariant.low_stock_threshold %}
+                            Low stock
+                        {% else %}
+                            In stock
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <form action="{% url 'managestock' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="productvariant_id" value="{{ productvariant.id }}">
+                                <button type="submit" class="action-btn">
+                                    <a class="btn">Manage Stock</a>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8">No variants found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
+        {% endif %}
+
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="?query={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+</div>
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
+</body>
+</html>
+{% endblock %}

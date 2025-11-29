@@ -82,6 +82,7 @@ class ProductVariant(models.Model):
     color = models.CharField(max_length=50)
     size = models.CharField(max_length=10)
     stock = models.PositiveIntegerField(default=0)
+    low_stock_threshold = models.PositiveIntegerField(default=5)
 
     sku = models.CharField(max_length=100, unique=True, blank=True, default="sku")
 
@@ -93,3 +94,10 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name} - {self.variant_name} ({self.color}, {self.size})"
+
+    
+class StockHistory(models.Model):
+    productvariant = models.ForeignKey(ProductVariant, on_delete=models.CASCADE)
+    change = models.IntegerField()  # positive for addition, negative for subtraction
+    reason = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)

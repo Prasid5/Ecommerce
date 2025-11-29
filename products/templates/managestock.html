@@ -1,0 +1,129 @@
+{% extends 'administrator/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Manage Stock{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/addproduct.css' %}">
+    {% comment %} <script src="{% static 'js/addproduct.js' %}"></script> {% endcomment %}
+    <style>
+    .form-group-current-img{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+    }
+
+    .form-group-current-img img{
+        height: 120px;
+        width: 120px;
+        object-fit: cover;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    textarea {
+        width: 100%;
+        height: 90px;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+    </style>
+</head>
+<body>
+
+<div class="content-area">
+    <div class="form-container">
+        <div class="form-box">
+
+            <!-- Header -->
+            <div class="form-header">
+                <h2>Manage Stock</h2>
+                <a href="#" class="back-link">&larr; Back</a>
+            </div>
+
+            {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- STOCK FORM -->
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        {% if productvariant%}
+                            <input type="hidden" name="productvariant_id" value="{{ productvariant.id }}">
+                            <label><strong>Product Variant:</strong></label>
+                            <span>{{ productvariant.variant_name }}</span>
+                        {% else %}
+                            <label><strong>Select Product Variant:</strong></label>
+                            <select id="variant-select" name="productvariant_id" required>
+                                <option disabled selected>Select Variant</option>
+                            {% for variant in all_variants %}
+                                <option value="{{ variant.id }}" data-stock="{{ variant.stock }}">{{ variant.variant_name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Current Stock -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label><strong>Current Stock:</strong></label>
+                        <span id="current-stock">{% if productvariant %}{{ productvariant.stock }}{% endif %}</span>
+                    </div>
+                </div>
+
+                <script>
+                    const variantSelect = document.getElementById('variant-select');
+                    const currentStock = document.getElementById('current-stock');
+
+                    if (variantSelect) {
+                        variantSelect.addEventListener('change', function() {
+                            const selectedOption = this.selectedOptions[0];
+                            const stock = selectedOption.dataset.stock;
+                            currentStock.textContent = stock;
+                        });
+                    }
+                </script>
+
+                <!-- Change Stock -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Adjust Stock (Use + or - )</label>
+                        <input type="number" name="change" placeholder="+5 or -3" required>
+                    </div>
+                </div>
+
+                <!-- Reason -->
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Reason</label>
+                        <textarea name="reason" placeholder="Stock received, damage, manual correction, etc." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" name="save_changes" class="btn-submit">
+                    Update Stock
+                </button>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+{% endblock %}

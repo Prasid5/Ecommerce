@@ -24,6 +24,10 @@ urlpatterns = [
     path("productvariantlist/", views.productvariantlist, name="productvariantlist"),
     path("productvariantlist/<slug:product_slug>/", views.productvariantlist, name="productvariantlist_by_product"),
 
+    path("stocktracking/", views.stocktracking, name="stocktracking"),
+    path("managestock/", views.managestock, name="managestock"),
+    path("stockhistory/", views.stockhistory, name="stockhistory"),
+
     path("deletebrand/", views.deletebrand, name="deletebrand"),
     path("deletecategory/", views.deletecategory, name="deletecategory"),
     path("deleteproduct/", views.deleteproduct, name="deleteproduct"),

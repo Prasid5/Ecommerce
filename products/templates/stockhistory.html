@@ -1,6 +1,6 @@
 {% extends 'administrator/base.html' %}
 {% load static %}
-{% block title %}Sneakee | Product List{% endblock %}
+{% block title %}Sneakee | Stock History{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -208,21 +208,15 @@
             </div>
         {% endif %}
 
-    <h1>
-        {% if category %}
-            Products of {{ category.category_name }}
-        {% else %}
-            Product List
-        {% endif %}
-    </h1>
+    <h1>Stock History</h1>
 
     <div class="topbar">
-        <a href="{% url 'addproduct' %}" class="add-btn">
-            +&nbsp;Add Product
+        <a href="{% url 'managestock' %}" class="add-btn">
+            Manage Stock
         </a>
 
-        <form action="{% url 'productlist' %}" method="get">
-            <input type="text" name="query" value="{{ query }}" placeholder="Search products...">
+        <form action="{% url 'stockhistory' %}" method="get">
+            <input type="text" name="query" value="{{ query }}" placeholder="Search stock...">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
             <button type="submit" class="page-btn">Search</button>
         </form>
@@ -233,64 +227,23 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Brand</th>
-                    <th>Base Price</th>
-                    <th>Total Variants</th>
-                    <th>Total Stock</th>
-                    <th>Variants</th>
-                    <th>Actions</th>
+                    <th>Variant Name</th>
+                    <th>Change</th>
+                    <th>Reason</th>
+                    <th>Time Stamp</th>
                 </tr>
             </thead>
             <tbody>
-                {% for product in page_obj %}
+                {% for stockhistory in page_obj %}
                 <tr>
-                    <td>{{ product.id }}</td>
-                    <td>
-                        <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="product-img">
-                    </td>
-                    <td>{{ product.product_name }}</td>
-                    <td>{{ product.category.category_name }}</td>
-                    <td>{{ product.category.brands.first.brand_name }}</td>
-                    <td>NPR {{ product.base_price }}</td>
-                    <td>
-                        {{product.total_productvariants}}
-                        {% comment %} {% for variant in product.variants.all %}
-                            {{ variant.variant_name }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            No Variants
-                        {% endfor %} {% endcomment %}
-                    </td>
-                    <td>{{product.total_stocks}}</td>
-                    <td>                        
-                        <a href="{% url 'productvariantlist_by_product' product.slug %}" class="btn">View</a>
-                    </td>
-                    <td>
-                        <div class="actions">
-                            <!-- Edit Button -->
-                            <form action="{% url 'editproduct' %}" method="POST">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{product.id}}">
-                                <button type="submit" class="action-btn">
-                                    <img src="{% static 'images/Pencil.png' %}" alt="Edit">
-                                </button>
-                            </form>
-
-                            <!-- Delete Button -->
-                            <form action="{% url 'deleteproduct' %}" method="POST">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.id }}">
-                                <button type="submit" class="action-btn">
-                                    <img src="{% static 'images/Bin.png' %}" alt="Delete">
-                                </button>
-                            </form>
-                        </div>
-                    </td>
+                    <td>{{ stockhistory.id }}</td>
+                    <td>{{ stockhistory.productvariant.variant_name }}</td>
+                    <td>{{ stockhistory.change }}</td>
+                    <td>{{ stockhistory.reason }}</td>
+                    <td>{{ stockhistory.timestamp }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="8">No products found.</td></tr>
+                <tr><td colspan="8">No stock history found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 import os
 
-from products.models import Brand, Category, Product, ProductVariant
+from products.models import Brand, Category, Product, ProductVariant,StockHistory
 
 def productdetails(request, slug):
     """
@@ -17,15 +17,6 @@ def productdetails(request, slug):
     }
     return render(request, 'productdetails.html', context)
 
-
-def categories(request):
-    return render(request,'categories.html')
-
-# def brand(request):
-#     return render(request, 'brand.html')
-
-from django.shortcuts import render, get_object_or_404
-from .models import Brand, Category
 
 def brand_view(request, brand_slug):
     # Fetch the brand
@@ -40,6 +31,10 @@ def brand_view(request, brand_slug):
     }
 
     return render(request, 'brand.html', context)
+
+
+def categories(request):
+    return render(request,'categories.html')
 
 
 def addbrand(request):
@@ -77,12 +72,9 @@ def addbrand(request):
         brand.save()
         messages.success(request, "Brand created successfully")
 
-        brands=Brand.objects.all()
-        context ={
-            'brands':brands
-        }
-        return render(request,'addcategory.html',context)
+        return redirect('addcategory')
     return render(request, 'addbrand.html')
+
 
 def addcategory(request):
     brands=Brand.objects.all()
@@ -124,12 +116,9 @@ def addcategory(request):
 
         category.save()
         messages.success(request, "Category created successfully")
-        categories =  Category.objects.all()
-        context ={
-            'categories':categories
-        }
-        return render(request, 'addproduct.html', context)
+        return redirect('addproduct')
     return render(request, 'addcategory.html',{'brands':brands})
+
 
 def addproduct(request):
     categories =  Category.objects.all()#Used to render all categories in the form
@@ -180,13 +169,9 @@ def addproduct(request):
         )    
 
         messages.success(request, "Product added successfully")
-        products=Product.objects.all()
-        context={
-            'products':products
-        }
-        return render(request, 'addproductvariant.html', context)
-    
+        return redirect('addproductvariant')
     return render(request,'addproduct.html',{'categories':categories})
+
 
 def addproductvariant(request):
     products=Product.objects.all()
@@ -196,6 +181,7 @@ def addproductvariant(request):
         color=request.POST.get('color','').strip()
         size=request.POST.get('size','').strip()
         stock=request.POST.get('stock','').strip()
+        low_stock_threshold=request.POST.get('low_stock_threshold','').strip()
         sku=request.POST.get('sku','').strip()
         top_image=request.FILES.get('top_image')
         right_image=request.FILES.get('right_image')
@@ -208,13 +194,17 @@ def addproductvariant(request):
              'color':color,
              'size':size,
              'stock':stock,
+             'low_stock_threshold':low_stock_threshold,
              'sku':sku,
         }
 
-        if not product_id or not variant_name or not color or not size or not stock:
+        if not product_id or not color or not size or not stock:
             messages.error(request, "All fields except SKU are required.")
             return render(request, 'addproductvariant.html', context)
         
+        if not variant_name:
+            variant_name = f"{product.product_name} - {color} - {size}"
+
         if not sku:
             sku_base=variant_name[:3].upper() if len(variant_name)>=3 else variant_name.upper()
             last_variant=ProductVariant.objects.last()
@@ -240,6 +230,7 @@ def addproductvariant(request):
             color=color,
             size=size,
             stock=int(stock),
+            low_stock_threshold=int(low_stock_threshold),
             sku=sku,
             top_image=top_image,
             right_image=right_image,
@@ -248,7 +239,7 @@ def addproductvariant(request):
         )
 
         messages.success(request, "Product Variant added successfully")
-        return redirect('productlist')
+        return redirect('productvariantlist')
     return render(request, 'addproductvariant.html', {'products':products})
 
 
@@ -364,18 +355,12 @@ def deletebrand(request):
         brand = get_object_or_404(Brand, id=brand_id)
 
         brand.categories.clear()
-        if brand.brand_logo:
-            if os.path.isfile(brand.brand_logo.path):
-                os.remove(brand.brand_logo.path)
-
-        if brand.brand_picture:
-            if os.path.isfile(brand.brand_picture.path):
-                os.remove(brand.brand_picture.path)
 
         brand.delete()
         messages.success(request, "Brand deleted successfully!")
         return redirect("brandlist")
-    
+
+
 def deletecategory(request):
     if request.method == "POST":
         category_id = request.POST.get("category_id")
@@ -390,17 +375,6 @@ def deleteproduct(request):
         product_id = request.POST.get("product_id")
         product = get_object_or_404(Product, id=product_id)
 
-        if product.main_image:
-            if os.path.isfile(product.main_image.path):
-                os.remove(product.main_image.path)
-
-        for productvariant in product.productvariants.all():
-            for img_field in ["top_image", "right_image", "left_image", "back_image"]:
-                img = getattr(productvariant, img_field)
-                if img:
-                    if os.path.isfile(img.path):
-                        os.remove(img.path)
-
         product.delete()
         messages.success(request, "Product and its variants deleted successfully!")
         return redirect("productlist")
@@ -410,16 +384,10 @@ def deleteproductvariant(request):
         productvariant_id = request.POST.get("productvariant_id")
         productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
 
-        # Remove variant images
-        for img_field in ["top_image", "right_image", "left_image", "back_image"]:
-            img = getattr(productvariant, img_field)
-            if img:
-                if os.path.isfile(img.path):
-                    os.remove(img.path)
-
         productvariant.delete()
         messages.success(request, "Product variant deleted successfully!")
         return redirect("productvariantlist")
+
 
 def editbrand(request):
     if request.method == "POST":
@@ -431,13 +399,9 @@ def editbrand(request):
             brand.slug = request.POST.get("slug")
 
             if request.FILES.get("brand_logo"):
-                if brand.brand_logo and os.path.isfile(brand.brand_logo.path):
-                    os.remove(brand.brand_logo.path)
                 brand.brand_logo = request.FILES["brand_logo"]
 
             if request.FILES.get("brand_picture"):
-                if brand.brand_picture and os.path.isfile(brand.brand_picture.path):
-                    os.remove(brand.brand_picture.path)
                 brand.brand_picture = request.FILES["brand_picture"]
 
             brand.save()
@@ -487,6 +451,7 @@ def editcategory(request):
 
     return redirect("categorylist")
 
+
 def editproduct(request):
     if request.method == "POST":
         product_id = request.POST.get("product_id")
@@ -509,9 +474,6 @@ def editproduct(request):
             # Handle main image replacement
             # ---------------------------
             if request.FILES.get("main_image"):
-                # Delete old image file
-                if product.main_image and os.path.isfile(product.main_image.path):
-                    os.remove(product.main_image.path)
                 # Assign new image
                 product.main_image = request.FILES["main_image"]
 
@@ -533,11 +495,6 @@ def editproduct(request):
 
     return redirect("productlist")
 
-import os
-from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import ProductVariant, Product
 
 def editproductvariant(request):
     if request.method == "POST":
@@ -562,9 +519,6 @@ def editproductvariant(request):
             # ---------------------------
             for field_name in ["top_image", "right_image", "left_image", "back_image"]:
                 if request.FILES.get(field_name):
-                    old_file = getattr(variant, field_name)
-                    if old_file and os.path.isfile(old_file.path):
-                        os.remove(old_file.path)
                     setattr(variant, field_name, request.FILES[field_name])
 
             variant.save()
@@ -584,5 +538,95 @@ def editproductvariant(request):
         })
 
     return redirect("productvariantlist")
+
+
+def stocktracking(request):
+    """
+    Shows:
+    - All variants (if no product_slug)
+    - Only variants of a specific product (if product_slug given)
+    """
+
+    query = request.GET.get("query", "")
+
+    product = None
+    variants = ProductVariant.objects.all().order_by("-id")
+
+    # Search logic
+    if query:
+        variants = variants.filter(variant_name__icontains=query)
+
+    paginator = Paginator(variants, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "query": query,
+        "product": product,
+    }
+    return render(request, "stocktracking.html", context)
+
+
+def managestock(request):
+    if request.method == "POST":
+        # Case 1: Submitting the stock adjustment form
+        if "save_changes" in request.POST:
+            productvariant_id = request.POST.get("productvariant_id")
+            productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
+
+            try:
+                change = int(request.POST.get("change"))
+            except (TypeError, ValueError):
+                messages.error(request, "Invalid stock change value.")
+                return render(request, "managestock.html", {"productvariant": productvariant})
+
+            reason = request.POST.get("reason", "").strip()
+            if not reason:
+                messages.error(request, "Please provide a reason for the stock change.")
+                return render(request, "managestock.html", {"productvariant": productvariant})
+
+            productvariant.stock += change
+            productvariant.save()
+
+            StockHistory.objects.create(
+                productvariant=productvariant,
+                change=change,
+                reason=reason
+            )
+
+            messages.success(request, "Stock updated successfully!")
+            return redirect("stockhistory")
+
+        # Case 2: Coming from stocktracking button or other POST action with ID
+        productvariant_id = request.POST.get("productvariant_id")
+        if productvariant_id:
+            productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
+            return render(request, "managestock.html", {"productvariant": productvariant})
+
+    # Case 3: Accessed without POST (directly via URL or button)
+    all_variants = ProductVariant.objects.all()
+    return render(request, "managestock.html", {"all_variants": all_variants})
+
+
+def stockhistory(request):
+    query = request.GET.get("query", "")
+
+    stockhistory=StockHistory.objects.all().order_by("-timestamp")#for descending order:-created_at
+
+    if query:
+        if query.isdigit():
+            stockhistory = stockhistory.filter(Q(id=int(query)) | Q(productvariant__variant_name__icontains=query))
+        else:
+            stockhistory = stockhistory.filter(productvariant__variant_name__icontains=query)
+    paginator = Paginator(stockhistory, 5)
+    page_number = request.GET.get("page")#for first-time page load, request.get={}
+    page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
+
+    context={
+        "page_obj": page_obj,
+        "query": query,
+    }
+    return render(request, "stockhistory.html", context)
 
 # Create your views here.
