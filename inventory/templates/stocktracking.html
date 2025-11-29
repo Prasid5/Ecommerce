@@ -203,11 +203,11 @@
                     <td>{{ productvariant.color }}</td>
                     <td>{{ productvariant.size }}</td>
                     <td>{{ productvariant.low_stock_threshold }}</td>
-                    <td>{{ productvariant.stock }}</td>
+                    <td>{{ productvariant.inventorystocks.quantity|default:0 }}</td>
                     <td>
-                        {% if productvariant.stock == 0 %}
+                        {% if productvariant.inventorystocks.quantity == 0 %}
                             Out of stock
-                        {% elif productvariant.stock <= productvariant.low_stock_threshold %}
+                        {% elif productvariant.inventorystocks.quantity <= productvariant.low_stock_threshold %}
                             Low stock
                         {% else %}
                             In stock

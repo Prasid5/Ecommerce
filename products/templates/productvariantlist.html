@@ -211,7 +211,7 @@
                     <td>{{ productvariant.color }}</td>
                     <td>{{ productvariant.size }}</td>
                     <td>NPR {{ productvariant.price }}</td>
-                    <td>{{ productvariant.stock }}</td>
+                    <td>{{ productvariant.inventorystocks.quantity|default:0 }}</td>
                     <td>
                         <div class="actions">
                             <!-- Edit Button -->

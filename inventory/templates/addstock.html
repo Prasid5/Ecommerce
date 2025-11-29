@@ -1,6 +1,6 @@
 {% extends 'administrator/base.html' %}
 {% load static %}
-{% block title %}Sneakee | Manage Stock{% endblock %}
+{% block title %}Sneakee | Add Stock{% endblock %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -8,8 +8,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/addproduct.css' %}">
-    {% comment %} <script src="{% static 'js/addproduct.js' %}"></script> {% endcomment %}
+    <link rel="stylesheet" href="{% static 'css/addstock.css' %}">
+    <script src="{% static 'js/addstock.js' %}"></script>
     <style>
     .form-group-current-img{
         display:flex;
@@ -42,7 +42,7 @@
 
             <!-- Header -->
             <div class="form-header">
-                <h2>Manage Stock</h2>
+                <h2>Add Stock</h2>
                 <a href="#" class="back-link">&larr; Back</a>
             </div>
 
@@ -64,52 +64,25 @@
                             <input type="hidden" name="productvariant_id" value="{{ productvariant.id }}">
                             <label><strong>Product Variant:</strong></label>
                             <span>{{ productvariant.variant_name }}</span>
-                        {% else %}
-                            <label><strong>Select Product Variant:</strong></label>
-                            <select id="variant-select" name="productvariant_id" required>
-                                <option disabled selected>Select Variant</option>
-                            {% for variant in all_variants %}
-                                <option value="{{ variant.id }}" data-stock="{{ variant.stock }}">{{ variant.variant_name }}</option>
-                            {% endfor %}
-                        </select>
                         {% endif %}
                     </div>
                 </div>
+                
 
-                <!-- Current Stock -->
+                <!-- Quantity -->
                 <div class="form-row">
                     <div class="form-group full-width">
-                        <label><strong>Current Stock:</strong></label>
-                        <span id="current-stock">{% if productvariant %}{{ productvariant.stock }}{% endif %}</span>
+                        <label><strong>Quantity:</strong></label>
+                        <input type="number" name="quantity" placeholder="In Units" value={{quantity}}>
                     </div>
                 </div>
 
-                <script>
-                    const variantSelect = document.getElementById('variant-select');
-                    const currentStock = document.getElementById('current-stock');
 
-                    if (variantSelect) {
-                        variantSelect.addEventListener('change', function() {
-                            const selectedOption = this.selectedOptions[0];
-                            const stock = selectedOption.dataset.stock;
-                            currentStock.textContent = stock;
-                        });
-                    }
-                </script>
-
-                <!-- Change Stock -->
+                <!-- Cost Per Unit Stock -->
                 <div class="form-row">
                     <div class="form-group full-width">
-                        <label>Adjust Stock (Use + or - )</label>
-                        <input type="number" name="change" placeholder="+5 or -3" required>
-                    </div>
-                </div>
-
-                <!-- Reason -->
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label>Reason</label>
-                        <textarea name="reason" placeholder="Stock received, damage, manual correction, etc." required></textarea>
+                        <label><strong>Cost Per Unit:</strong></label>
+                        <input type="number" name="cost" placeholder="In NRP" value="{{cost_per_unit}}">
                     </div>
                 </div>
 

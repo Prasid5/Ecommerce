@@ -37,7 +37,7 @@ def orderdashboard(request):
 @login_required
 def inventorydashboard(request):
     if request.user.is_staff:
-        low_stock_variants = ProductVariant.objects.filter(stock__lte=F('low_stock_threshold'))
+        low_stock_variants = ProductVariant.objects.filter(inventorystocks__quantity__lte=F('low_stock_threshold'))
 
         return render(request, "administrator/inventorydashboard.html", {
             "low_stock_variants": low_stock_variants

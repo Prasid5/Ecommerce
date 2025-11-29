@@ -20,7 +20,7 @@
                             {% comment %} {{ item.product.product_name }} –  {% endcomment %}
                             Product Variant Name: {{ item.variant_name }} | SKU: {{item.sku}}
                         </strong>
-                        <span class="qty">Stock: {{ item.stock }}</span>
+                        <span class="qty">Stock: {{ item.inventorystocks.quantity }}</span>
                     </div>
                 {% endfor %}
             {% else %}
@@ -48,7 +48,7 @@
             </div>
         </a>
 
-        <a href="{% url 'stockhistory' %}" class="dashboard-box-link">
+        <a href="{% url 'stocktransaction' %}" class="dashboard-box-link">
             <div class="dashboard-box">
                 <div class="icon">🧾</div>
                 <h3>Stock log</h3>

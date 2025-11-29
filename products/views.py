@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.http import urlencode
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 import os
 
-from products.models import Brand, Category, Product, ProductVariant,StockHistory
+from products.models import Brand, Category, Product, ProductVariant
 
 def productdetails(request, slug):
     """
@@ -180,7 +182,6 @@ def addproductvariant(request):
         variant_name=request.POST.get('variant_name','').strip()
         color=request.POST.get('color','').strip()
         size=request.POST.get('size','').strip()
-        stock=request.POST.get('stock','').strip()
         low_stock_threshold=request.POST.get('low_stock_threshold','').strip()
         sku=request.POST.get('sku','').strip()
         top_image=request.FILES.get('top_image')
@@ -193,14 +194,15 @@ def addproductvariant(request):
              'variant_name':variant_name,
              'color':color,
              'size':size,
-             'stock':stock,
              'low_stock_threshold':low_stock_threshold,
              'sku':sku,
         }
 
-        if not product_id or not color or not size or not stock:
+        if not product_id or not color or not size:
             messages.error(request, "All fields except SKU are required.")
             return render(request, 'addproductvariant.html', context)
+        
+        product = Product.objects.get(id=product_id)
         
         if not variant_name:
             variant_name = f"{product.product_name} - {color} - {size}"
@@ -218,10 +220,6 @@ def addproductvariant(request):
         if sku and ProductVariant.objects.filter(sku=sku).exists():
             messages.error(request,"SKU already exists")
             return render(request,"addproductvariant.html", context)
-        
-        if not stock.isdigit() or int(stock)<=0:
-            messages.error(request,"Stock must be a positive integer")
-            return render(request, 'addproductvariant.html', context)
 
         product=Product.objects.get(id=product_id)
         productvariant=ProductVariant.objects.create(
@@ -229,7 +227,6 @@ def addproductvariant(request):
             variant_name=variant_name,
             color=color,
             size=size,
-            stock=int(stock),
             low_stock_threshold=int(low_stock_threshold),
             sku=sku,
             top_image=top_image,
@@ -239,7 +236,10 @@ def addproductvariant(request):
         )
 
         messages.success(request, "Product Variant added successfully")
-        return redirect('productvariantlist')
+        # return redirect(f'/addstock/?productvariant_id={productvariant.id}')
+        url = reverse('addstock')
+        params = urlencode({'productvariant_id': productvariant.id})
+        return redirect(f"{url}?{params}")
     return render(request, 'addproductvariant.html', {'products':products})
 
 
@@ -506,7 +506,6 @@ def editproductvariant(request):
             variant.variant_name = request.POST.get("variant_name")
             variant.color = request.POST.get("color")
             variant.size = request.POST.get("size")
-            variant.stock = request.POST.get("stock") or 0
             variant.sku = request.POST.get("sku") or f"SKU-{variant.id}"
 
             # Update linked product if changed
@@ -533,100 +532,12 @@ def editproductvariant(request):
             "variant_name": variant.variant_name,
             "color": variant.color,
             "size": variant.size,
-            "stock": variant.stock,
             "sku": variant.sku,
         })
 
     return redirect("productvariantlist")
 
 
-def stocktracking(request):
-    """
-    Shows:
-    - All variants (if no product_slug)
-    - Only variants of a specific product (if product_slug given)
-    """
 
-    query = request.GET.get("query", "")
-
-    product = None
-    variants = ProductVariant.objects.all().order_by("-id")
-
-    # Search logic
-    if query:
-        variants = variants.filter(variant_name__icontains=query)
-
-    paginator = Paginator(variants, 10)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        "page_obj": page_obj,
-        "query": query,
-        "product": product,
-    }
-    return render(request, "stocktracking.html", context)
-
-
-def managestock(request):
-    if request.method == "POST":
-        # Case 1: Submitting the stock adjustment form
-        if "save_changes" in request.POST:
-            productvariant_id = request.POST.get("productvariant_id")
-            productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
-
-            try:
-                change = int(request.POST.get("change"))
-            except (TypeError, ValueError):
-                messages.error(request, "Invalid stock change value.")
-                return render(request, "managestock.html", {"productvariant": productvariant})
-
-            reason = request.POST.get("reason", "").strip()
-            if not reason:
-                messages.error(request, "Please provide a reason for the stock change.")
-                return render(request, "managestock.html", {"productvariant": productvariant})
-
-            productvariant.stock += change
-            productvariant.save()
-
-            StockHistory.objects.create(
-                productvariant=productvariant,
-                change=change,
-                reason=reason
-            )
-
-            messages.success(request, "Stock updated successfully!")
-            return redirect("stockhistory")
-
-        # Case 2: Coming from stocktracking button or other POST action with ID
-        productvariant_id = request.POST.get("productvariant_id")
-        if productvariant_id:
-            productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
-            return render(request, "managestock.html", {"productvariant": productvariant})
-
-    # Case 3: Accessed without POST (directly via URL or button)
-    all_variants = ProductVariant.objects.all()
-    return render(request, "managestock.html", {"all_variants": all_variants})
-
-
-def stockhistory(request):
-    query = request.GET.get("query", "")
-
-    stockhistory=StockHistory.objects.all().order_by("-timestamp")#for descending order:-created_at
-
-    if query:
-        if query.isdigit():
-            stockhistory = stockhistory.filter(Q(id=int(query)) | Q(productvariant__variant_name__icontains=query))
-        else:
-            stockhistory = stockhistory.filter(productvariant__variant_name__icontains=query)
-    paginator = Paginator(stockhistory, 5)
-    page_number = request.GET.get("page")#for first-time page load, request.get={}
-    page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
-
-    context={
-        "page_obj": page_obj,
-        "query": query,
-    }
-    return render(request, "stockhistory.html", context)
 
 # Create your views here.

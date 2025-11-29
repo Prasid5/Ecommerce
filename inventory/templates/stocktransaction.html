@@ -193,6 +193,63 @@
             cursor:default;
 
         }
+                /* Filter form container */
+        .filter-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Search input */
+        .filter-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #080033;
+            box-shadow: 0 0 5px rgba(8, 0, 51, 0.3);
+        }
+
+        /* Dropdown select */
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #080033;
+            box-shadow: 0 0 5px rgba(8, 0, 51, 0.3);
+        }
+
+        /* Filter button */
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: #080033;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .filter-btn:hover {
+            background-color: #0d004d;
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -208,17 +265,18 @@
             </div>
         {% endif %}
 
-    <h1>Stock History</h1>
+    <h1>Stock Transaction</h1>
 
     <div class="topbar">
-        <a href="{% url 'managestock' %}" class="add-btn">
-            Manage Stock
-        </a>
-
-        <form action="{% url 'stockhistory' %}" method="get">
-            <input type="text" name="query" value="{{ query }}" placeholder="Search stock...">
+        <form action="{% url 'stocktransaction' %}" method="get" class="filter-form">
+            <input type="text" name="query" value="{{ query }}" placeholder="Search stock..." class="filter-input">
+            <select name="type" class="filter-select">
+                <option value="all" {% if stock_type == "all" %}selected{% endif %}>All</option>
+                <option value="in" {% if stock_type == "in" %}selected{% endif %}>Stock In</option>
+                <option value="out" {% if stock_type == "out" %}selected{% endif %}>Stock Out</option>
+            </select>
             <input type="hidden" name="page" value="{{ page_obj.number }}">
-            <button type="submit" class="page-btn">Search</button>
+            <button type="submit" class="filter-btn">Filter</button>
         </form>
     </div>
 
@@ -231,16 +289,26 @@
                     <th>Change</th>
                     <th>Reason</th>
                     <th>Time Stamp</th>
+                    <th>Status</th>
+                    <th>Transaction Cost</th>
                 </tr>
             </thead>
             <tbody>
-                {% for stockhistory in page_obj %}
+                {% for stocktransaction in page_obj %}
                 <tr>
-                    <td>{{ stockhistory.id }}</td>
-                    <td>{{ stockhistory.productvariant.variant_name }}</td>
-                    <td>{{ stockhistory.change }}</td>
-                    <td>{{ stockhistory.reason }}</td>
-                    <td>{{ stockhistory.timestamp }}</td>
+                    <td>{{ stocktransaction.id }}</td>
+                    <td>{{ stocktransaction.productvariant.variant_name }}</td>
+                    <td>{{ stocktransaction.change }}</td>
+                    <td>{{ stocktransaction.reason }}</td>
+                    <td>{{ stocktransaction.timestamp }}</td>
+                    <td>
+                        {% if stocktransaction.change > 0 %}
+                            Stock In
+                        {% elif stocktransaction.change < 0%}
+                            Stock Out
+                        {% endif %}
+                    </td>
+                    <td>{{ stocktransaction.transaction_cost }}</td>
                 </tr>
                 {% empty %}
                 <tr><td colspan="8">No stock history found.</td></tr>
