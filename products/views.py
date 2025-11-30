@@ -8,14 +8,19 @@ import os
 
 from products.models import Brand, Category, Product, ProductVariant
 
+from django.shortcuts import render, get_object_or_404
+from .models import Product
+
 def productdetails(request, slug):
     """
     Fetch product by slug
     """
     product = get_object_or_404(Product, slug=slug)
+    first_variant = product.productvariants.first()  # get the first variant
 
     context = {
-        'product': product
+        'product': product,
+        'first_variant': first_variant,  # pass first variant separately
     }
     return render(request, 'productdetails.html', context)
 
@@ -176,59 +181,65 @@ def addproduct(request):
 
 
 def addproductvariant(request):
-    products=Product.objects.all()
-    if request.method == 'POST':
-        product_id=request.POST.get('product')
-        variant_name=request.POST.get('variant_name','').strip()
-        color=request.POST.get('color','').strip()
-        size=request.POST.get('size','').strip()
-        low_stock_threshold=request.POST.get('low_stock_threshold','').strip()
-        sku=request.POST.get('sku','').strip()
-        top_image=request.FILES.get('top_image')
-        right_image=request.FILES.get('right_image')
-        left_image=request.FILES.get('left_image')
-        back_image=request.FILES.get('back_image')
+    products = Product.objects.all()
 
-        context={
-             'products':products,
-             'variant_name':variant_name,
-             'color':color,
-             'size':size,
-             'low_stock_threshold':low_stock_threshold,
-             'sku':sku,
+    if request.method == 'POST':
+        product_id = request.POST.get('product')
+        variant_name = request.POST.get('variant_name', '').strip()
+        color = request.POST.get('color', '').strip()
+        size = request.POST.get('size', '').strip()
+        low_stock_threshold = request.POST.get('low_stock_threshold', '').strip()
+        sku = request.POST.get('sku', '').strip()
+
+        main_image = request.FILES.get('main_image')
+        top_image = request.FILES.get('top_image')
+        right_image = request.FILES.get('right_image')
+        left_image = request.FILES.get('left_image')
+        back_image = request.FILES.get('back_image')
+
+        context = {
+            'products': products,
+            'variant_name': variant_name,
+            'color': color,
+            'size': size,
+            'low_stock_threshold': low_stock_threshold,
+            'sku': sku,
         }
 
         if not product_id or not color or not size:
-            messages.error(request, "All fields except SKU are required.")
+            messages.error(request, "Product, Color and Size are required.")
             return render(request, 'addproductvariant.html', context)
-        
-        product = Product.objects.get(id=product_id)
-        
-        if not variant_name:
-            variant_name = f"{product.product_name} - {color} - {size}"
 
+        product = Product.objects.get(id=product_id)
+
+        # Auto variant name
+        if not variant_name:
+            variant_name = f"{product.product_name} - {color}"
+
+        # Auto SKU
         if not sku:
-            sku_base=variant_name[:3].upper() if len(variant_name)>=3 else variant_name.upper()
-            last_variant=ProductVariant.objects.last()
-            next_id=last_variant.id+1 if last_variant else 1
-            sku=f"{next_id}{sku_base}"
+            sku_base = variant_name[:3].upper()
+            color_base = color[0:2].upper()
+            last_variant = ProductVariant.objects.last()
+            next_id = (last_variant.id + 1) if last_variant else 1
+            sku = f"{next_id}{sku_base}{color_base}{size}"
 
             while ProductVariant.objects.filter(sku=sku).exists():
                 next_id += 1
-                sku = f"{next_id}{sku_base}"
+                sku = f"{next_id}{sku_base}{color_base}{size}"
 
-        if sku and ProductVariant.objects.filter(sku=sku).exists():
-            messages.error(request,"SKU already exists")
-            return render(request,"addproductvariant.html", context)
+        if ProductVariant.objects.filter(sku=sku).exists():
+            messages.error(request, "SKU already exists.")
+            return render(request, 'addproductvariant.html', context)
 
-        product=Product.objects.get(id=product_id)
-        productvariant=ProductVariant.objects.create(
+        productvariant = ProductVariant.objects.create(
             product=product,
             variant_name=variant_name,
             color=color,
             size=size,
-            low_stock_threshold=int(low_stock_threshold),
+            low_stock_threshold=int(low_stock_threshold or 0),
             sku=sku,
+            main_image=main_image,
             top_image=top_image,
             right_image=right_image,
             left_image=left_image,
@@ -236,11 +247,12 @@ def addproductvariant(request):
         )
 
         messages.success(request, "Product Variant added successfully")
-        # return redirect(f'/addstock/?productvariant_id={productvariant.id}')
+
         url = reverse('addstock')
         params = urlencode({'productvariant_id': productvariant.id})
         return redirect(f"{url}?{params}")
-    return render(request, 'addproductvariant.html', {'products':products})
+
+    return render(request, 'addproductvariant.html', {'products': products})
 
 
 def brandlist(request):
@@ -502,21 +514,21 @@ def editproductvariant(request):
         variant = get_object_or_404(ProductVariant, id=variant_id)
 
         if "save_changes" in request.POST:
-            # Update text fields
+
             variant.variant_name = request.POST.get("variant_name")
             variant.color = request.POST.get("color")
             variant.size = request.POST.get("size")
-            variant.sku = request.POST.get("sku") or f"SKU-{variant.id}"
 
-            # Update linked product if changed
+            new_sku = request.POST.get("sku")
+            variant.sku = new_sku if new_sku else variant.sku
+
+            # Update product reference
             product_id = request.POST.get("product")
             if product_id:
                 variant.product_id = int(product_id)
 
-            # ---------------------------
-            # Handle image replacements
-            # ---------------------------
-            for field_name in ["top_image", "right_image", "left_image", "back_image"]:
+            # Replace images
+            for field_name in ["main_image", "top_image", "right_image", "left_image", "back_image"]:
                 if request.FILES.get(field_name):
                     setattr(variant, field_name, request.FILES[field_name])
 
@@ -524,7 +536,6 @@ def editproductvariant(request):
             messages.success(request, "Product Variant updated successfully!")
             return redirect("productvariantlist")
 
-        # First time opening edit page
         return render(request, "addproductvariant.html", {
             "edit_mode": True,
             "variant": variant,
@@ -533,9 +544,11 @@ def editproductvariant(request):
             "color": variant.color,
             "size": variant.size,
             "sku": variant.sku,
+            "low_stock_threshold": variant.low_stock_threshold,
         })
 
     return redirect("productvariantlist")
+
 
 
 

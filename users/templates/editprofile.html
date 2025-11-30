@@ -4,10 +4,14 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/signup.css' %}">
-
+<style>
+  .form-container{
+    margin:10px 0px;
+  }
+</style>
   <div class="form-container">
     <div class="form-box">
-      <h2>Edit User</h2>
+      <h2>Edit Profile</h2>
 
       {% if messages %}
         <div class="message-container">
@@ -19,7 +23,7 @@
         </div>
       {% endif %}
 
-      <form method="POST" action="#">
+      <form method="POST" action="#" class="user-form">
         {% csrf_token %}
         <input type="hidden" name="user_id" value="{{user_id}}"disabled/>
         <input type="text" name="username" placeholder="Username" value="{{username}}"disabled/>
@@ -27,6 +31,10 @@
         <input type="password" name="password" placeholder="Password" value="{{password}}"/>
         <input type="text" name="address" placeholder="Address" value="{{address}}" disabled/>
         <input type="tel" name="phone" placeholder="Phone Number" value="{{phone}}"/>
+        {% if not request.user.is_staff%}
+          <textarea name="shipping_address1" placeholder="Shipping Address 1">{{ shipping_address1|default:"" }}</textarea>
+          <textarea name="shipping_address2" placeholder="Shipping Address 2">{{ shipping_address2|default:"" }}</textarea>
+       {% endif %}
 
         <button type="submit" class="btn-register">Edit Profile</button>
       </form>

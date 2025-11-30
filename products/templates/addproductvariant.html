@@ -76,7 +76,7 @@
                 <!-- Row 2: Color + Size -->
                 <div class="form-row">
                     <div class="form-group half-width">
-                        <input type="text" name="color" placeholder="Color" value="{{color}}">
+                        <input type="text" name="color" placeholder="Color (e.g., White, Black, Red)" value="{{color}}">
                         <span class="error-message" id="color_error"></span>
                     </div>
 
@@ -96,6 +96,26 @@
                     <div class="form-group half-width">
                         <input type="text" name="sku" placeholder="SKU (optional)" value="{{sku}}">
                         <span class="error-message" id="sku_error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 4: Main Image -->
+                {% if edit_mode and variant.main_image %}
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Current Main Image:</label><br>
+                        <img src="{{ variant.main_image.url }}" width="150" style="border-radius:5px;">
+                    </div>
+                </div>
+                {% endif %}
+                {% if edit_mode %}
+                    <strong>Upload Main Product Image In Order To Update:</strong><br>
+                {% endif %}
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Main Product Image</label>
+                        <input type="file" name="main_image">
+                        <span class="error-message" id="main_image_error"></span>
                     </div>
                 </div>
 
@@ -134,7 +154,7 @@
                         </div>
                 </div>
 
-                <!-- Row 4: Top + Right -->
+                <!-- Row 5: Top + Right -->
                 <div class="form-row">
                     <div class="form-group half-width">
                         <label>Top Image</label>
@@ -148,7 +168,7 @@
                     </div>
                 </div>
 
-                <!-- Row 5: Left + Back -->
+                <!-- Row 6: Left + Back -->
                 <div class="form-row">
                     <div class="form-group half-width">
                         <label>Left Image</label>

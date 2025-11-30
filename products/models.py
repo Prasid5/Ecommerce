@@ -93,12 +93,14 @@ class ProductVariant(models.Model):
 
     sku = models.CharField(max_length=100, unique=True, blank=True, default="sku")
 
-    # Images (4 angles)
+    # Images (5 angles)
+    main_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
     top_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
     right_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
     left_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
     back_image = models.ImageField(upload_to='images/variants/', blank=True, null=True)
 
     def __str__(self):
-        return f"{self.product.product_name} - {self.variant_name} ({self.color}, {self.size})"
+        return f"{self.product.product_name} - {self.color}"
+
 

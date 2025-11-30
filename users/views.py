@@ -125,6 +125,8 @@ def editprofile(request):
         "user_id": user.id,
         "address":user.address,
         "phone":user.phone,
+        'shipping_address1':user.shipping_address1,
+        'shipping_address2':user.shipping_address2,
     }
 
     if request.method == "POST":
@@ -132,6 +134,14 @@ def editprofile(request):
         user=User.objects.filter(id=user.id).first()
         password = request.POST.get('password', '').strip()
         phone = request.POST.get('phone', '').strip()
+        if not request.user.is_staff:
+            shipping_address1=request.POST.get('shipping_address1').strip()
+            shipping_address2=request.POST.get('shipping_address2').strip()
+
+        if not request.user.is_staff:
+            if not shipping_address1 or not shipping_address2:
+                messages.error(request, "Both shipping address are required.")
+                return render(request, 'editprofile.html', context)
 
         if password and not len(password)>=6:
             messages.error(request, "Password must be atleast 6 characters long.")
@@ -145,6 +155,10 @@ def editprofile(request):
             messages.error(request, "Phone already exists.")
             return render(request,'editprofile.html',context)
         
+        if not request.user.is_staff:
+            user.shipping_address1=shipping_address1
+            user.shipping_address2=shipping_address2
+
         if password:
             user.password=password  # always use set_password
 
@@ -289,6 +303,9 @@ def edituser(request):
             password = request.POST.get('password', '').strip()
             address = request.POST.get('address', '').strip()
             phone = request.POST.get('phone', '').strip()
+            if not request.user.is_staff:
+                shipping_address1=request.POST.get('shipping_address1').strip()
+                shipping_address2=request.POST.get('shipping_address2').strip()
 
             context = {
                 'user_id':user_id,
@@ -296,12 +313,19 @@ def edituser(request):
                 'email': email,
                 'address': address,
                 'phone': phone,
+                'shipping_address1':shipping_address1,
+                'shipping_address2':shipping_address2,
             }
 
             # === Validation checks ===
             if not username or not email or not address or not phone:
                 messages.error(request, "All fields are required.")
                 return render(request, 'edituser.html', context)
+            
+            if not request.user.is_staff:
+                if not shipping_address1 or not shipping_address2:
+                    messages.error(request, "Both shipping address are required.")
+                    return render(request, 'edituser.html', context)
             
             elif not re.match(no_space,username):
                 messages.error(request, "Username cannot contain spaces.")
@@ -336,6 +360,9 @@ def edituser(request):
                     user.password=password
                 user.address= address
                 user.phone= phone
+                if not user.is_staff:
+                    user.shipping_address1=shipping_address1
+                    user.shipping_address2=shipping_address2
                 user.save()
             if user.is_staff:
                 messages.success(request, "Admin edited successfully.")

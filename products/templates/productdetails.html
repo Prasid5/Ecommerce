@@ -4,38 +4,53 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
 <link rel="canonical" href="{% url 'productdetails' product.slug %}" />
+<style>
+  .size-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 4px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
+.size-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.size-btn.selected {
+  color: black;
+  border-color: #000000ff;
+}
+
+</style>
 <main>
 <div class="product-detail-container">
 
   <div class="product-gallery">
 
     <div class="main-image">
-      {% if product.main_image %}
-        <img src="{{ product.main_image.url }}" alt="{{ product.name }}">
+      {% if first_variant.main_image %}
+        <img src="{{ first_variant.main_image.url }}" alt="{{ product.product_name }}">
       {% else %}
         <img src="{% static 'images/sneakeelogo.png' %}" alt="Main Product">
       {% endif %}
     </div>
 
     <div class="thumbnail-row">
-      {% for variant in product.variants.all %}
-        {% if variant.front_image %}
-          <img src="{{ variant.front_image.url }}" alt="Front - {{ variant.variant_name }}">
-        {% endif %}
-        {% if variant.top_image %}
-          <img src="{{ variant.top_image.url }}" alt="Top - {{ variant.variant_name }}">
-        {% endif %}
-        {% if variant.right_image %}
-          <img src="{{ variant.right_image.url }}" alt="Right - {{ variant.variant_name }}">
-        {% endif %}
-        {% if variant.left_image %}
-          <img src="{{ variant.left_image.url }}" alt="Left - {{ variant.variant_name }}">
-        {% endif %}
-        {% if variant.back_image %}
-          <img src="{{ variant.back_image.url }}" alt="Back - {{ variant.variant_name }}">
-        {% endif %}
-      {% endfor %}
+      {% if first_variant.top_image %}
+        <img src="{{ first_variant.top_image.url }}" alt="Top - {{ first_variant.variant_name }}">
+      {% endif %}
+      {% if first_variant.right_image %}
+        <img src="{{ first_variant.right_image.url }}" alt="Right - {{ first_variant.variant_name }}">
+      {% endif %}
+      {% if first_variant.left_image %}
+        <img src="{{ first_variant.left_image.url }}" alt="Left - {{ first_variant.variant_name }}">
+      {% endif %}
+      {% if first_variant.back_image %}
+        <img src="{{ first_variant.back_image.url }}" alt="Back - {{ first_variant.variant_name }}">
+      {% endif %}
     </div>
     
   </div>
@@ -46,21 +61,22 @@
     <h1>{{ product.product_name }}</h1>
     <p class="price">NPR {{ product.base_price|floatformat:2 }}</p>
     <ul class="product-specs">
-      {% for variant in product.variants.all %}
-
-        <li><strong>SKU:</strong>{{ variant.sku }}{% if not forloop.last %}, {% endif %}</li>
-        <li><strong>Color:</strong>{{ variant.color }}</li>
-        <li><strong>Material:</strong> {{ product.material }}</li>
-        <li><strong>Stock:</strong> {{ variant.stock }}</li>
-        <li><strong>Categories:</strong> {{product.category.category_name}}</li>
-      {% endfor %}
+      <li><strong>SKU:</strong> {{ first_variant.sku }}</li>
+      <li><strong>Color:</strong> {{ first_variant.color }}</li>
+      <li><strong>Material:</strong> {{ product.material }}</li>
+      <li><strong>Stock:</strong> {{ first_variant.stock }}</li>
+      <li><strong>Categories:</strong> {{ product.category.category_name }}</li>
     </ul>
+
 
     <div class="size-options">
       <p><strong>Size:</strong></p>
       <div class="sizes">
-        {% for variant in product.variants.all %}
-          <span>{{ variant.size }}</span>
+        {% for variant in product.productvariants.all %}
+          {% if variant.variant_name == first_variant.variant_name and variant.color == first_variant.color %}
+            <input type="radio" name="size" id="size-{{ variant.id }}" value="{{ variant.sku }}" style="display:none;">
+            <label for="size-{{ variant.id }}" class="size-btn">{{ variant.size }}</label>
+          {% endif %}
         {% endfor %}
       </div>
     </div>
@@ -84,14 +100,19 @@
       </p>
     </div> {% endcomment %}
 
-    <div class="other-variants">
-      <label for="product-variants"><strong>Variants:</strong></label>
-      <select id="product-variants" name="product-variants" class="variant-select">
-        {% for variant in product.variants.all %}
-          <option value="{{ variant.variant_name }}">{{ variant.variant_name }}</option>
-        {% endfor %}
-      </select>
-    </div>
+<div class="other-variants">
+  <label for="product-variants"><strong>Variants:</strong></label>
+  <select id="product-variants" name="product-variants" class="variant-select">
+    {% for variant in product.productvariants.all %}
+      {% ifchanged variant.variant_name %}
+        <option value="{{ variant.id }}" {% if variant.id == first_variant.id %}selected{% endif %}>
+          {{ variant.variant_name }}
+        </option>
+      {% endifchanged %}
+    {% endfor %}
+  </select>
+</div>
+
 
     <div class="description">
       <strong>Description:</strong>
@@ -105,6 +126,25 @@
 </main>
 
 <script>
+    const sizeButtons = document.querySelectorAll('.size-btn');
+
+  sizeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove 'selected' from all buttons
+      sizeButtons.forEach(b => b.classList.remove('selected'));
+      // Add 'selected' to clicked button
+      btn.classList.add('selected');
+      // Check the corresponding hidden radio input
+      const input = document.getElementById(btn.getAttribute('for'));
+      input.checked = true;
+    });
+  });
+
+// Optional: pre-select first size
+if(sizeButtons.length > 0) {
+  sizeButtons[0].classList.add('selected');
+  document.getElementById(sizeButtons[0].getAttribute('for')).checked = true;
+}
   function changeQty(change) {
     let qty = document.getElementById('qty');
     let value = parseInt(qty.value);

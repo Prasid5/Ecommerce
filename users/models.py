@@ -21,7 +21,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email=models.EmailField(unique=True)
     phone=models.CharField(max_length=10,blank=True)
     address=models.CharField(max_length=100, blank=True)
-
+    shipping_address1 = models.TextField(blank=True)
+    shipping_address2 = models.TextField(blank=True)
     is_active=models.BooleanField(default=True)
     is_staff=models.BooleanField(default=False)
 

@@ -29,7 +29,7 @@ body {
   width: 100%;
   max-width: 400px;
   background: #ffffff;
-  padding: 40px 30px;
+  padding: 20px 30px;
   border-radius: 15px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
 }
@@ -48,6 +48,20 @@ body {
   border-radius: 8px;
   font-size: 1rem;
   box-sizing: border-box;
+}
+.user-form textarea{
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.user-form textarea {
+    resize: vertical;
+    min-height: 80px;
 }
 
 .btn-register {
