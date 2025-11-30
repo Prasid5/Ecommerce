@@ -4,8 +4,9 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
 <link rel="canonical" href="{% url 'productdetails' product.slug %}" />
+
 <style>
-  .size-btn {
+.size-btn {
   display: inline-block;
   padding: 8px 12px;
   margin: 4px;
@@ -20,16 +21,17 @@
 }
 
 .size-btn.selected {
-  color: black;
-  border-color: #000000ff;
+  color: white;
+  background-color: #007bff;
+  border-color: #007bff;
 }
-
 </style>
+
 <main>
 <div class="product-detail-container">
 
+  <!-- Product Gallery -->
   <div class="product-gallery">
-
     <div class="main-image">
       {% if first_variant.main_image %}
         <img src="{{ first_variant.main_image.url }}" alt="{{ product.product_name }}">
@@ -52,23 +54,22 @@
         <img src="{{ first_variant.back_image.url }}" alt="Back - {{ first_variant.variant_name }}">
       {% endif %}
     </div>
-    
   </div>
 
+  <!-- Product Info -->
   <div class="product-info">
-    {% comment %} <p class="breadcrumb">Home / Fashion / Men / Shoes / LaceUp /</p> {% endcomment %}
-    {% comment %} <h1>{{ product.variants.first.variant_name }}</h1> {% endcomment %}
     <h1>{{ product.product_name }}</h1>
     <p class="price">NPR {{ product.base_price|floatformat:2 }}</p>
+
     <ul class="product-specs">
-      <li><strong>SKU:</strong> {{ first_variant.sku }}</li>
-      <li><strong>Color:</strong> {{ first_variant.color }}</li>
+      <li><strong>SKU:</strong> <span id="sku-display">{{ first_variant.sku }}</span></li>
+      <li><strong>Color:</strong> <span id="color-display">{{ first_variant.color }}</span></li>
       <li><strong>Material:</strong> {{ product.material }}</li>
-      <li><strong>Stock:</strong> {{ first_variant.stock }}</li>
+      <li><strong>Stock:</strong> <span id="stock-status">{% if first_variant.inventorystocks.quantity <= 0 %}Not Available{% else %}Available{% endif %}</span></li>
       <li><strong>Categories:</strong> {{ product.category.category_name }}</li>
     </ul>
 
-
+    <!-- Size Options -->
     <div class="size-options">
       <p><strong>Size:</strong></p>
       <div class="sizes">
@@ -81,76 +82,174 @@
       </div>
     </div>
 
+    <!-- Product Action -->
     <div class="product-action">
       <div class="quantity-box">
-        <button onclick="changeQty(-1)">-</button>
+        <button type="button" onclick="changeQty(-1)">-</button>
         <input type="text" value="1" id="qty" readonly>
-        <button onclick="changeQty(1)">+</button>
+        <button type="button" onclick="changeQty(1)">+</button>
       </div>
-      <button class="add-to-cart">ADD TO CART</button>
+      <form action="" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="variant_sku" id="selected-variant-sku" value="{{ first_variant.sku }}">
+        <input type="hidden" name="quantity" id="selected-quantity" value="1">
+        <button class="add-to-cart" type="submit">ADD TO CART</button>
+      </form>
       <button class="buy-now">BUY NOW</button>
     </div>
 
-    {% comment %} <div class="meta-info">
-      <p><strong>SKU:</strong> 
-        {% for variant in product.variants.all %}
-          {% if not forloop.first %}, {% endif %}
-          {{ variant.sku }}
+    <!-- Other Variants Dropdown -->
+    <div class="other-variants">
+      <label for="product-variants"><strong>Variants:</strong></label>
+      <select id="product-variants" name="product-variants" class="variant-select">
+        {% for variant in product.productvariants.all %}
+          {% ifchanged variant.variant_name %}
+            <option 
+              value="{{ variant.id }}"
+              {% if variant.id == first_variant.id %}selected{% endif %}
+              data-main="{{ variant.main_image.url|default:'' }}"
+              data-top="{{ variant.top_image.url|default:'' }}"
+              data-right="{{ variant.right_image.url|default:'' }}"
+              data-left="{{ variant.left_image.url|default:'' }}"
+              data-back="{{ variant.back_image.url|default:'' }}"
+              data-color="{{ variant.color|escapejs }}"
+            >
+              {{ variant.variant_name }}
+            </option>
+          {% endifchanged %}
         {% endfor %}
-      </p>
-    </div> {% endcomment %}
+      </select>
+    </div>
 
-<div class="other-variants">
-  <label for="product-variants"><strong>Variants:</strong></label>
-  <select id="product-variants" name="product-variants" class="variant-select">
-    {% for variant in product.productvariants.all %}
-      {% ifchanged variant.variant_name %}
-        <option value="{{ variant.id }}" {% if variant.id == first_variant.id %}selected{% endif %}>
-          {{ variant.variant_name }}
-        </option>
-      {% endifchanged %}
-    {% endfor %}
-  </select>
-</div>
-
-
+    <!-- Description -->
     <div class="description">
       <strong>Description:</strong>
-      <p class="text"> 
-        {{product.description}} 
-      </p>
+      <p class="text">{{ product.description }}</p>
     </div>
   </div>
-  
 </div>
 </main>
 
-<script>
-    const sizeButtons = document.querySelectorAll('.size-btn');
+<!-- Variant Data JSON -->
+<script type="application/json" id="variants-data">
+[
+{% for v in product.productvariants.all %}
+  {
+    "id": {{ v.id }},
+    "variant_name": "{{ v.variant_name|escapejs }}",
+    "color": "{{ v.color|escapejs }}",
+    "size": "{{ v.size|escapejs }}",
+    "sku": "{{ v.sku|escapejs }}",
+    "quantity": {{ v.inventorystocks.quantity|default:0 }},
+    "main_image": "{{ v.main_image.url|default:'' }}",
+    "top_image": "{{ v.top_image.url|default:'' }}",
+    "right_image": "{{ v.right_image.url|default:'' }}",
+    "left_image": "{{ v.left_image.url|default:'' }}",
+    "back_image": "{{ v.back_image.url|default:'' }}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script>
 
-  sizeButtons.forEach(btn => {
+<script>
+const variantSelect = document.getElementById('product-variants');
+const variantData = JSON.parse(document.getElementById('variants-data').textContent);
+const skuInput = document.getElementById('selected-variant-sku');
+const qtyInput = document.getElementById('selected-quantity');
+
+// Update Stock and SKU
+function updateStockAndSKU(sku){
+  const stockSpan = document.getElementById('stock-status');
+  const skuDisplay = document.getElementById('sku-display');
+  const variant = variantData.find(v => v.sku === sku);
+  if(!variant) return;
+  stockSpan.textContent = (variant.quantity <= 0) ? 'Not Available' : 'Available';
+  skuDisplay.textContent = variant.sku;
+  skuInput.value = variant.sku;
+}
+
+// Initialize size buttons
+function initSizeButtons() {
+  const allBtns = document.querySelectorAll('.size-btn');
+  allBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Remove 'selected' from all buttons
-      sizeButtons.forEach(b => b.classList.remove('selected'));
-      // Add 'selected' to clicked button
+      allBtns.forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      // Check the corresponding hidden radio input
       const input = document.getElementById(btn.getAttribute('for'));
       input.checked = true;
+      updateStockAndSKU(input.value);
     });
   });
 
-// Optional: pre-select first size
-if(sizeButtons.length > 0) {
-  sizeButtons[0].classList.add('selected');
-  document.getElementById(sizeButtons[0].getAttribute('for')).checked = true;
-}
-  function changeQty(change) {
-    let qty = document.getElementById('qty');
-    let value = parseInt(qty.value);
-    if (value + change > 0) {
-      qty.value = value + change;
-    }
+  if(allBtns.length > 0){
+    allBtns[0].click();
   }
+}
+initSizeButtons();
+
+// Quantity adjustment
+function changeQty(change) {
+  let value = parseInt(document.getElementById('qty').value);
+  if (value + change > 0) {
+    document.getElementById('qty').value = value + change;
+    qtyInput.value = value + change;
+  }
+}
+
+// Handle variant dropdown change
+variantSelect.addEventListener('change', function() {
+  const selectedOption = this.selectedOptions[0];
+  const selectedName = selectedOption.text;
+  const selectedColor = selectedOption.dataset.color;
+
+  // Filter variants with same name + color
+  const filteredVariants = variantData.filter(v => v.variant_name === selectedName && v.color === selectedColor);
+  if(filteredVariants.length === 0) return;
+  const firstVar = filteredVariants[0];
+
+  // Update main image
+  const mainImg = document.querySelector('.main-image img');
+  mainImg.src = firstVar.main_image || "{% static 'images/sneakeelogo.png' %}";
+
+  // Update thumbnails
+  const thumbs = ['top_image','right_image','left_image','back_image'];
+  const thumbnailRow = document.querySelector('.thumbnail-row');
+  thumbnailRow.innerHTML = '';
+  thumbs.forEach(key => {
+    if(firstVar[key]){
+      const img = document.createElement('img');
+      img.src = firstVar[key];
+      img.alt = key.replace('_image','') + ' - ' + firstVar.variant_name;
+      thumbnailRow.appendChild(img);
+    }
+  });
+
+  // Update product specs
+  document.getElementById('color-display').textContent = firstVar.color;
+  updateStockAndSKU(firstVar.sku);
+
+  // Update sizes
+  const sizesDiv = document.querySelector('.sizes');
+  sizesDiv.innerHTML = '';
+  filteredVariants.forEach(v => {
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'size';
+    input.id = `size-${v.id}`;
+    input.value = v.sku;
+    input.style.display = 'none';
+
+    const label = document.createElement('label');
+    label.htmlFor = `size-${v.id}`;
+    label.classList.add('size-btn');
+    label.textContent = v.size;
+    sizesDiv.appendChild(input);
+    sizesDiv.appendChild(label);
+  });
+
+  // Re-initialize size buttons after update
+  initSizeButtons();
+});
 </script>
+
 {% endblock %}
