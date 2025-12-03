@@ -36,15 +36,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     
 class ShippingAddress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    contact_person = models.CharField(max_length=50, default="user")
+    contact_number = models.CharField(max_length=20)
     location_of = models.CharField(max_length=50)
-    province = models.CharField(max_length=100)
+    province = models.CharField(max_length=50)
     district = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
-    address = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
     landmark = models.CharField(max_length=255)
-    streetorhouse_no = models.CharField(max_length=255)
-    contact = models.CharField(max_length=20)
+    location_description = models.TextField(blank=True, null=True,default="Location")
 
     created_at = models.DateTimeField(auto_now_add=True)
 

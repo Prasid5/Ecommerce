@@ -24,6 +24,18 @@
         <form method="POST">
             {% csrf_token %}
             <input type="hidden" name="formshippingaddress_id" value="{{shippingaddress.id|default:''}}">
+
+            <!-- Contact Person-->
+            <div>
+                <label>Contact Person</label>
+                <input type="text" name="contact_person"placeholder="Please enter your contact person" value="{{ shippingaddress.contact_person|default:request.user.username }}">
+            </div>
+
+            <!-- Contact Number-->
+            <div>
+                <label>Contact Number</label><input type="text" name="contact_number" placeholder="Please enter your contact number"value="{{ shippingaddress.contact_number|default:request.user.phone }}">
+            </div>
+
             <!-- Location -->
             <div>
                 <label>Location of</label>
@@ -66,12 +78,12 @@
                        value="{{ shippingaddress.city|default:'' }}">
             </div>
 
-            <!-- Address -->
+            <!-- Location -->
             <div>
-                <label>Address</label>
-                <input type="text" name="address"
+                <label>Location</label>
+                <input type="text" name="location"
                        placeholder="For Example: Street #123, ABC Road"
-                       value="{{ shippingaddress.address|default:'' }}">
+                       value="{{ shippingaddress.location|default:'' }}">
             </div>
 
             <!-- Landmark -->
@@ -84,19 +96,11 @@
 
             <!-- Street / House No -->
             <div>
-                <label>Street or House No.</label>
-                <input type="text" name="streetorhouse_no"
-                       placeholder="Please enter"
-                       value="{{ shippingaddress.streetorhouse_no|default:'' }}">
+                <label>Location Description</label>
+                <textarea name="location_description" placeholder="Description">{{ shippingaddress.location_description|default:'' }}</textarea>
             </div>
 
-            <!-- Contact -->
-            <div>
-                <label>Contact Number</label>
-                <input type="text" name="contact"
-                       placeholder="Please enter your contact number"
-                       value="{{ shippingaddress.contact|default:'' }}">
-            </div>
+
 
             <!-- Buttons -->
             <div class="form-actions">

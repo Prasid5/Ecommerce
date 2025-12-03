@@ -1,9 +1,9 @@
 import re
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -60,7 +60,7 @@ def signup(request):
             messages.error(request, "Email already registered.")
             return render(request, 'signup.html', context)
         
-        user= User.objects.create_user(
+        user= User.objects.create_user(#create_user hash password automatically
             username=username,
             email=email,
             password=password,
@@ -302,7 +302,7 @@ def edituser(request):
                 user.username= username
                 user.email= email
                 if password:
-                    user.password=password
+                    user.set_password(password)
                 user.address= address
                 user.phone= phone
                 if not user.is_staff:
@@ -347,80 +347,11 @@ def deleteuser(request):
 
 @never_cache
 @login_required
-def shippingaddress(request):
-    user = request.user
-
-    if request.method == "POST" and 'btn-save' in request.POST:
-            formshippingaddress_id = request.POST.get('formshippingaddress_id','').strip()
-            location_of = request.POST.get('location_of', '').strip()
-            province = request.POST.get('province', '').strip()
-            district = request.POST.get('district', '').strip()
-            city = request.POST.get('city', '').strip()
-            address_field = request.POST.get('address', '').strip()
-            landmark = request.POST.get('landmark', '').strip()
-            streetorhouse_no = request.POST.get('streetorhouse_no', '').strip()
-            contact = request.POST.get('contact', '').strip()
-            
-            if formshippingaddress_id:
-                # Update existing address
-                shipping_address = ShippingAddress.objects.filter(id=formshippingaddress_id, user=user).first()
-                if shipping_address:
-                    shipping_address.location_of = location_of
-                    shipping_address.province = province
-                    shipping_address.district = district
-                    shipping_address.city = city
-                    shipping_address.address = address_field
-                    shipping_address.landmark = landmark
-                    shipping_address.streetorhouse_no = streetorhouse_no
-                    shipping_address.contact = contact
-                    shipping_address.save()
-                    messages.success(request, "Shipping address updated successfully.")
-                else:
-                    messages.error(request, "Shipping address not found.")
-                    return redirect('editprofile')
-            else:
-                # Add new address
-                if ShippingAddress.objects.filter(user=user).count() >= 2:
-                    messages.error(request, "You can only have up to 2 shipping addresses.")
-                    return redirect('editprofile')
-                ShippingAddress.objects.create(
-                    user=user,
-                    location_of=location_of,
-                    province=province,
-                    district=district,
-                    city=city,
-                    address=address_field,
-                    landmark=landmark,
-                    streetorhouse_no=streetorhouse_no,
-                    contact=contact
-                )
-                messages.success(request, "Shipping address added successfully.")
-            
-            return redirect('editprofile')
-
-        # --- EDIT BUTTON ---
-    elif request.method == "POST":
-        shippingaddress_id = request.POST.get('shippingaddress_id')
-        shipping_address = ShippingAddress.objects.filter(id=shippingaddress_id, user=user).first()
-        if not shipping_address:
-            messages.error(request, "Shipping address not found.")
-            return redirect('editprofile')
-        return render(request, 'shippingaddress.html', {'shippingaddress': shipping_address})
-
-    # --- GET request (Add new shipping address) ---
-    context = {'shippingaddress': None}
-    return render(request, 'shippingaddress.html', context)
-
-
-
-@never_cache
-@login_required
 def editprofile(request):
     user = request.user  # already the authenticated user
     phone_pattern1 = r"^98\d{8}$"
     phone_pattern2 = r"^97\d{8}$"
-    if ShippingAddress.objects.filter(user=user).exists():
-        shipping_address = ShippingAddress.objects.filter(user=user).all()
+    shipping_address = ShippingAddress.objects.filter(user=user).all()
     context = {
         "username": user.username,
         "email": user.email,
@@ -449,7 +380,7 @@ def editprofile(request):
             return render(request,'editprofile.html',context)
         
         if password:
-            user.password=password  # always use set_password
+            user.set_password(password) # always use set_password
 
         if phone:
             user.phone = phone  # assuming you have a Profile model with phone
@@ -460,3 +391,84 @@ def editprofile(request):
         return redirect("editprofile")
     
     return render(request, 'editprofile.html', context)
+
+
+@never_cache
+@login_required
+def shippingaddress(request):
+    user = request.user
+
+    # ---------------------- SAVE BUTTON (Add or Update) ----------------------
+    if request.method == "POST" and 'btn-save' in request.POST:
+
+        formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
+
+        # New Fields
+        contact_person = request.POST.get('contact_person', '').strip()
+        contact_number = request.POST.get('contact_number', '').strip()
+        location_of = request.POST.get('location_of', '').strip()
+        province = request.POST.get('province', '').strip()
+        district = request.POST.get('district', '').strip()
+        city = request.POST.get('city', '').strip()
+        location = request.POST.get('location', '').strip()
+        landmark = request.POST.get('landmark', '').strip()
+        location_description = request.POST.get('location_description', '').strip()
+
+        # ---------- UPDATE EXISTING ----------
+        if formshippingaddress_id:
+            shipping_address = ShippingAddress.objects.filter(id=formshippingaddress_id, user=user).first()
+
+            if shipping_address:
+                shipping_address.contact_person = contact_person
+                shipping_address.contact_number = contact_number
+                shipping_address.location_of = location_of
+                shipping_address.province = province
+                shipping_address.district = district
+                shipping_address.city = city
+                shipping_address.location = location
+                shipping_address.landmark = landmark
+                shipping_address.location_description = location_description
+                shipping_address.save()
+
+                messages.success(request, "Shipping address updated successfully.")
+            else:
+                messages.error(request, "Shipping address not found.")
+                return redirect('editprofile')
+
+        # ---------- ADD NEW ----------
+        else:
+            if ShippingAddress.objects.filter(user=user).count() >= 2:
+                messages.error(request, "You can only have up to 2 shipping addresses.")
+                return redirect('editprofile')
+
+            ShippingAddress.objects.create(
+                user=user,
+                contact_person=contact_person,
+                contact_number=contact_number,
+                location_of=location_of,
+                province=province,
+                district=district,
+                city=city,
+                location=location,
+                landmark=landmark,
+                location_description=location_description
+            )
+
+            messages.success(request, "Shipping address added successfully.")
+
+        return redirect('editprofile')
+
+    # ---------------------- EDIT BUTTON CLICKED ----------------------
+    elif request.method == "POST":
+        shippingaddress_id = request.POST.get('shippingaddress_id')
+
+        shipping_address = ShippingAddress.objects.filter(id=shippingaddress_id, user=user).first()
+
+        if not shipping_address:
+            messages.error(request, "Shipping address not found.")
+            return redirect('editprofile')
+
+        return render(request, 'shippingaddress.html', {"shippingaddress": shipping_address})
+
+    # ---------------------- GET REQUEST (Add New) ----------------------
+    return render(request, 'shippingaddress.html', {"shippingaddress": None})

@@ -44,13 +44,19 @@ main {
       font-weight: 500;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
       font-size: 14px;
       box-sizing: border-box;
+    }
+
+    textarea {
+        width: 100%;
+        resize: vertical;
+        min-height: 80px;
     }
 
     /* Full-width fields */
@@ -93,7 +99,7 @@ main {
     
     /* Footer buttons */
     .form-actions {
-        grid-column: span 2;
+      grid-column: span 2;
       display: flex;
       justify-content: flex-end;
       gap: 15px;
