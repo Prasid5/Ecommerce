@@ -21,8 +21,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email=models.EmailField(unique=True)
     phone=models.CharField(max_length=10,blank=True)
     address=models.CharField(max_length=100, blank=True)
-    shipping_address1 = models.TextField(blank=True)
-    shipping_address2 = models.TextField(blank=True)
     is_active=models.BooleanField(default=True)
     is_staff=models.BooleanField(default=False)
 
@@ -35,3 +33,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+class ShippingAddress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    location_of = models.CharField(max_length=50)
+    province = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    address = models.CharField(max_length=255)
+    landmark = models.CharField(max_length=255)
+    streetorhouse_no = models.CharField(max_length=255)
+    contact = models.CharField(max_length=20)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.location_of} - {self.city}"

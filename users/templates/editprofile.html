@@ -8,6 +8,33 @@
   .form-container{
     margin:10px 0px;
   }
+  .shipping-address{
+  display: flex;
+  align-items:center;
+  justify-content:space-between;
+  width: 100%;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  }
+
+  .btn-shipping-address{
+    background-color: #100d22;
+    color: #fff;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #100d22;
+    border-radius: 8px;
+  }
+
+  .btn-shipping-address:hover{
+    background-color: #fff;
+    color: #100d22;
+    padding: 5px;
+  }
 </style>
   <div class="form-container">
     <div class="form-box">
@@ -32,16 +59,36 @@
         <input type="text" name="address" placeholder="Address" value="{{address}}" disabled/>
         <input type="tel" name="phone" placeholder="Phone Number" value="{{phone}}"/>
         {% if not request.user.is_staff%}
-          <textarea name="shipping_address1" placeholder="Shipping Address 1">{{ shipping_address1|default:"" }}</textarea>
-          <textarea name="shipping_address2" placeholder="Shipping Address 2">{{ shipping_address2|default:"" }}</textarea>
+            {% if shippingaddress %}
+              {% for address in shippingaddress %}
+                <div class="shipping-address">
+                  <div>Shipping Address {{forloop.counter}}</div>
+                  <button type="button" class="btn-shipping-address" onclick="submitShippingForm('{{address.id}}');">
+                    Edit
+                  </button>
+                </div>
+              {% endfor %}
+            {% else %}
+                <div class="shipping-address">
+                  <div>Shipping Address 1</div> <button type="button" class="btn-shipping-address" onclick="window.location.href='{% url 'shippingaddress' %}'">Add</button>
+                </div>
+            {% endif%}
        {% endif %}
 
         <button type="submit" class="btn-register">Edit Profile</button>
       </form>
     </div>
+      <form id="shipping-form" action="{% url 'shippingaddress' %}" method="POST" style="display:none;">
+        {% csrf_token %}
+        <input type="hidden" name="shippingaddress_id" id="shipping-id" value="">
+      </form>
   </div>
 
 <script>
+  function submitShippingForm(addressId) {
+  document.getElementById('shipping-id').value = addressId;
+  document.getElementById('shipping-form').submit();
+}
   // auto hide messages after 4 seconds
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');

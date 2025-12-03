@@ -1,0 +1,117 @@
+{% extends 'customer/base.html' %}
+{% block title %}Sneakee | Shipping Address{% endblock %}
+{% load static%}
+{% block content%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/shippingaddress.css' %}">
+</head>
+<body>
+  <main>
+    <div class="form-box">
+
+        <h2>
+            {% if shippingaddress %}
+                Edit Shipping Address
+            {% else %}
+                Add New Shipping Address
+            {% endif %}
+        </h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="formshippingaddress_id" value="{{shippingaddress.id|default:''}}">
+            <!-- Location -->
+            <div>
+                <label>Location of</label>
+                <select name="location_of">
+                    <option value="Home" {% if shippingaddress and shippingaddress.location_of == "Home" %}selected{% endif %}>Home</option>
+                    <option value="Office" {% if shippingaddress and shippingaddress.location_of == "Office" %}selected{% endif %}>Office</option>
+                    <option value="Others" {% if shippingaddress and shippingaddress.location_of == "Others" %}selected{% endif %}>Others</option>
+                </select>
+            </div>
+
+            <!-- Province -->
+            <div>
+                <label>Province</label>
+                <select name="province">
+                    <option disabled {% if not shippingaddress %}selected{% endif %}>Please choose your province</option>
+
+                    <option value="Koshi" {% if shippingaddress and shippingaddress.province == "Koshi" %}selected{% endif %}>Koshi</option>
+                    <option value="Madhesh" {% if shippingaddress and shippingaddress.province == "Madhesh" %}selected{% endif %}>Madhesh</option>
+                    <option value="Bagmati" {% if shippingaddress and shippingaddress.province == "Bagmati" %}selected{% endif %}>Bagmati</option>
+                    <option value="Gandaki" {% if shippingaddress and shippingaddress.province == "Gandaki" %}selected{% endif %}>Gandaki</option>
+                    <option value="Lumbini" {% if shippingaddress and shippingaddress.province == "Lumbini" %}selected{% endif %}>Lumbini</option>
+                    <option value="Karnali" {% if shippingaddress and shippingaddress.province == "Karnali" %}selected{% endif %}>Karnali</option>
+                    <option value="Sudurpashchim" {% if shippingaddress and shippingaddress.province == "Sudurpashchim" %}selected{% endif %}>Sudurpashchim</option>
+                </select>
+            </div>
+
+            <!-- District -->
+            <div>
+                <label>District</label>
+                <input type="text" name="district"
+                       placeholder="Please enter"
+                       value="{{ shippingaddress.district|default:'' }}">
+            </div>
+
+            <!-- City -->
+            <div>
+                <label>City</label>
+                <input type="text" name="city"
+                       placeholder="Please enter"
+                       value="{{ shippingaddress.city|default:'' }}">
+            </div>
+
+            <!-- Address -->
+            <div>
+                <label>Address</label>
+                <input type="text" name="address"
+                       placeholder="For Example: Street #123, ABC Road"
+                       value="{{ shippingaddress.address|default:'' }}">
+            </div>
+
+            <!-- Landmark -->
+            <div>
+                <label>Landmark</label>
+                <input type="text" name="landmark"
+                       placeholder="Please enter"
+                       value="{{ shippingaddress.landmark|default:'' }}">
+            </div>
+
+            <!-- Street / House No -->
+            <div>
+                <label>Street or House No.</label>
+                <input type="text" name="streetorhouse_no"
+                       placeholder="Please enter"
+                       value="{{ shippingaddress.streetorhouse_no|default:'' }}">
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <label>Contact Number</label>
+                <input type="text" name="contact"
+                       placeholder="Please enter your contact number"
+                       value="{{ shippingaddress.contact|default:'' }}">
+            </div>
+
+            <!-- Buttons -->
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'editprofile' %}'">
+                    CANCEL
+                </button>
+
+                <button type="submit" class="btn-save" name="btn-save">
+                    SAVE
+                </button>
+            </div>
+
+        </form>
+    </div>
+</main>
+</body>
+</html>
+{% endblock %}

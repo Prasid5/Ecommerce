@@ -59,7 +59,7 @@
         <!-- Right: Cart and Account Links -->
         <div class="nav-right">
             
-            <a href="{% url 'cart' %}" class="nav-right-option">🛒 Add to Cart</a>
+            <a href="{% url 'cart_view' %}" class="nav-right-option">🛒 Add to Cart</a>
             
             {% if user.is_authenticated %}
                 <div class="dropdown" id="profileDropdown">

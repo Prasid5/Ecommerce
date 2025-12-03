@@ -12,6 +12,18 @@ from django.shortcuts import render, get_object_or_404
 from .models import Product
 
 def productdetails(request, slug):
+    product = Product.objects.filter(slug=slug).first()
+    variants = product.productvariants.all().order_by('id')
+    
+    context = {
+        'product': product,
+        'variants': variants,
+    }
+    return render(request, 'productdetails.html', context)
+
+
+'''
+def productdetails(request, slug):
     """
     Fetch product by slug
     """
@@ -23,6 +35,8 @@ def productdetails(request, slug):
         'first_variant': first_variant,  # pass first variant separately
     }
     return render(request, 'productdetails.html', context)
+'''
+
 
 
 def brand_view(request, brand_slug):

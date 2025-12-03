@@ -1,0 +1,254 @@
+{% extends 'customer/base.html' %}
+{% block title %}Sneakee | Product Detail{% endblock %}
+{% block content %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
+<link rel="canonical" href="{% url 'productdetails' product.slug %}" />
+
+<style>
+.size-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  margin: 4px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.size-btn:hover { background-color: #f0f0f0; }
+.size-btn.selected {
+  color: white;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+</style>
+
+<main>
+<div class="product-detail-container">
+
+  <!-- Product Gallery -->
+  <div class="product-gallery">
+    <div class="main-image">
+      {% if first_variant.main_image %}
+        <img src="{{ first_variant.main_image.url }}" alt="{{ product.product_name }}">
+      {% else %}
+        <img src="{% static 'images/sneakeelogo.png' %}" alt="Main Product">
+      {% endif %}
+    </div>
+
+    <div class="thumbnail-row">
+      {% if first_variant.top_image %}
+        <img src="{{ first_variant.top_image.url }}" alt="Top - {{ first_variant.variant_name }}">
+      {% endif %}
+      {% if first_variant.right_image %}
+        <img src="{{ first_variant.right_image.url }}" alt="Right - {{ first_variant.variant_name }}">
+      {% endif %}
+      {% if first_variant.left_image %}
+        <img src="{{ first_variant.left_image.url }}" alt="Left - {{ first_variant.variant_name }}">
+      {% endif %}
+      {% if first_variant.back_image %}
+        <img src="{{ first_variant.back_image.url }}" alt="Back - {{ first_variant.variant_name }}">
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Product Info -->
+  <div class="product-info">
+    <h1>{{ product.product_name }}</h1>
+    <p class="price">NPR {{ product.base_price|floatformat:2 }}</p>
+
+    <ul class="product-specs">
+      <li><strong>SKU:</strong> <span id="sku-display">{{ first_variant.sku }}</span></li>
+      <li><strong>Color:</strong> <span id="color-display">{{ first_variant.color }}</span></li>
+      <li><strong>Material:</strong> {{ product.material }}</li>
+      <li>
+        <strong>Stock:</strong>
+        <span id="stock-status">
+          {% if first_variant.inventorystocks.quantity <= 0 %}Not Available{% else %}Available{% endif %}
+        </span>
+      </li>
+      <li><strong>Categories:</strong> {{ product.category.category_name }}</li>
+    </ul>
+
+    <!-- Size Options -->
+    <div class="size-options">
+      <p><strong>Size:</strong></p>
+      <div class="sizes">
+        {% for variant in product.productvariants.all %}
+          {% if variant.variant_name == first_variant.variant_name and variant.color == first_variant.color %}
+            <input type="radio" name="size" id="size-{{ variant.id }}" value="{{ variant.id }}" style="display:none;">
+            <label for="size-{{ variant.id }}" class="size-btn">{{ variant.size }}</label>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Product Action -->
+    <div class="product-action">
+      <div class="quantity-box">
+        <button type="button" onclick="changeQty(-1)">-</button>
+        <input type="text" value="1" id="qty" readonly>
+        <button type="button" onclick="changeQty(1)">+</button>
+      </div>
+
+      <form action="{% url 'add_to_cart' %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="variant_id" id="selected-variant-id" value="{{ first_variant.id }}">
+        <input type="hidden" name="quantity" id="selected-quantity" value="1">
+        <button class="add-to-cart" type="submit">ADD TO CART</button>
+      </form>
+
+      <button class="buy-now">BUY NOW</button>
+    </div>
+
+    <!-- Other Variants Dropdown -->
+    <div class="other-variants">
+      <label for="product-variants"><strong>Variants:</strong></label>
+      <select id="product-variants" name="product-variants" class="variant-select">
+        {% for variant in product.productvariants.all %}
+          {% ifchanged variant.variant_name %}
+            <option 
+              value="{{ variant.id }}"
+              {% if variant.id == first_variant.id %}selected{% endif %}
+              data-color="{{ variant.color|escapejs }}"
+              data-main="{{ variant.main_image.url|default:'' }}"
+              data-top="{{ variant.top_image.url|default:'' }}"
+              data-right="{{ variant.right_image.url|default:'' }}"
+              data-left="{{ variant.left_image.url|default:'' }}"
+              data-back="{{ variant.back_image.url|default:'' }}"
+            >
+              {{ variant.variant_name }}
+            </option>
+          {% endifchanged %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="description">
+      <strong>Description:</strong>
+      <p class="text">{{ product.description }}</p>
+    </div>
+  </div>
+</div>
+</main>
+
+<!-- Variant Data JSON -->
+<script type="application/json" id="variants-data">
+[
+{% for v in product.productvariants.all %}
+  {
+    "id": {{ v.id }},
+    "variant_name": "{{ v.variant_name|escapejs }}",
+    "color": "{{ v.color|escapejs }}",
+    "size": "{{ v.size|escapejs }}",
+    "sku": "{{ v.sku|escapejs }}",
+    "quantity": {{ v.inventorystocks.quantity|default:0 }},
+    "main_image": "{{ v.main_image.url|default:'' }}",
+    "top_image": "{{ v.top_image.url|default:'' }}",
+    "right_image": "{{ v.right_image.url|default:'' }}",
+    "left_image": "{{ v.left_image.url|default:'' }}",
+    "back_image": "{{ v.back_image.url|default:'' }}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script>
+
+<script>
+const variantSelect = document.getElementById('product-variants');
+const variantData = JSON.parse(document.getElementById('variants-data').textContent);
+const variantInput = document.getElementById('selected-variant-id');
+const qtyInput = document.getElementById('selected-quantity');
+
+// Update Stock, SKU, Variant ID
+function updateVariant(variant) {
+  document.getElementById('stock-status').textContent =
+    variant.quantity <= 0 ? 'Not Available' : 'Available';
+
+  document.getElementById('sku-display').textContent = variant.sku;
+  document.getElementById('color-display').textContent = variant.color;
+
+  variantInput.value = variant.id;
+}
+
+// Size button setup
+function initSizeButtons() {
+  const btns = document.querySelectorAll('.size-btn');
+
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      btns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      const input = document.getElementById(btn.getAttribute('for'));
+      input.checked = true;
+
+      const selectedVariant = variantData.find(v => v.id == input.value);
+      updateVariant(selectedVariant);
+    });
+  });
+
+  if (btns.length > 0) btns[0].click();
+}
+initSizeButtons();
+
+// Quantity Buttons
+function changeQty(change) {
+  let val = parseInt(document.getElementById('qty').value);
+  if (val + change > 0) {
+    document.getElementById('qty').value = val + change;
+    qtyInput.value = val + change;
+  }
+}
+
+// Variant Dropdown Change
+variantSelect.addEventListener('change', function() {
+  const id = parseInt(this.value);
+  const selectedVariant = variantData.find(v => v.id === id);
+  if (!selectedVariant) return;
+
+  updateVariant(selectedVariant);
+
+  // Update images
+  const mainImg = document.querySelector('.main-image img');
+  mainImg.src = selectedVariant.main_image || "{% static 'images/sneakeelogo.png' %}";
+
+  const thumbs = ['top_image', 'right_image', 'left_image', 'back_image'];
+  const thumbnailRow = document.querySelector('.thumbnail-row');
+  thumbnailRow.innerHTML = '';
+
+  thumbs.forEach(key => {
+    if (selectedVariant[key]) {
+      const img = document.createElement('img');
+      img.src = selectedVariant[key];
+      thumbnailRow.appendChild(img);
+    }
+  });
+
+  // Update size options for this variant group
+  const sizesDiv = document.querySelector('.sizes');
+  sizesDiv.innerHTML = '';
+
+  variantData
+    .filter(v => v.variant_name === selectedVariant.variant_name && v.color === selectedVariant.color)
+    .forEach(v => {
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'size';
+      input.id = `size-${v.id}`;
+      input.value = v.id;
+      input.style.display = 'none';
+
+      const label = document.createElement('label');
+      label.classList.add('size-btn');
+      label.htmlFor = `size-${v.id}`;
+      label.textContent = v.size;
+
+      sizesDiv.appendChild(input);
+      sizesDiv.appendChild(label);
+    });
+
+  initSizeButtons();
+});
+</script>
+
+{% endblock %}

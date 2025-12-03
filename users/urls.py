@@ -12,4 +12,6 @@ urlpatterns = [
     path('edituserform/', views.edituserform, name="edituserform"),
     path('edituser/', views.edituser, name="edituser"),
     path('deleteuser/', views.deleteuser, name="deleteuser"),
+
+    path('shippingaddress/', views.shippingaddress, name="shippingaddress"),
 ]

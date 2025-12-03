@@ -2,61 +2,226 @@
 {% load static %}
 {% block title%}Sneakee | Cart{%endblock%}
 {% block content%}
-<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+{% comment %} <link rel="stylesheet" href="{% static 'css/cart.css' %}"> {% endcomment %}
+<style>
+.message-container {
+    margin-bottom: 1rem;
+    position:relative;
+    z-index:999;
+}
+.alert {
+    z-index:999;
+    position:relative;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+.alert.success { 
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.alert.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.cart-container {
+    display: flex;
+    gap: 30px;
+    padding: 40px;
+    font-family: 'Segoe UI', sans-serif;
+    height: 90vh;
+}   
+
+.cart-items {
+    flex: 3;
+}
+
+.cart-items > .cart-heading{
+    display:flex;
+    padding-bottom:10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.cart-items > .cart-heading span{
+    font: 16px;
+    font-weight: 500;
+}
+
+/* Cart Item Class */
+.cart-item {
+    
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #edd;
+    padding: 20px 0;
+}
+
+/* Item Details Class */
+.item-details {
+    flex: 7;
+    display:flex;
+    align-items:center;
+    gap:80px;
+    justify-content:flex-start;
+}
+
+.item-img {
+    width: 125px;
+    height: 125px;
+    object-fit: cover;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #c64c1c;
+}
+
+.item-price {
+    margin-top: 5px;
+}
+
+.remove-btn {
+    margin-top: 10px;
+    background: none;
+    border: 1px solid #999;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+/* Item Quantity Class */
+.item-quantity {
+    flex:1;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    gap: 10px;
+    margin: 0 30px;
+    
+}
+
+.qty-input {   
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    padding: 4px 6px;
+}
+
+/* Item Amount Class */
+.item-amount {
+    flex:1;
+    width: 100px;
+    font-weight: 600;
+}
+
+.cart-summary {
+    flex: 1;
+    border-left: 1px solid #edd;
+    padding-left: 30px;
+}
+
+.cart-amount {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.note {
+    font-size: 13px;
+    color: #777;
+}
+
+.checkout-btn {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    margin-top: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.continue-link {
+    display: block;
+    margin-top: 15px;
+    cursor:pointer;
+    color: #000;
+    text-decoration: none;
+    text-align: center;
+}
+
+</style>
+{% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 <div class="cart-container">
+
     <div class="cart-items">
         <div class="cart-heading">
             <span style="width:75%">Items</span>
             <span style="width:12.5%; text-align:center">Quantity</span>
             <span style="width:12.5%; text-align:center">Price</span>
         </div>
-        
-        <div class="cart-item">
-            <img src="{% static 'images/sneakeelogo.png' %}" alt="Shoe" class="item-img">
+        {% if cart_items %}
+            {% for item in cart_items %}
+                <div class="cart-item">
 
-            <div class="item-details">
-                <p class="item-name">Abros Clara Black/Fushia – Women’s Running Shoes</p>
-                <p>Size: UK5/EU38</p>
-                <p class="item-price">Price: <strong>Rs.1,399.00</strong></p>
-                <button class="remove-btn">Remove</button>
-            </div>
+                    <!-- Product Image -->
+                    
+                    <div class="item-details">
+                        <div>
+                            <img src="{{ item.variant.main_image.url }}" class="item-img" alt="{{ item.variant.variant_name }}">
+                        </div>
+                        <div>
+                            <p class="item-name">{{ item.variant.variant_name }}</p>
+                            <p>Size: {{ item.variant.size }}</p>
+                            <p>SKU: {{ item.variant.sku }}</p>
+                            <p class="item-price">Unit Price: <strong>Rs. {{ item.variant.product.base_price }}</strong></p>
 
-            <div class="item-quantity">
-                <button class="qty-btn" onclick="decreaseQty(this)">-</button>
-                <input type="text" value="1" readonly class="qty-input">
-                <button class="qty-btn" onclick="increaseQty(this)">+</button>
-            </div>
+                            <form action="{% url 'remove_from_cart' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="item_id" value="{{item.id}}">
+                                <button class="remove-btn">Remove</button>
+                            </form>
+                        </div>
+                    </div>
 
-            <div class="item-amount">Rs.1,399.00</div>
-        </div>
-        
-        <div class="cart-item">
-            
-            <img src="{% static 'images/sneakeelogo.png' %}" alt="Shoe" class="item-img">
+                    <div class="item-quantity">
+                        <span class="qty-input">{{ item.quantity }}</span>
+                    </div>
 
-            <div class="item-details">
-                <p class="item-name">Abros Clara Black/Fushia – Women’s Running Shoes</p>
-                <p>Size: UK5/EU38</p>
-                <p class="item-price">Price: <strong>Rs.1,399.00</strong></p>
-                <button class="remove-btn">Remove</button>
-            </div>
-            <div class="item-quantity">
-                <button class="qty-btn" onclick="decreaseQty(this)">-</button>
-                <input type="text" value="1" readonly class="qty-input">
-                <button class="qty-btn" onclick="increaseQty(this)">+</button>
-            </div>
-            <div class="item-amount">Rs.1,399.00</div>
-        </div>
+                    <div class="item-amount">
+                        Rs. {{ item.item_amount|floatformat:2 }}
+                    </div>
+
+
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Your cart is empty.</p>
+        {% endif %} 
+
     </div>
 
-<div class="cart-summary">
-    <h3>Subtotal (1 Item)</h3>
-    <p class="subtotal">Rs.1,399.00</p>
-    <p class="note">Shipping and taxes will be calculated at checkout</p>
-    <button class="checkout-btn">Checkout</button>
-    <a href="#" class="continue-link">Continue Shopping</a>
-</div>
-</div>
+    <div class="cart-summary">
+        <h3>Cart Amount ({{ cart.total_quantity }} Item{{ cart.total_quantity|pluralize }})</h3>
+        <p class="cart-amount">Rs. {{ cart.total_amount|floatformat:2 }}</p>
+        <button class="checkout-btn">Checkout</button>
+        <a onclick="history.back();" class="continue-link">Continue Shopping</a>
+    </div>
 
-<script src="{% static 'js/cart.js' %}"></script>
+</div>
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
 {% endblock %}

@@ -5,13 +5,7 @@ from products.models import ProductVariant
 User = get_user_model()
 
 class Cart(models.Model):
-    """
-    Cart can belong to:
-    - Logged in user (user field)
-    - Guest user using session_id
-    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    session_id = models.CharField(max_length=200, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -19,7 +13,6 @@ class Cart(models.Model):
     def __str__(self):
         if self.user:
             return f"Cart for {self.user.email}"
-        return f"Guest Cart ({self.session_id})"
 
     @property
     def total_items(self):
@@ -31,7 +24,7 @@ class Cart(models.Model):
 
     @property
     def total_amount(self):
-        return sum(item.subtotal for item in self.items.all())
+        return sum(item.item_amount for item in self.items.all())
 
 
 class CartItem(models.Model):
@@ -56,5 +49,5 @@ class CartItem(models.Model):
         return self.variant.product.base_price
 
     @property
-    def subtotal(self):
+    def item_amount(self):
         return self.price * self.quantity

@@ -63,13 +63,13 @@
                         {% if productvariant%}
                             <input type="hidden" name="productvariant_id" value="{{ productvariant.id }}">
                             <label><strong>Product Variant:</strong></label>
-                            <span>{{ productvariant.variant_name }}</span>
+                            <span>{{ productvariant.variant_name }} - {{productvariant.size}} | {{productvariant.sku}}</span>
                         {% else %}
                             <label><strong>Select Product Variant:</strong></label>
                             <select id="variant-select" name="productvariant_id" required>
                                 <option disabled selected>Select Variant</option>
                             {% for variant in all_variants %}
-                                <option value="{{ variant.id }}" data-stock="{{ variant.inventorystocks.quantity|default:0 }}">{{ variant.variant_name }}</option>
+                                <option value="{{ variant.id }}" data-stock="{{ variant.inventorystocks.quantity|default:0 }}">{{ variant.variant_name }} - {{variant.size}} | {{variant.sku}}</option>
                             {% endfor %}
                         </select>
                         {% endif %}

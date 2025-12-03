@@ -4,252 +4,281 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
 <link rel="canonical" href="{% url 'productdetails' product.slug %}" />
-
-<style>
-.size-btn {
-  display: inline-block;
-  padding: 8px 12px;
-  margin: 4px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.size-btn:hover {
-  background-color: #f0f0f0;
-}
-
-.size-btn.selected {
-  color: white;
-  background-color: #007bff;
-  border-color: #007bff;
-}
-</style>
-
 <main>
-<div class="product-detail-container">
+  <div class="product-detail-container">
 
-  <!-- Product Gallery -->
-  <div class="product-gallery">
-    <div class="main-image">
-      {% if first_variant.main_image %}
-        <img src="{{ first_variant.main_image.url }}" alt="{{ product.product_name }}">
-      {% else %}
-        <img src="{% static 'images/sneakeelogo.png' %}" alt="Main Product">
-      {% endif %}
+    <div class="product-gallery">
+
+      <div class="main-image" id="main-image-container">
+        {% if product.main_image %}
+          <img id="main-display-image" src="{{ product.main_image.url }}" alt="{{ product.product_name }}">
+        {% else %}
+          <img id="main-display-image" src="{% static 'images/sneakeelogo.png' %}" alt="Main Product">
+        {% endif %}
+      </div>
+
+    <div class="thumbnail-row" id="thumbnail-container">
+      <img id="display-top-image" src="" alt="Top" style="display: none;">
+      <img id="display-right-image" src="" alt="Right" style="display: none;">
+      <img id="display-left-image" src="" alt="Left" style="display: none;">
+      <img id="display-back-image" src="" alt="Back" style="display: none;">
+    </div>
+      
     </div>
 
-    <div class="thumbnail-row">
-      {% if first_variant.top_image %}
-        <img src="{{ first_variant.top_image.url }}" alt="Top - {{ first_variant.variant_name }}">
-      {% endif %}
-      {% if first_variant.right_image %}
-        <img src="{{ first_variant.right_image.url }}" alt="Right - {{ first_variant.variant_name }}">
-      {% endif %}
-      {% if first_variant.left_image %}
-        <img src="{{ first_variant.left_image.url }}" alt="Left - {{ first_variant.variant_name }}">
-      {% endif %}
-      {% if first_variant.back_image %}
-        <img src="{{ first_variant.back_image.url }}" alt="Back - {{ first_variant.variant_name }}">
-      {% endif %}
+    <div class="product-info">
+      <h1>{{ product.product_name }}</h1>
+      <p class="price">NPR {{ product.base_price|floatformat:2 }}</p>
+      
+      <ul class="product-specs">
+        <li><strong>SKU:</strong> <span id="display-sku">-</span></li>
+        <li><strong>Color:</strong> <span id="display-color">-</span></li>
+        <li><strong>Material:</strong> {{ product.material }}</li>
+        <li><strong>Stock:</strong> <span id="display-stock">-</span></li>
+        <li><strong>Categories:</strong> {{ product.category.category_name }}</li>
+      </ul>
+
+      <div class="size-options" id="size-options-container" style="display: none;">
+        <p><strong>Size:</strong></p>
+        <div class="sizes" id="size-buttons-container">
+          <!-- Sizes will be populated dynamically -->
+        </div>
+      </div>
+
+<form id="product-form" method="POST" action="">
+  {% csrf_token %}
+  <input type="hidden" name="variant_id" id="variant-id-input" value="">
+  <input type="hidden" name="quantity" id="quantity-input">
+  
+  <div class="product-action">
+    <div class="quantity-box">
+      <button type="button" onclick="changeQty(-1)">-</button>
+      <input type="text" value="1" id="qty" readonly>
+      <button type="button" onclick="changeQty(1)">+</button>
     </div>
+    <button type="submit" name="action" value="add_to_cart" class="add-to-cart">ADD TO CART</button>
+    <button type="submit" name="action" value="buy_now" class="buy-now">BUY NOW</button>
   </div>
+</form>
 
-  <!-- Product Info -->
-  <div class="product-info">
-    <h1>{{ product.product_name }}</h1>
-    <p class="price">NPR {{ product.base_price|floatformat:2 }}</p>
+      <div class="other-variants">
+        <label for="product-variants"><strong>Variants:</strong></label>
+        <select id="product-variants" name="product-variants" class="variant-select">
+          <option disabled selected>Select Variant</option>
+          {% regroup variants by variant_name as variant_groups %}
+          {% for group in variant_groups %}
+            <option value="{{ group.grouper }}">{{ group.grouper }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <ul class="product-specs">
-      <li><strong>SKU:</strong> <span id="sku-display">{{ first_variant.sku }}</span></li>
-      <li><strong>Color:</strong> <span id="color-display">{{ first_variant.color }}</span></li>
-      <li><strong>Material:</strong> {{ product.material }}</li>
-      <li><strong>Stock:</strong> <span id="stock-status">{% if first_variant.inventorystocks.quantity <= 0 %}Not Available{% else %}Available{% endif %}</span></li>
-      <li><strong>Categories:</strong> {{ product.category.category_name }}</li>
-    </ul>
-
-    <!-- Size Options -->
-    <div class="size-options">
-      <p><strong>Size:</strong></p>
-      <div class="sizes">
-        {% for variant in product.productvariants.all %}
-          {% if variant.variant_name == first_variant.variant_name and variant.color == first_variant.color %}
-            <input type="radio" name="size" id="size-{{ variant.id }}" value="{{ variant.sku }}" style="display:none;">
-            <label for="size-{{ variant.id }}" class="size-btn">{{ variant.size }}</label>
-          {% endif %}
-        {% endfor %}
+      <div class="description">
+        <strong>Description:</strong>
+        <p class="text"> 
+          {{ product.description }} 
+        </p>
       </div>
     </div>
-
-    <!-- Product Action -->
-    <div class="product-action">
-      <div class="quantity-box">
-        <button type="button" onclick="changeQty(-1)">-</button>
-        <input type="text" value="1" id="qty" readonly>
-        <button type="button" onclick="changeQty(1)">+</button>
-      </div>
-      <form action="" method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="variant_sku" id="selected-variant-sku" value="{{ first_variant.sku }}">
-        <input type="hidden" name="quantity" id="selected-quantity" value="1">
-        <button class="add-to-cart" type="submit">ADD TO CART</button>
-      </form>
-      <button class="buy-now">BUY NOW</button>
-    </div>
-
-    <!-- Other Variants Dropdown -->
-    <div class="other-variants">
-      <label for="product-variants"><strong>Variants:</strong></label>
-      <select id="product-variants" name="product-variants" class="variant-select">
-        {% for variant in product.productvariants.all %}
-          {% ifchanged variant.variant_name %}
-            <option 
-              value="{{ variant.id }}"
-              {% if variant.id == first_variant.id %}selected{% endif %}
-              data-main="{{ variant.main_image.url|default:'' }}"
-              data-top="{{ variant.top_image.url|default:'' }}"
-              data-right="{{ variant.right_image.url|default:'' }}"
-              data-left="{{ variant.left_image.url|default:'' }}"
-              data-back="{{ variant.back_image.url|default:'' }}"
-              data-color="{{ variant.color|escapejs }}"
-            >
-              {{ variant.variant_name }}
-            </option>
-          {% endifchanged %}
-        {% endfor %}
-      </select>
-    </div>
-
-    <!-- Description -->
-    <div class="description">
-      <strong>Description:</strong>
-      <p class="text">{{ product.description }}</p>
-    </div>
+    
   </div>
-</div>
 </main>
 
-<!-- Variant Data JSON -->
-<script type="application/json" id="variants-data">
-[
-{% for v in product.productvariants.all %}
-  {
-    "id": {{ v.id }},
-    "variant_name": "{{ v.variant_name|escapejs }}",
-    "color": "{{ v.color|escapejs }}",
-    "size": "{{ v.size|escapejs }}",
-    "sku": "{{ v.sku|escapejs }}",
-    "quantity": {{ v.inventorystocks.quantity|default:0 }},
-    "main_image": "{{ v.main_image.url|default:'' }}",
-    "top_image": "{{ v.top_image.url|default:'' }}",
-    "right_image": "{{ v.right_image.url|default:'' }}",
-    "left_image": "{{ v.left_image.url|default:'' }}",
-    "back_image": "{{ v.back_image.url|default:'' }}"
-  }{% if not forloop.last %},{% endif %}
-{% endfor %}
-]
-</script>
-
 <script>
-const variantSelect = document.getElementById('product-variants');
-const variantData = JSON.parse(document.getElementById('variants-data').textContent);
-const skuInput = document.getElementById('selected-variant-sku');
-const qtyInput = document.getElementById('selected-quantity');
+  // Quantity change function
+  function changeQty(change) {
+    let qty = document.getElementById('qty');
+    let quantityInput = document.getElementById('quantity-input');
+    let value = parseInt(qty.value);
+    let newValue = value + change;
+    
+    if (newValue > 0) {
+      qty.value = newValue;
+      quantityInput.value = newValue;
+    }
+  }
 
-// Update Stock and SKU
-function updateStockAndSKU(sku){
-  const stockSpan = document.getElementById('stock-status');
-  const skuDisplay = document.getElementById('sku-display');
-  const variant = variantData.find(v => v.sku === sku);
-  if(!variant) return;
-  stockSpan.textContent = (variant.quantity <= 0) ? 'Not Available' : 'Available';
-  skuDisplay.textContent = variant.sku;
-  skuInput.value = variant.sku;
-}
+  // All variants data from Django
+  const allVariantsData = [
+    {% for variant in variants %}
+    {
+      id: {{ variant.id }},
+      variant_name: "{{ variant.variant_name }}",
+      color: "{{ variant.color }}",
+      size: "{{ variant.size }}",
+      sku: "{{ variant.sku }}",
+      stock: {{ variant.inventorystocks.quantity|default:0 }},
+      low_stock: {{ variant.low_stock_threshold }},
+      main_image: "{% if variant.main_image %}{{ variant.main_image.url }}{% endif %}",
+      top_image: "{% if variant.top_image %}{{ variant.top_image.url }}{% endif %}",
+      right_image: "{% if variant.right_image %}{{ variant.right_image.url }}{% endif %}",
+      left_image: "{% if variant.left_image %}{{ variant.left_image.url }}{% endif %}",
+      back_image: "{% if variant.back_image %}{{ variant.back_image.url }}{% endif %}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
 
-// Initialize size buttons
-function initSizeButtons() {
-  const allBtns = document.querySelectorAll('.size-btn');
-  allBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      allBtns.forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      const input = document.getElementById(btn.getAttribute('for'));
-      input.checked = true;
-      updateStockAndSKU(input.value);
+  // DOM Elements
+  const variantSelect = document.getElementById('product-variants');
+  const sizeOptionsContainer = document.getElementById('size-options-container');
+  const sizeButtonsContainer = document.getElementById('size-buttons-container');
+  const mainDisplayImage = document.getElementById('main-display-image');
+  
+  const displaySku = document.getElementById('display-sku');
+  const displayColor = document.getElementById('display-color');
+  const displayStock = document.getElementById('display-stock');
+  
+  const displayTopImage = document.getElementById('display-top-image');
+  const displayRightImage = document.getElementById('display-right-image');
+  const displayLeftImage = document.getElementById('display-left-image');
+  const displayBackImage = document.getElementById('display-back-image');
+  
+  const variantIdInput = document.getElementById('variant-id-input');
+  const quantityInput = document.getElementById('quantity-input');
+  const qtyDisplay = document.getElementById('qty');
+  const productForm = document.getElementById('product-form');
+
+  let currentSelectedVariant = null;
+
+  if (variantSelect) {
+    // When variant name is selected
+    variantSelect.addEventListener('change', function() {
+      const selectedVariantName = this.value;
+      
+      if (selectedVariantName) {
+        // Filter variants with this variant_name
+        const matchingVariants = allVariantsData.filter(v => v.variant_name === selectedVariantName);
+        
+        if (matchingVariants.length > 0) {
+          // Show size options
+          sizeOptionsContainer.style.display = 'block';
+          
+          // Populate size buttons
+          sizeButtonsContainer.innerHTML = '';
+          matchingVariants.forEach(variant => {
+            const sizeSpan = document.createElement('span');
+            sizeSpan.textContent = variant.size;
+            sizeSpan.dataset.variantId = variant.id;
+            sizeSpan.style.cursor = 'pointer';
+            
+            // Click handler for size
+            sizeSpan.addEventListener('click', function() {
+              // Remove active class from all sizes
+              sizeButtonsContainer.querySelectorAll('span').forEach(s => {
+                s.style.borderColor = '#ccc';
+                s.style.backgroundColor = 'transparent';
+              });
+              
+              // Add active style to clicked size
+              this.style.borderColor = '#000';
+              this.style.backgroundColor = '#f0f0f0';
+              
+              // Find and update with this variant's data
+              const variantId = parseInt(this.dataset.variantId);
+              const selectedVariant = allVariantsData.find(v => v.id === variantId);
+              
+              if (selectedVariant) {
+                updateVariantDisplay(selectedVariant);
+                currentSelectedVariant = selectedVariant;
+                variantIdInput.value = selectedVariant.id;
+                // Sync quantity with current displayed value
+                quantityInput.value = qtyDisplay.value;
+              }
+            });
+            
+            sizeButtonsContainer.appendChild(sizeSpan);
+          });
+          
+          // Auto-select first size
+          const firstSizeButton = sizeButtonsContainer.querySelector('span');
+          if (firstSizeButton) {
+            firstSizeButton.click();
+          }
+        }
+      }
+    });
+  }
+
+  // Function to update all display elements
+  function updateVariantDisplay(variant) {
+    // Update text information
+    displaySku.textContent = variant.sku || '-';
+    displayColor.textContent = variant.color || '-';
+    displayStock.textContent = variant.stock || '0';
+    
+    // Update main image
+    if (variant.main_image && variant.main_image.trim() !== '') {
+      mainDisplayImage.src = variant.main_image;
+    }
+    
+    // Update thumbnail images
+    updateThumbnail(displayTopImage, variant.top_image);
+    updateThumbnail(displayRightImage, variant.right_image);
+    updateThumbnail(displayLeftImage, variant.left_image);
+    updateThumbnail(displayBackImage, variant.back_image);
+  }
+
+  function updateThumbnail(imgElement, imageSrc) {
+    if (imageSrc && imageSrc.trim() !== '') {
+      imgElement.src = imageSrc;
+      imgElement.style.display = 'block';
+    } else {
+      imgElement.style.display = 'none';
+    }
+  }
+
+  // Click thumbnail to show in main image
+  [displayTopImage, displayRightImage, displayLeftImage, displayBackImage].forEach(thumb => {
+    thumb.addEventListener('click', function() {
+      if (this.src) mainDisplayImage.src = this.src;
     });
   });
 
-  if(allBtns.length > 0){
-    allBtns[0].click();
-  }
-}
-initSizeButtons();
-
-// Quantity adjustment
-function changeQty(change) {
-  let value = parseInt(document.getElementById('qty').value);
-  if (value + change > 0) {
-    document.getElementById('qty').value = value + change;
-    qtyInput.value = value + change;
-  }
-}
-
-// Handle variant dropdown change
-variantSelect.addEventListener('change', function() {
-  const selectedOption = this.selectedOptions[0];
-  const selectedName = selectedOption.text;
-  const selectedColor = selectedOption.dataset.color;
-
-  // Filter variants with same name + color
-  const filteredVariants = variantData.filter(v => v.variant_name === selectedName && v.color === selectedColor);
-  if(filteredVariants.length === 0) return;
-  const firstVar = filteredVariants[0];
-
-  // Update main image
-  const mainImg = document.querySelector('.main-image img');
-  mainImg.src = firstVar.main_image || "{% static 'images/sneakeelogo.png' %}";
-
-  // Update thumbnails
-  const thumbs = ['top_image','right_image','left_image','back_image'];
-  const thumbnailRow = document.querySelector('.thumbnail-row');
-  thumbnailRow.innerHTML = '';
-  thumbs.forEach(key => {
-    if(firstVar[key]){
-      const img = document.createElement('img');
-      img.src = firstVar[key];
-      img.alt = key.replace('_image','') + ' - ' + firstVar.variant_name;
-      thumbnailRow.appendChild(img);
+  // Form submission validation
+  productForm.addEventListener('submit', function(e) {
+    const variantId = variantIdInput.value;
+    const quantity = parseInt(qtyDisplay.value);
+    
+    // Always sync quantity before submission
+    quantityInput.value = quantity;
+    
+    if (!variantId) {
+      e.preventDefault();
+      alert('Please select a variant and size before proceeding.');
+      return false;
+    }
+    
+    if (!currentSelectedVariant) {
+      e.preventDefault();
+      alert('Please select a variant and size.');
+      return false;
+    }
+    
+    // Check stock
+    if (quantity > currentSelectedVariant.stock) {
+      e.preventDefault();
+      alert(`Only ${currentSelectedVariant.stock} items available in stock.`);
+      return false;
+    }
+    
+    // Update the action URL based on which button was clicked
+    const submitter = e.submitter;
+    if (submitter) {
+      const action = submitter.value;
+      if (action === 'add_to_cart') {
+        this.action = "{% url 'add_to_cart' %}";
+      } else if (action === 'buy_now') {
+        this.action = "{% url 'add_to_cart' %}";
+      }
     }
   });
 
-  // Update product specs
-  document.getElementById('color-display').textContent = firstVar.color;
-  updateStockAndSKU(firstVar.sku);
+  // Initialize quantity input with default value
+  quantityInput.value = qtyDisplay.value;
 
-  // Update sizes
-  const sizesDiv = document.querySelector('.sizes');
-  sizesDiv.innerHTML = '';
-  filteredVariants.forEach(v => {
-    const input = document.createElement('input');
-    input.type = 'radio';
-    input.name = 'size';
-    input.id = `size-${v.id}`;
-    input.value = v.sku;
-    input.style.display = 'none';
-
-    const label = document.createElement('label');
-    label.htmlFor = `size-${v.id}`;
-    label.classList.add('size-btn');
-    label.textContent = v.size;
-    sizesDiv.appendChild(input);
-    sizesDiv.appendChild(label);
-  });
-
-  // Re-initialize size buttons after update
-  initSizeButtons();
-});
+  // Initialize with first variant on page load
+  if (variantSelect && variantSelect.options.length > 1) {
+    variantSelect.selectedIndex = 1;
+    variantSelect.dispatchEvent(new Event('change'));
+  }
 </script>
-
 {% endblock %}
