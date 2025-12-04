@@ -8,7 +8,7 @@ def cart_view(request):
     if request.user.is_authenticated:
         cart = _get_cart(request)
         cart_items = cart.items.all()  # using related_name
-        return render(request, 'cart.html', {
+        return render(request, 'order.html', {
             'cart': cart,
             'cart_items': cart_items,
         })

@@ -1,0 +1,255 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title%}Sneakee | Payment{%endblock%}
+{% block content%}
+{% comment %} <link rel="stylesheet" href="{% static 'css/cart.css' %}"> {% endcomment %}
+<style>
+.message-container {
+    margin-bottom: 1rem;
+    position:relative;
+    z-index:999;
+}
+.alert {
+    z-index:999;
+    position:relative;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+.alert.success { 
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.alert.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.payment-container {
+    display: flex;
+    gap: 30px;
+    padding: 40px;
+    font-family: 'Segoe UI', sans-serif;
+    height: 90vh;
+}   
+
+.payment-method {
+    flex: 3;
+}
+
+.payment-heading{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.payment-heading h2 {
+    margin: 10px 0;
+}
+
+.payment{
+    margin-top:20px;
+    margin-bottom:70px;
+
+    display:flex;
+    align-items:center;
+    justify-items:flex-start;
+    gap:20px;
+}
+
+.payment img{
+    border:1px solid black;
+    height:100px;
+    width:100px;
+}
+
+/* Order Item Heading*/
+.payment-method > .order-heading{
+    display:flex;
+    padding-bottom:10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.payment-method > .order-heading span{
+    font: 16px;
+    font-weight: 500;
+}
+
+/* Order Item Class */
+.order-item {
+    
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #edd;
+    padding: 20px 0;
+}
+
+/* Item Details Class */
+.item-details {
+    flex: 7;
+    display:flex;
+    align-items:center;
+    gap:80px;
+    justify-content:flex-start;
+}
+
+.item-img {
+    width: 125px;
+    height: 125px;
+    object-fit: cover;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #c64c1c;
+}
+
+.item-price {
+    margin-top: 5px;
+}
+
+.remove-btn {
+    margin-top: 10px;
+    background: none;
+    border: 1px solid #999;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+/* Item Quantity Class */
+.item-quantity {
+    flex:1;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    gap: 10px;
+    margin: 0 30px;
+    
+}
+
+.qty-input {   
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    padding: 4px 6px;
+}
+
+/* Item Amount Class */
+.item-amount {
+    flex:1;
+    width: 100px;
+    font-weight: 600;
+}
+
+.order-summary {
+    flex: 1;
+    border-left: 1px solid #edd;
+    padding-left: 30px;
+}
+
+.order-amount {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.order-amount table{
+    width: 100%;
+}
+.order-amount table tr{
+    margin-top:10px;
+}
+
+.note {
+    font-size: 13px;
+    color: #777;
+}
+
+.checkout-btn {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    margin-top: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.continue-link {
+    display: block;
+    margin-top: 15px;
+    cursor:pointer;
+    color: #000;
+    text-decoration: none;
+    text-align: center;
+}
+
+</style>
+{% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+<div class="payment-container">
+    <div class="payment-method">
+        <div class="payment-heading">
+            <h2>Select Payment Method</h2>
+        </div>
+
+        <div class="payment">
+            <img src="{% static 'images/esewa.png' %}" alt="eSewa">
+            <img src="{% static 'images/cashondelivery.png' %}" alt="Cash on Delivery">
+        </div>
+
+        <div class="payment-description">
+            <h2>Payment Description</h2>
+            <p>Cash Payment<br>-You have to pay in cash to our courier:</p>
+                <ul>
+                    <li type="square">You have to pay in cash to our courier upon receiving your parcel at the doorstep.</li>
+                    <li type="square">Before you make payment to the courier, confirm your order number, sender information, and tracking number on the parcel.</li>
+                </ul>
+            
+            <br>
+
+            <p>eSewa<br>- You will be redirected to your eSewa account to complete your payment:</p>
+                 <ul>   
+                    <li type="square">Login to your eSewa account using your eSewa ID and your Password</li>
+                    <li type="square">Ensure your eSewa account is active and has sufficient balance</li>
+                    <li type="square">Payment Successful</li>
+                </ul>
+        </div>
+    </div>
+
+    <div class="order-summary">
+        <h3>Order Summary </h3>
+        <div class="order-amount">
+            <table>
+                <tr>
+                    <td>Subtotal</td>
+                    <td>Rs.10000 </td>
+                </tr>
+                <tr>
+                    <td>Shipping Fee</td>
+                    <td>Rs. 1000</td>
+                </tr>
+                <tr style="font-weight:bold;">
+                    <td>Total Amount</td>
+                    <td>Rs. 1000</td>
+                </tr>
+            </table>
+        </div>
+        <button class="checkout-btn">Pay Now</button>
+    </div>
+
+</div>
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
+{% endblock %}

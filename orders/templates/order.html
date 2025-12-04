@@ -1,0 +1,335 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title%}Sneakee | Order{%endblock%}
+{% block content%}
+{% comment %} <link rel="stylesheet" href="{% static 'css/cart.css' %}"> {% endcomment %}
+<style>
+.message-container {
+    margin-bottom: 1rem;
+    position:relative;
+    z-index:999;
+}
+.alert {
+    z-index:999;
+    position:relative;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+.alert.success { 
+    background-color: #d1fae5;
+    color: #065f46;
+}
+.alert.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+.order-container {
+    display: flex;
+    gap: 30px;
+    padding: 40px;
+    font-family: 'Segoe UI', sans-serif;
+    height: 90vh;
+}   
+
+.order-items {
+    flex: 3;
+}
+.shipping-address-container{
+    margin-bottom:50px;
+}
+/* Shipping Address */
+.shipping-address-heading{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.shipping-address-heading h2 {
+    margin: 10px 0;
+}
+
+.shipping-address-heading > .btn-add{
+    width: 10%;
+    margin-top: 10px;
+    padding: 12px;
+
+    background-color: #000;
+    border: none;
+
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+}
+
+.shipping-address{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.shipping-address textarea{
+    width: 85%;
+    margin: 10px 0;
+    padding: 12px 15px;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+
+    font-size: 1rem;
+}
+
+.shipping-address > .btn-edit{
+    width: 10%;
+    margin: 10px 0;
+    padding: 12px;
+
+    background-color: #000;
+    border: none;
+
+    font-weight: bold;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Order Item Heading*/
+.order-items > .order-heading{
+    display:flex;
+    padding-bottom:10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.order-items > .order-heading span{
+    font: 16px;
+    font-weight: 500;
+}
+
+/* Order Item Class */
+.order-item {
+    
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #edd;
+    padding: 20px 0;
+}
+
+/* Item Details Class */
+.item-details {
+    flex: 7;
+    display:flex;
+    align-items:center;
+    gap:80px;
+    justify-content:flex-start;
+}
+
+.item-img {
+    width: 125px;
+    height: 125px;
+    object-fit: cover;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #c64c1c;
+}
+
+.item-price {
+    margin-top: 5px;
+}
+
+.remove-btn {
+    margin-top: 10px;
+    background: none;
+    border: 1px solid #999;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+/* Item Quantity Class */
+.item-quantity {
+    flex:1;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    gap: 10px;
+    margin: 0 30px;
+    
+}
+
+.qty-input {   
+    width: 40px;
+    text-align: center;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    padding: 4px 6px;
+}
+
+/* Item Amount Class */
+.item-amount {
+    flex:1;
+    width: 100px;
+    font-weight: 600;
+}
+
+.order-summary {
+    flex: 1;
+    border-left: 1px solid #edd;
+    padding-left: 30px;
+}
+
+.order-amount {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.order-amount table{
+    width: 100%;
+}
+.order-amount table tr{
+    margin-top:10px;
+}
+
+.note {
+    font-size: 13px;
+    color: #777;
+}
+
+.checkout-btn {
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    margin-top: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.continue-link {
+    display: block;
+    margin-top: 15px;
+    cursor:pointer;
+    color: #000;
+    text-decoration: none;
+    text-align: center;
+}
+
+.select-shipping-address{
+    width: 100%;
+    padding: 12px 15px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+</style>
+{% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+<div class="order-container">
+    <div class="order-items">
+
+        <div class="shipping-address-container">
+
+            <div class="shipping-address-heading">
+                <h2>Shipping Address</h2>
+                <button class="btn-add"> Add New</button>
+            </div>
+
+            <div class="shipping-address">
+                <textarea name="" id="">
+                </textarea>
+                <button class="btn-edit"> Edit </button>
+            </div>
+        </div>
+
+        <div class="order-heading">
+            <span style="width:75%">Order Items</span>
+            <span style="width:12.5%; text-align:center">Quantity</span>
+            <span style="width:12.5%; text-align:center">Price</span>
+        </div>
+        {% if cart_items %}
+            {% for item in cart_items %}
+                <div class="order-item">
+
+                    <!-- Product Image -->
+                    
+                    <div class="item-details">
+                        <div>
+                            <img src="{{ item.variant.main_image.url }}" class="item-img" alt="{{ item.variant.variant_name }}">
+                        </div>
+                        <div>
+                            <p class="item-name">{{ item.variant.variant_name }}</p>
+                            <p>Size: {{ item.variant.size }}</p>
+                            <p>SKU: {{ item.variant.sku }}</p>
+                            <p class="item-price">Unit Price: <strong>Rs. {{ item.variant.product.base_price }}</strong></p>
+
+                            <form action="{% url 'remove_from_cart' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="item_id" value="{{item.id}}">
+                                <button class="remove-btn">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="item-quantity">
+                        <span class="qty-input">{{ item.quantity }}</span>
+                    </div>
+
+                    <div class="item-amount">
+                        Rs. {{ item.item_amount|floatformat:2 }}
+                    </div>
+
+
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Your cart is empty.</p>
+        {% endif %} 
+
+    </div>
+
+    <div class="order-summary">
+        <h3>Order Summary ({{ cart.total_quantity }} Item{{ cart.total_quantity|pluralize }})</h3>
+        <div class="order-amount">
+            <table>
+                <tr>
+                    <td>Subtotal({{ cart.total_quantity }} Item{{ cart.total_quantity|pluralize }})</td>
+                    <td>Rs. {{ cart.total_amount|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Shipping Fee</td>
+                    <td>Rs. 1000</td>
+                </tr>
+                <tr style="font-weight:bold;">
+                    <td>Total</td>
+                    <td>Rs. 1000</td>
+                </tr>
+            </table>
+        </div>
+        <select class="select-shipping-address" name="">
+            <option disabled selected>Select Shipping Address</option>
+            <option value="">Shipping Address 1</option>
+            <option value="">Shipping Address 2</option>
+        </select>
+        <button class="checkout-btn">Proceed To Pay</button>
+        <a onclick="history.back();" class="continue-link">Continue Shopping</a>
+    </div>
+
+</div>
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
+{% endblock %}

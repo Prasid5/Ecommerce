@@ -1,7 +1,7 @@
 from django.urls import path
-from orders import views
+from payments import views
 
 urlpatterns = [
     # path('shippingaddress/', views.shippingaddress, name="shippingaddress"),
-    path('order/',views.order,name="order"),
+    path('payments/',views.payment,name="payments"),
 ]
