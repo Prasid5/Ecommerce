@@ -56,10 +56,16 @@
     gap:20px;
 }
 
-.payment img{
-    border:1px solid black;
-    height:100px;
-    width:100px;
+.payment > .pay-option {
+    border: 2px solid transparent;
+    height: 100px;
+    width: 100px;
+    cursor: pointer;
+    object-fit: cover;
+}
+
+.payment > .pay-option.selected {
+    border: 2px dotted black;
 }
 
 /* Order Item Heading*/
@@ -201,8 +207,8 @@
         </div>
 
         <div class="payment">
-            <img src="{% static 'images/esewa.png' %}" alt="eSewa">
-            <img src="{% static 'images/cashondelivery.png' %}" alt="Cash on Delivery">
+            <img src="{% static 'images/esewa.png' %}" class="pay-option"  data-value="esewa" alt="eSewa">
+            <img src="{% static 'images/cashondelivery.png' %}" class="pay-option" data-value="cod"alt="Cash on Delivery">
         </div>
 
         <div class="payment-description">
@@ -242,7 +248,11 @@
                 </tr>
             </table>
         </div>
-        <button class="checkout-btn">Pay Now</button>
+        <form action="#" method="GET">
+            {% csrf_token %}
+            <input type="hidden" name="payment_method" id="payment_method" value="">
+            <button type="submit" class="checkout-btn">Pay Now</button>
+        </form>
     </div>
 
 </div>
@@ -251,5 +261,21 @@
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
+
+  document.querySelectorAll('.pay-option').forEach(img => {
+    img.addEventListener('click', function () {
+
+        // Remove previous selection
+        document.querySelectorAll('.pay-option').forEach(i => 
+            i.classList.remove('selected')
+        );
+
+        // Add highlight to clicked one
+        this.classList.add('selected');
+
+        // Set hidden input value
+        document.getElementById('payment_method').value = this.dataset.value;
+    });
+});
 </script>
 {% endblock %}

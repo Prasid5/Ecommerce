@@ -29,7 +29,8 @@
     gap: 30px;
     padding: 40px;
     font-family: 'Segoe UI', sans-serif;
-    height: 90vh;
+    min-height: 80vh; /* optional, keeps initial spacing */
+    flex-wrap: wrap; /* optional, for small screens */
 }   
 
 .cart-items {
@@ -211,9 +212,13 @@
     </div>
 
     <div class="cart-summary">
-        <h3>Cart Amount ({{ cart.total_quantity }} Item{{ cart.total_quantity|pluralize }})</h3>
-        <p class="cart-amount">Rs. {{ cart.total_amount|floatformat:2 }}</p>
-        <button class="checkout-btn">Checkout</button>
+        <h3>Total Cart Amount ({{ cart.total_quantity }} Unit{{ cart.total_quantity|pluralize }})</h3>
+        <p class="cart-amount">Rs. {{ cart.total_cart_amount|floatformat:2 }}</p>
+        <form action="{% url 'order_view' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="cart_id" value="{{cart.id}}">
+            <button class="checkout-btn" type="submit">Checkout</button>
+        </form>
         <a onclick="history.back();" class="continue-link">Continue Shopping</a>
     </div>
 

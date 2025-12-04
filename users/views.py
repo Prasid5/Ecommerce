@@ -1,5 +1,5 @@
 import re
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,  get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -7,8 +7,9 @@ from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import never_cache
 from django.db.models import Q
 from django.core.paginator import Paginator
-from users.models import User, ShippingAddress
 from carts.models import Cart
+from users.models import User, ShippingAddress
+
 
 @never_cache
 def signup(request):
@@ -396,14 +397,15 @@ def editprofile(request):
 @never_cache
 @login_required
 def shippingaddress(request):
+    """Handle shipping address management from edit profile page"""
     user = request.user
+    next_page = request.POST.get("next_page", "editprofile")
 
-    # ---------------------- SAVE BUTTON (Add or Update) ----------------------
+    # SAVE BUTTON (Add or Update)
     if request.method == "POST" and 'btn-save' in request.POST:
 
         formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
 
-        # New Fields
         contact_person = request.POST.get('contact_person', '').strip()
         contact_number = request.POST.get('contact_number', '').strip()
         location_of = request.POST.get('location_of', '').strip()
@@ -414,32 +416,32 @@ def shippingaddress(request):
         landmark = request.POST.get('landmark', '').strip()
         location_description = request.POST.get('location_description', '').strip()
 
-        # ---------- UPDATE EXISTING ----------
+        # UPDATE
         if formshippingaddress_id:
             shipping_address = ShippingAddress.objects.filter(id=formshippingaddress_id, user=user).first()
 
-            if shipping_address:
-                shipping_address.contact_person = contact_person
-                shipping_address.contact_number = contact_number
-                shipping_address.location_of = location_of
-                shipping_address.province = province
-                shipping_address.district = district
-                shipping_address.city = city
-                shipping_address.location = location
-                shipping_address.landmark = landmark
-                shipping_address.location_description = location_description
-                shipping_address.save()
-
-                messages.success(request, "Shipping address updated successfully.")
-            else:
+            if not shipping_address:
                 messages.error(request, "Shipping address not found.")
-                return redirect('editprofile')
+                return redirect(next_page)
 
-        # ---------- ADD NEW ----------
+            shipping_address.contact_person = contact_person
+            shipping_address.contact_number = contact_number
+            shipping_address.location_of = location_of
+            shipping_address.province = province
+            shipping_address.district = district
+            shipping_address.city = city
+            shipping_address.location = location
+            shipping_address.landmark = landmark
+            shipping_address.location_description = location_description
+            shipping_address.save()
+
+            messages.success(request, "Shipping address updated successfully.")
+
+        # ADD NEW
         else:
             if ShippingAddress.objects.filter(user=user).count() >= 2:
                 messages.error(request, "You can only have up to 2 shipping addresses.")
-                return redirect('editprofile')
+                return redirect(next_page)
 
             ShippingAddress.objects.create(
                 user=user,
@@ -456,19 +458,151 @@ def shippingaddress(request):
 
             messages.success(request, "Shipping address added successfully.")
 
-        return redirect('editprofile')
+        return redirect(next_page)
 
-    # ---------------------- EDIT BUTTON CLICKED ----------------------
+    # EDIT BUTTON CLICKED
     elif request.method == "POST":
+
         shippingaddress_id = request.POST.get('shippingaddress_id')
 
         shipping_address = ShippingAddress.objects.filter(id=shippingaddress_id, user=user).first()
 
         if not shipping_address:
             messages.error(request, "Shipping address not found.")
-            return redirect('editprofile')
+            return redirect(next_page)
 
-        return render(request, 'shippingaddress.html', {"shippingaddress": shipping_address})
+        return render(request, 'shippingaddress.html', {
+            "shippingaddress": shipping_address,
+            "next_page": next_page
+        })
 
-    # ---------------------- GET REQUEST (Add New) ----------------------
-    return render(request, 'shippingaddress.html', {"shippingaddress": None})
+    # DEFAULT (Add New)
+    return render(request, 'shippingaddress.html', {
+        "shippingaddress": None,
+        "next_page": next_page
+    })
+
+
+
+def render_order_page(request, cart_id, user):
+    """Helper function to render order.html with all necessary data"""
+    
+    # If cart_id is not provided, get user's first active cart
+    if not cart_id:
+        cart = Cart.objects.filter(user=user).first()
+        if not cart:
+            messages.error(request, "No active cart found.")
+            return redirect("cart_view")
+    else:
+        cart = get_object_or_404(Cart, id=cart_id, user=user)
+    
+    cart_items = cart.items.all()
+    shipping_address = ShippingAddress.objects.filter(user=user)
+    shipping_fee = 100 * cart.total_quantity
+    total_amount = cart.total_cart_amount + shipping_fee
+
+    return render(request, "order.html", {
+        "cart": cart,
+        "cart_items": cart_items,
+        "shipping_address": shipping_address,
+        "shipping_fee": shipping_fee,
+        "total_amount": total_amount,
+    })
+
+
+@never_cache
+@login_required
+def shippingaddress_order(request):
+    """Handle shipping address management from order page"""
+    user = request.user
+    next_page = request.POST.get("next_page", "order")
+    cart_id = request.POST.get("cart_id")
+
+    # Debug: Print to check if cart_id is being received
+    print(f"DEBUG: cart_id = {cart_id}, next_page = {next_page}")
+
+    # SAVE BUTTON (Add or Update)
+    if request.method == "POST" and 'btn-save' in request.POST:
+
+        formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
+
+        contact_person = request.POST.get('contact_person', '').strip()
+        contact_number = request.POST.get('contact_number', '').strip()
+        location_of = request.POST.get('location_of', '').strip()
+        province = request.POST.get('province', '').strip()
+        district = request.POST.get('district', '').strip()
+        city = request.POST.get('city', '').strip()
+        location = request.POST.get('location', '').strip()
+        landmark = request.POST.get('landmark', '').strip()
+        location_description = request.POST.get('location_description', '').strip()
+
+        # UPDATE
+        if formshippingaddress_id:
+            shipping_address = ShippingAddress.objects.filter(id=formshippingaddress_id, user=user).first()
+
+            if not shipping_address:
+                messages.error(request, "Shipping address not found.")
+                return render_order_page(request, cart_id, user)
+
+            shipping_address.contact_person = contact_person
+            shipping_address.contact_number = contact_number
+            shipping_address.location_of = location_of
+            shipping_address.province = province
+            shipping_address.district = district
+            shipping_address.city = city
+            shipping_address.location = location
+            shipping_address.landmark = landmark
+            shipping_address.location_description = location_description
+            shipping_address.save()
+
+            messages.success(request, "Shipping address updated successfully.")
+
+        # ADD NEW
+        else:
+            if ShippingAddress.objects.filter(user=user).count() >= 2:
+                messages.error(request, "You can only have up to 2 shipping addresses.")
+                return render_order_page(request, cart_id, user)
+
+            ShippingAddress.objects.create(
+                user=user,
+                contact_person=contact_person,
+                contact_number=contact_number,
+                location_of=location_of,
+                province=province,
+                district=district,
+                city=city,
+                location=location,
+                landmark=landmark,
+                location_description=location_description
+            )
+
+            messages.success(request, "Shipping address added successfully.")
+
+        return render_order_page(request, cart_id, user)
+
+    # EDIT BUTTON CLICKED or ADD NEW BUTTON
+    elif request.method == "POST" and 'btn-edit' in request.POST:
+        shippingaddress_id = request.POST.get('shippingaddress_id', '')
+        
+        if shippingaddress_id:
+            shipping_address = ShippingAddress.objects.filter(id=shippingaddress_id, user=user).first()
+
+            if not shipping_address:
+                messages.error(request, "Shipping address not found.")
+                return render_order_page(request, cart_id, user)
+
+            return render(request, 'shippingaddress.html', {
+                "shippingaddress": shipping_address,
+                "next_page": next_page,
+                "cart_id": cart_id
+            })
+        else:
+            # ADD NEW button was clicked
+            return render(request, 'shippingaddress.html', {
+                "shippingaddress": None,
+                "next_page": next_page,
+                "cart_id": cart_id
+            })
+
+    # Default - render order page
+    return render_order_page(request, cart_id, user)

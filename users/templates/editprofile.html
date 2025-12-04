@@ -58,35 +58,44 @@
         <input type="password" name="password" placeholder="Password" value="{{password}}"/>
         <input type="text" name="address" placeholder="Address" value="{{address}}" disabled/>
         <input type="tel" name="phone" placeholder="Phone Number" value="{{phone}}"/>
-        {% if not request.user.is_staff%}
+        {% if not request.user.is_staff %}
             {% if shippingaddress %}
-              {% for address in shippingaddress %}
-                <div class="shipping-address">
-                  <div>Shipping Address {{forloop.counter}}</div>
-                  <button type="button" class="btn-shipping-address" onclick="submitShippingForm('{{address.id}}');">
-                    Edit
-                  </button>
-                </div>
-              {% endfor %}
+                {% for address in shippingaddress %}
+                    <div class="shipping-address">
+                        <div>Shipping Address {{forloop.counter}}</div>
+                        <button type="button" class="btn-shipping-address" onclick="submitShippingForm('{{address.id}}');">
+                            Edit
+                        </button>
+                    </div>
+                {% endfor %}
+                {% if shippingaddress|length < 2 %}
+                    <div class="shipping-address">
+                        <div>Add Shipping Address {{ shippingaddress|length|add:'1' }}</div>
+                        <button type="button" class="btn-shipping-address" onclick="window.location.href='{% url 'shippingaddress' %}'">Add</button>
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="shipping-address">
-                  <div>Add Shipping Address 1</div> <button type="button" class="btn-shipping-address" onclick="window.location.href='{% url 'shippingaddress' %}'">Add</button>
+                    <div>Add Shipping Address 1</div>
+                    <button type="button" class="btn-shipping-address" onclick="window.location.href='{% url 'shippingaddress' %}'">Add</button>
                 </div>
-            {% endif%}
-       {% endif %}
-
+            {% endif %}
+        {% endif %}
         <button type="submit" class="btn-register">Edit Profile</button>
       </form>
     </div>
-      <form id="shipping-form" action="{% url 'shippingaddress' %}" method="POST" style="display:none;">
-        {% csrf_token %}
-        <input type="hidden" name="shippingaddress_id" id="shipping-id" value="">
-      </form>
+<form id="shipping-form" action="{% url 'shippingaddress' %}" method="POST" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="shippingaddress_id" id="shipping-id" value="">
+    <input type="hidden" name="next_page" id="next_page" value="">  <!-- ADD THIS -->
+</form>
+
   </div>
 
 <script>
-  function submitShippingForm(addressId) {
+function submitShippingForm(addressId) {
   document.getElementById('shipping-id').value = addressId;
+  document.getElementById('next_page').value = "editprofile";
   document.getElementById('shipping-form').submit();
 }
   // auto hide messages after 4 seconds

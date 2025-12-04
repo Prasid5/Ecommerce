@@ -29,7 +29,8 @@
     gap: 30px;
     padding: 40px;
     font-family: 'Segoe UI', sans-serif;
-    height: 90vh;
+    min-height: 80vh; /* optional, keeps initial spacing */
+    flex-wrap: wrap; /* optional, for small screens */
 }   
 
 .order-items {
@@ -38,6 +39,7 @@
 .shipping-address-container{
     margin-bottom:50px;
 }
+
 /* Shipping Address */
 .shipping-address-heading{
     display: flex;
@@ -49,8 +51,11 @@
     margin: 10px 0;
 }
 
-.shipping-address-heading > .btn-add{
-    width: 10%;
+.shipping-address > .address form{
+    width:10%;
+}
+.btn-add{
+    width: 100%;
     margin-top: 10px;
     padding: 12px;
 
@@ -63,12 +68,25 @@
 }
 
 .shipping-address{
+    width:100%;
     display:flex;
     align-items:center;
     justify-content:space-between;
+    
+    flex-direction:column;
 }
 
-.shipping-address textarea{
+.shipping-address > .address{
+    width:100%;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    flex-direction:row;
+}
+
+.shipping-address > .address textarea{
     width: 85%;
     margin: 10px 0;
     padding: 12px 15px;
@@ -79,9 +97,12 @@
 
     font-size: 1rem;
 }
+.shipping-address > .address form{
+    width:10%;
+}
 
-.shipping-address > .btn-edit{
-    width: 10%;
+.btn-edit{
+    width: 100%;
     margin: 10px 0;
     padding: 12px;
 
@@ -242,18 +263,39 @@
 
             <div class="shipping-address-heading">
                 <h2>Shipping Address</h2>
-                <button class="btn-add"> Add New</button>
+                    {% if shipping_address|length < 2 %}
+                    <form action="{% url 'shippingaddress_order' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="cart_id" value="{{cart.id}}">
+                        <input type="hidden" name="next_page" value="order">
+                        <button class="btn-add" name="btn-edit">Add New</button>
+                    </form>
+                    {% endif %}
             </div>
-
             <div class="shipping-address">
-                <textarea name="" id="">
-                </textarea>
-                <button class="btn-edit"> Edit </button>
+                {% if shipping_address %}
+                    {% for address in shipping_address %}
+                    <div class="address">
+                        <textarea readonly>Location of: {{address.location_of}} | Province: {{address.province}} District: {{address.district}} | Location: {{address.city}},{{address.location}},{{address.landmark}} | Description: {{address.location_description}}
+                        </textarea>
+                        <form action="{% url 'shippingaddress_order'%}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="shippingaddress_id" value="{{ address.id }}">
+                            <input type="hidden" name="cart_id" value="{{cart.id}}">
+                            <input type="hidden" name="next_page" value="order">   <!-- IMPORTANT -->
+                            <button class="btn-edit" type="submit" name="btn-edit">Edit</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Add Shipping Address By Clicking The Button</p>
+                {% endif %}
             </div>
         </div>
 
-        <div class="order-heading">
-            <span style="width:75%">Order Items</span>
+        <h2>Order</h2>
+        <div class="order-heading">   
+            <span style="width:75%">Items</span>
             <span style="width:12.5%; text-align:center">Quantity</span>
             <span style="width:12.5%; text-align:center">Price</span>
         </div>
@@ -273,10 +315,11 @@
                             <p>SKU: {{ item.variant.sku }}</p>
                             <p class="item-price">Unit Price: <strong>Rs. {{ item.variant.product.base_price }}</strong></p>
 
-                            <form action="{% url 'remove_from_cart' %}" method="POST">
+                            <form action="{% url 'remove_item' %}" method="POST">
                                 {% csrf_token %}
+                                <input type="hidden" name="cart_id" value="{{cart.id}}">
                                 <input type="hidden" name="item_id" value="{{item.id}}">
-                                <button class="remove-btn">Remove</button>
+                                <button type="submit" class="remove-btn">Remove</button>
                             </form>
                         </div>
                     </div>
@@ -299,28 +342,30 @@
     </div>
 
     <div class="order-summary">
-        <h3>Order Summary ({{ cart.total_quantity }} Item{{ cart.total_quantity|pluralize }})</h3>
+        <h3>Order Summary ({{ cart.total_quantity }} Unit{{ cart.total_quantity|pluralize }})</h3>
         <div class="order-amount">
             <table>
                 <tr>
-                    <td>Subtotal({{ cart.total_quantity }} Item{{ cart.total_quantity|pluralize }})</td>
-                    <td>Rs. {{ cart.total_amount|floatformat:2 }}</td>
+                    <td>Subtotal({{ cart.total_quantity }} Unit{{ cart.total_quantity|pluralize }})</td>
+                    <td>Rs. {{ cart.total_cart_amount|floatformat:2 }}</td>
                 </tr>
                 <tr>
                     <td>Shipping Fee</td>
-                    <td>Rs. 1000</td>
+                    <td>Rs. {{ shipping_fee|floatformat:2 }}</td>
                 </tr>
                 <tr style="font-weight:bold;">
                     <td>Total</td>
-                    <td>Rs. 1000</td>
+                    <td>Rs. {{ total_amount|floatformat:2 }}</td>
                 </tr>
             </table>
         </div>
-        <select class="select-shipping-address" name="">
+        <select class="select-shipping-address" name="shipping_address_id" required>
             <option disabled selected>Select Shipping Address</option>
-            <option value="">Shipping Address 1</option>
-            <option value="">Shipping Address 2</option>
+            {% for address in shipping_address %}
+                <option value="{{ address.id }}">{{ address.location_of }} - {{ address.city }} - {{address.location}}</option>
+            {% endfor %}
         </select>
+
         <button class="checkout-btn">Proceed To Pay</button>
         <a onclick="history.back();" class="continue-link">Continue Shopping</a>
     </div>

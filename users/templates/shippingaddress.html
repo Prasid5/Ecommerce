@@ -21,19 +21,27 @@
             {% endif %}
         </h2>
 
-        <form method="POST">
+        <!-- Form posts to different views based on next_page -->
+        {% if next_page == 'order' %}
+            <form method="POST" action="{% url 'shippingaddress_order' %}">
+        {% else %}
+            <form method="POST" action="{% url 'shippingaddress' %}">
+        {% endif %}
             {% csrf_token %}
             <input type="hidden" name="formshippingaddress_id" value="{{shippingaddress.id|default:''}}">
+            <input type="hidden" name="next_page" value="{{ next_page }}">
+            <input type="hidden" name="cart_id" value="{{ cart_id|default:'' }}">
 
             <!-- Contact Person-->
             <div>
                 <label>Contact Person</label>
-                <input type="text" name="contact_person"placeholder="Please enter your contact person" value="{{ shippingaddress.contact_person|default:request.user.username }}">
+                <input type="text" name="contact_person" placeholder="Please enter your contact person" value="{{ shippingaddress.contact_person|default:request.user.username }}">
             </div>
 
             <!-- Contact Number-->
             <div>
-                <label>Contact Number</label><input type="text" name="contact_number" placeholder="Please enter your contact number"value="{{ shippingaddress.contact_number|default:request.user.phone }}">
+                <label>Contact Number</label>
+                <input type="text" name="contact_number" placeholder="Please enter your contact number" value="{{ shippingaddress.contact_number|default:request.user.phone }}">
             </div>
 
             <!-- Location -->
@@ -65,52 +73,46 @@
             <!-- District -->
             <div>
                 <label>District</label>
-                <input type="text" name="district"
-                       placeholder="Please enter"
-                       value="{{ shippingaddress.district|default:'' }}">
+                <input type="text" name="district" placeholder="Please enter" value="{{ shippingaddress.district|default:'' }}">
             </div>
 
             <!-- City -->
             <div>
                 <label>City</label>
-                <input type="text" name="city"
-                       placeholder="Please enter"
-                       value="{{ shippingaddress.city|default:'' }}">
+                <input type="text" name="city" placeholder="Please enter" value="{{ shippingaddress.city|default:'' }}">
             </div>
 
             <!-- Location -->
             <div>
                 <label>Location</label>
-                <input type="text" name="location"
-                       placeholder="For Example: Street #123, ABC Road"
-                       value="{{ shippingaddress.location|default:'' }}">
+                <input type="text" name="location" placeholder="For Example: Street #123, ABC Road" value="{{ shippingaddress.location|default:'' }}">
             </div>
 
             <!-- Landmark -->
             <div>
                 <label>Landmark</label>
-                <input type="text" name="landmark"
-                       placeholder="Please enter"
-                       value="{{ shippingaddress.landmark|default:'' }}">
+                <input type="text" name="landmark" placeholder="Please enter" value="{{ shippingaddress.landmark|default:'' }}">
             </div>
 
-            <!-- Street / House No -->
+            <!-- Location Description -->
             <div>
                 <label>Location Description</label>
                 <textarea name="location_description" placeholder="Description">{{ shippingaddress.location_description|default:'' }}</textarea>
             </div>
 
-
-
             <!-- Buttons -->
             <div class="form-actions">
-                <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'editprofile' %}'">
-                    CANCEL
-                </button>
+                {% if next_page == 'order' %}
+                    <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'order_view' %}'">
+                        CANCEL
+                    </button>
+                {% else %}
+                    <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'editprofile' %}'">
+                        CANCEL
+                    </button>
+                {% endif %}
 
-                <button type="submit" class="btn-save" name="btn-save">
-                    SAVE
-                </button>
+                <button type="submit" class="btn-save" name="btn-save">SAVE</button>
             </div>
 
         </form>
