@@ -44,7 +44,6 @@ def stocktransaction(request):
     return render(request, "stocktransaction.html", context)
 
 
-
 def stocktracking(request):
     """
     Shows:

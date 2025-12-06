@@ -20,7 +20,7 @@
                             {% comment %} {{ item.product.product_name }} –  {% endcomment %}
                             Product Variant Name: {{ item.variant_name }} | SKU: {{item.sku}}
                         </strong>
-                        <span class="qty">Stock: {{ item.inventorystocks.quantity }}</span>
+                        <span class="qty">Stock: {{ item.inventorystocks.quantity|default:'Not Added' }}</span>
                     </div>
                 {% endfor %}
             {% else %}

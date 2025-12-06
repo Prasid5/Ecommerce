@@ -1,5 +1,7 @@
 from django.db import models
 from orders.models import Order
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = (

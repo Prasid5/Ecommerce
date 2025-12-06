@@ -1,4 +1,4 @@
-{% extends 'customer/base.html' %}
+{% extends base_template %}
 {% load static %}
 {% block title %}Sneakee | Edit Profile{% endblock %}
 
@@ -36,6 +36,7 @@
     padding: 5px;
   }
 </style>
+<div class="content-area">
   <div class="form-container">
     <div class="form-box">
       <h2>Edit Profile</h2>
@@ -60,10 +61,10 @@
         <input type="tel" name="phone" placeholder="Phone Number" value="{{phone}}"/>
         {% if not request.user.is_staff %}
             {% if shippingaddress %}
-                {% for address in shippingaddress %}
+                {% for saddress in shippingaddress %}
                     <div class="shipping-address">
                         <div>Shipping Address {{forloop.counter}}</div>
-                        <button type="button" class="btn-shipping-address" onclick="submitShippingForm('{{address.id}}');">
+                        <button type="button" class="btn-shipping-address" onclick="submitShippingForm('{{saddress.id}}');">
                             Edit
                         </button>
                     </div>
@@ -91,7 +92,7 @@
 </form>
 
   </div>
-
+</div>
 <script>
 function submitShippingForm(addressId) {
   document.getElementById('shipping-id').value = addressId;

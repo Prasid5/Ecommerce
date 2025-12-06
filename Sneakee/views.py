@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required
 from products.models import Brand, Category, ProductVariant
-from django.db.models import F
+from django.db.models import F, Q
 
 @never_cache
 def home(request):
@@ -37,8 +37,10 @@ def orderdashboard(request):
 @login_required
 def inventorydashboard(request):
     if request.user.is_staff:
-        low_stock_variants = ProductVariant.objects.filter(inventorystocks__quantity__lte=F('low_stock_threshold'))
-
+        low_stock_variants = ProductVariant.objects.filter(
+            Q(inventorystocks__quantity__lte=F('low_stock_threshold')) |
+            Q(inventorystocks__isnull=True)
+        ).distinct()
         return render(request, "administrator/inventorydashboard.html", {
             "low_stock_variants": low_stock_variants
         })

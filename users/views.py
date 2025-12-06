@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from carts.models import Cart
 from users.models import User, ShippingAddress
+from products.models import ProductVariant
 
 
 @never_cache
@@ -133,14 +134,17 @@ def addadmin(request):
             email = request.POST.get('email', '').strip().lower()
             password = request.POST.get('password', '').strip()
             phone = request.POST.get('phone', '').strip()
+            address = request.POST.get('address', '').strip()
+
 
             context={
                 'username':username,
                 'email':email,
-                'phone':phone
+                'phone':phone,
+                'address':address,
             }
             
-            if not username or not email or not password or not phone:
+            if not username or not email or not password or not address or not phone:
                 messages.error(request,"All field are required.")
                 return render(request, 'addadmin.html',context)
             
@@ -173,6 +177,7 @@ def addadmin(request):
                 email=email,
                 password=password,
                 phone=phone,
+                address=address,
                 is_staff=True
             )
 
@@ -249,9 +254,11 @@ def edituser(request):
             password = request.POST.get('password', '').strip()
             address = request.POST.get('address', '').strip()
             phone = request.POST.get('phone', '').strip()
+            shipping_address1 = ""
+            shipping_address2 = ""
             if not request.user.is_staff:
-                shipping_address1=request.POST.get('shipping_address1').strip()
-                shipping_address2=request.POST.get('shipping_address2').strip()
+                shipping_address1=request.POST.get('shipping_address1','').strip()
+                shipping_address2=request.POST.get('shipping_address2','').strip()
 
             context = {
                 'user_id':user_id,
@@ -350,10 +357,16 @@ def deleteuser(request):
 @login_required
 def editprofile(request):
     user = request.user  # already the authenticated user
+    if user.is_staff:
+        base_template='administrator/base.html'
+    else:
+        base_template='customer/base.html'
+
     phone_pattern1 = r"^98\d{8}$"
     phone_pattern2 = r"^97\d{8}$"
     shipping_address = ShippingAddress.objects.filter(user=user).all()
     context = {
+        "base_template":base_template,
         "username": user.username,
         "email": user.email,
         "user_id": user.id,
@@ -483,10 +496,8 @@ def shippingaddress(request):
     })
 
 
-
 def render_order_page(request, cart_id, user):
     """Helper function to render order.html with all necessary data"""
-    
     # If cart_id is not provided, get user's first active cart
     if not cart_id:
         cart = Cart.objects.filter(user=user).first()
@@ -498,6 +509,7 @@ def render_order_page(request, cart_id, user):
     
     cart_items = cart.items.all()
     shipping_address = ShippingAddress.objects.filter(user=user)
+    sub_total= cart.total_cart_amount
     shipping_fee = 100 * cart.total_quantity
     total_amount = cart.total_cart_amount + shipping_fee
 
@@ -506,9 +518,38 @@ def render_order_page(request, cart_id, user):
         "cart_items": cart_items,
         "shipping_address": shipping_address,
         "shipping_fee": shipping_fee,
+        "sub_total":sub_total,
         "total_amount": total_amount,
     })
 
+def render_buy_now_order_page(request, variant_id, quantity, user):
+    """Helper function to render buynoworder.html with all necessary data"""
+    variant = ProductVariant.objects.filter(id=variant_id).first()
+    if not variant:
+        messages.error(request, "The selected product variant does not exist.")
+        return redirect("home")
+    
+    quantity = int(quantity) if quantity else 1
+
+    shipping_address = ShippingAddress.objects.filter(user=user)
+
+    # Pricing using product base price
+    base_price = variant.product.base_price
+    sub_total = base_price * quantity
+    shipping_fee = 100 * quantity
+    total_amount = sub_total + shipping_fee
+
+    # Render buy now order page with correct template name
+    return render(request, "buynoworder.html", {
+        "variant": variant,
+        "variant_id": variant_id,
+        "quantity": quantity,
+        "base_price": base_price,
+        "sub_total": sub_total,
+        "shipping_fee": shipping_fee,
+        "total_amount": total_amount,
+        "shipping_address": shipping_address,
+    })
 
 @never_cache
 @login_required
@@ -516,10 +557,12 @@ def shippingaddress_order(request):
     """Handle shipping address management from order page"""
     user = request.user
     next_page = request.POST.get("next_page", "order")
-    cart_id = request.POST.get("cart_id")
+    cart_id = request.POST.get("cart_id", "")
+    variant_id = request.POST.get("variant_id", "")
+    quantity = request.POST.get("quantity", "")
 
     # Debug: Print to check if cart_id is being received
-    print(f"DEBUG: cart_id = {cart_id}, next_page = {next_page}")
+    print(f"DEBUG: cart_id = {cart_id}, variant_id = {variant_id}, next_page = {next_page}")
 
     # SAVE BUTTON (Add or Update)
     if request.method == "POST" and 'btn-save' in request.POST:
@@ -542,7 +585,10 @@ def shippingaddress_order(request):
 
             if not shipping_address:
                 messages.error(request, "Shipping address not found.")
-                return render_order_page(request, cart_id, user)
+                if cart_id:
+                    return render_order_page(request, cart_id, user)
+                else:
+                    return render_buy_now_order_page(request, variant_id, quantity, user)
 
             shipping_address.contact_person = contact_person
             shipping_address.contact_number = contact_number
@@ -561,7 +607,10 @@ def shippingaddress_order(request):
         else:
             if ShippingAddress.objects.filter(user=user).count() >= 2:
                 messages.error(request, "You can only have up to 2 shipping addresses.")
-                return render_order_page(request, cart_id, user)
+                if cart_id:
+                    return render_order_page(request, cart_id, user)
+                else:
+                    return render_buy_now_order_page(request, variant_id, quantity, user)
 
             ShippingAddress.objects.create(
                 user=user,
@@ -578,7 +627,11 @@ def shippingaddress_order(request):
 
             messages.success(request, "Shipping address added successfully.")
 
-        return render_order_page(request, cart_id, user)
+        # Return to appropriate page after save
+        if cart_id:
+            return render_order_page(request, cart_id, user)
+        else:
+            return render_buy_now_order_page(request, variant_id, quantity, user)
 
     # EDIT BUTTON CLICKED or ADD NEW BUTTON
     elif request.method == "POST" and 'btn-edit' in request.POST:
@@ -589,20 +642,30 @@ def shippingaddress_order(request):
 
             if not shipping_address:
                 messages.error(request, "Shipping address not found.")
-                return render_order_page(request, cart_id, user)
+                if cart_id:
+                    return render_order_page(request, cart_id, user)
+                else:
+                    return render_buy_now_order_page(request, variant_id, quantity, user)
 
             return render(request, 'shippingaddress.html', {
                 "shippingaddress": shipping_address,
                 "next_page": next_page,
-                "cart_id": cart_id
+                "cart_id": cart_id,
+                "variant_id": variant_id,
+                "quantity": quantity
             })
         else:
             # ADD NEW button was clicked
             return render(request, 'shippingaddress.html', {
                 "shippingaddress": None,
                 "next_page": next_page,
-                "cart_id": cart_id
+                "cart_id": cart_id,
+                "variant_id": variant_id,
+                "quantity": quantity
             })
 
-    # Default - render order page
-    return render_order_page(request, cart_id, user)
+    # Default - render appropriate order page
+    if cart_id:
+        return render_order_page(request, cart_id, user)
+    else:
+        return render_buy_now_order_page(request, variant_id, quantity, user)

@@ -36,5 +36,7 @@ urlpatterns = [
     path("editproduct/", views.editproduct, name="editproduct"),
     path("editproductvariant/", views.editproductvariant, name="editproductvariant"),
 
+    path('backtoproductdetails/', views.backtoproductdetails, name='backtoproductdetails'),
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

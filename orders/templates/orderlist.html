@@ -1,0 +1,447 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Order List{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .content-area {
+            width: 90%;
+            min-height:85vh;
+            margin: 20px auto;
+        }
+
+        .message-container {
+    position: fixed;
+    top: 80px; /* Adjust based on your header height */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: 90%;
+    max-width: 600px;
+    pointer-events: none; /* Allows clicking through empty space */
+}
+
+.alert {
+    pointer-events: auto; /* Re-enables clicking on actual alerts */
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert.success { 
+    background-color: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert.error {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-left: 4px solid #ef4444;
+}
+
+        .content-area h1 { 
+            margin-bottom: 20px; 
+        }
+
+        /* ---------- Top Bar ---------- */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .topbar form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topbar input[type=text] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-btn {
+            background-color: #080033;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .search-btn:hover {
+            background-color: #1a0052;
+        }
+
+        /* ---------- TABLE CONTAINER ---------- */
+        .table-wrapper {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        thead tr {
+            background: #ffffffff;
+            color: #000000ff;
+            font-weight: 600;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 16px;
+        }
+
+        td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending { 
+            background-color: #fef3c7; 
+            color: #92400e; 
+        }
+
+        .status-confirmed { 
+            background-color: #d1fae5; 
+            color: #065f46; 
+        }
+
+        .status-processing { 
+            background-color: #bfdbfe; 
+            color: #1e40af; 
+        }
+
+        .status-shipped { 
+            background-color: #dbeafe; 
+            color: #1e3a8a; 
+        }
+
+        .status-delivered { 
+            background-color: #d1fae5; 
+            color: #065f46; 
+        }
+
+        .status-canceled { 
+            background-color: #fee2e2; 
+            color: #b91c1c; 
+        }
+
+        .payment-status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .payment-pending { 
+            background-color: #fef3c7; 
+            color: #92400e; 
+        }
+
+        .payment-success { 
+            background-color: #d1fae5; 
+            color: #065f46; 
+        }
+
+        .payment-failed { 
+            background-color: #fee2e2; 
+            color: #b91c1c; 
+        }
+
+        /* Action buttons */
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background-color: #080033;
+            color: #fff;
+            text-decoration: none;
+            padding: 6px 12px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #1a0052;
+        }
+
+        .action-btn.danger {
+            background-color: #ef4444;
+        }
+
+        .action-btn.danger:hover {
+            background-color: #dc2626;
+        }
+
+        .action-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* ---------- Pagination ---------- */
+        .pagination {
+            margin-top: 12px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn {
+            padding: 6px 10px;
+            text-decoration: none;
+            color: black;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            cursor: default;
+            font-weight: 500;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: #999;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .no-orders {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .content-area {
+                width: 95%;
+            }
+
+            .topbar {
+                flex-direction: column;
+            }
+
+            .topbar form {
+                width: 100%;
+            }
+
+            .topbar input[type=text] {
+                width: 100%;
+                flex: 1;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+            }
+
+            .actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .action-btn {
+                width: 100%;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="content-area">
+
+    {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h1>My Orders</h1>
+
+    <!-- Search Bar -->
+    <div class="topbar">
+        <form action="{% url 'order_list' %}" method="get">
+            <input type="text" name="query" value="{{ query }}" placeholder="Search by Order ID or Name...">
+            <input type="hidden" name="page" value="{{ page_obj.number }}">
+            <button type="submit" class="page-btn">Search</button>
+        </form>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Total Amount</th>
+                    <th>Order Status</th>
+                    <th>Payment Method</th>
+                    <th>Payment Status</th>
+                    <th>Order Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in page_obj %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>NPR {{ order.total_amount|floatformat:2 }}</td>
+                    <td>
+                        <span class="status-badge status-{{ order.status|lower }}">
+                            {{ order.status|title }}
+                        </span>
+                    </td>
+                    <td>
+                        {% with order.payments.first as payment %}
+                            {% if payment %}
+                                {{ payment.payment_method|upper }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with order.payments.first as payment %}
+                            {% if payment %}
+                                <span class="payment-status-badge payment-{{ payment.payment_status|lower }}">
+                                    {{ payment.payment_status|title }}
+                                </span>
+                            {% else %}
+                                <span class="payment-status-badge payment-pending">
+                                    Pending
+                                </span>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ order.order_date|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <div class="actions">
+                            <!-- View Details Button -->
+                            <a href="{% url 'order_detail' order.id %}" class="action-btn">
+                                View Details
+                            </a>
+
+                            <!-- Download Invoice - Only if confirmed and paid -->
+                            {% with order.payments.first as payment %}
+                                {% if order.status == "confirmed" and payment and payment.payment_status == "success" %}
+                                <a href="{% url 'download_invoice' order.id %}" class="action-btn" title="Download Invoice">
+                                    Download Invoice
+                                </a>
+                                {% endif %}
+                            {% endwith %}
+
+                            <!-- Cancel Order Button - Only if COD, paid, and pending/confirmed (NOT processing) -->
+                            {% with order.payments.first as payment %}
+                                {% if payment and payment.payment_method == "cod" and payment.payment_status == "success" and order.status in "pending,confirmed" %}
+                                <form action="{% url 'cancel_order' order.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="action-btn danger">
+                                        Cancel Order
+                                    </button>
+                                </form>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="no-orders">No orders found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
+        {% endif %}
+
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="?query={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+  // Auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
+</body>
+</html>
+{% endblock %}

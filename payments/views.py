@@ -1,5 +1,678 @@
-from django.shortcuts import render
+import uuid
+import base64
+import json
+import hmac
+import hashlib
+import os
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse, FileResponse
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_http_methods
+from carts.models import CartItem, Cart
+from orders.models import Order, OrderItem
+from payments.models import Payment
+from inventory.models import Stock, StockTransaction
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.conf import settings
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
-def payment(request):
-    return render(request, 'payment.html')
-# Create your views here.
+# ───────────────────────────────────
+# Helper Functions
+# ───────────────────────────────────
+
+def generate_signature(total_amount, transaction_uuid, product_code, secret_key):
+    """Generate eSewa signature"""
+    data = f"total_amount={total_amount},transaction_uuid={transaction_uuid},product_code={product_code}"
+    key = secret_key
+    message = data.encode()
+    key_bytes = key.encode()
+    signature = hmac.new(key_bytes, message, hashlib.sha256).digest()
+    encoded_signature = base64.b64encode(signature).decode()
+    return encoded_signature
+
+
+def decode_base64_response(encoded_data):
+    """Decode eSewa response"""
+    try:
+        decoded = base64.b64decode(encoded_data)
+        response_data = json.loads(decoded)
+        return response_data
+    except Exception as e:
+        print(f"Error decoding eSewa response: {e}")
+        return None
+
+
+def reduce_inventory_for_order(order):
+    """
+    Reduce inventory stock for all items in the order.
+    Creates StockTransaction records for audit trail.
+    """
+    try:
+        for item in order.items.all():
+            # Get the stock record for this variant
+            stock = Stock.objects.get(productvariant=item.variant)
+            
+            # Reduce the quantity
+            if stock.quantity >= item.quantity:
+                stock.quantity -= item.quantity
+                stock.save()
+                
+                # Create a stock transaction record for audit
+                StockTransaction.objects.create(
+                    productvariant=item.variant,
+                    change=-item.quantity,  # Negative for stock out
+                    reason=f"Order #{order.id} - Payment Confirmed",
+                )
+            else:
+                raise ValueError(f"Insufficient stock for {item.variant.product.product_name}")
+        
+        return True, "Inventory reduced successfully"
+    except Stock.DoesNotExist:
+        return False, f"Stock record not found for variant"
+    except Exception as e:
+        return False, str(e)
+
+
+def delete_user_cart(user):
+    """Delete all cart items and cart for user"""
+    cart = Cart.objects.filter(user=user)
+    CartItem.objects.filter(cart__in=cart).delete()
+    cart.delete()
+
+
+def restore_inventory_for_order(order):
+    """
+    Restore inventory stock for all items in a canceled order.
+    Creates StockTransaction records for audit trail.
+    """
+    try:
+        for item in order.items.all():
+            # Get the stock record for this variant
+            stock = Stock.objects.get(productvariant=item.variant)
+            
+            # Increase the quantity back
+            stock.quantity += item.quantity
+            stock.save()
+            
+            # Create a stock transaction record for audit
+            StockTransaction.objects.create(
+                productvariant=item.variant,
+                change=item.quantity,  # Positive for stock in (restoration)
+                reason=f"Order #{order.id} - Canceled by Customer",
+            )
+        
+        return True, "Inventory restored successfully"
+    except Stock.DoesNotExist:
+        return False, f"Stock record not found for variant"
+    except Exception as e:
+        return False, str(e)
+
+
+def generate_invoice_pdf(order):
+    """
+    Generate invoice PDF for an order and save it to media directory
+    """
+    # Create media/invoices directory if it doesn't exist
+    invoice_dir = os.path.join(settings.MEDIA_ROOT, 'invoices')
+    os.makedirs(invoice_dir, exist_ok=True)
+    
+    # Create filename with order ID and timestamp
+    invoice_filename = f"invoice_order_{order.id}_{order.order_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+    invoice_path = os.path.join(invoice_dir, invoice_filename)
+    
+    # Create PDF document
+    doc = SimpleDocTemplate(
+        invoice_path,
+        pagesize=A4,
+        rightMargin=0.25*inch,
+        leftMargin=0.25*inch,
+        topMargin=0.25*inch,
+        bottomMargin=0.25*inch,
+    )
+    
+    # Container for PDF elements
+    elements = []
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#080033'),
+        spaceAfter=12,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#080033'),
+        spaceAfter=6,
+        fontName='Helvetica-Bold'
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        spaceAfter=3,
+    )
+    
+    # Title
+    elements.append(Paragraph("SNEAKEE", title_style))
+    elements.append(Paragraph("Invoice", heading_style))
+    
+    
+    invoice_info = f"""
+    <b>Invoice Number:</b> INV-{order.id:05d}<br/>
+    <b>Invoice Date:</b> {order.order_date.strftime('%d %B %Y')}<br/>
+    <b>Order Date:</b> {order.order_date.strftime('%d %B %Y %H:%M')}<br/>
+    """
+    elements.append(Paragraph(invoice_info, normal_style))
+    elements.append(Spacer(1, 8))
+
+    '''
+    # Invoice Header Information
+    invoice_info = [
+        ['Invoice Number:', f"INV-{order.id:05d}"],
+        ['Invoice Date:', order.order_date.strftime('%d %B %Y')],
+        ['Order Date:', order.order_date.strftime('%d %B %Y %H:%M')],
+    ]
+    
+    invoice_table = Table(invoice_info, colWidths=[2*inch, 4*inch])
+    invoice_table.setStyle(TableStyle([
+        ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 10),
+        ('FONT', (1, 0), (1, -1), 'Helvetica', 10),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    elements.append(invoice_table)
+    elements.append(Spacer(1, 12))
+    '''
+    
+    # Customer Information
+    elements.append(Paragraph("Bill To:", heading_style))
+    customer_info = f"""
+    <b>Customer Name:</b> {order.user.username}<br/>
+    <b>Email:</b> {order.user.email}<br/>
+    <b>Phone:</b> {order.user.phone}<br/>
+    """
+    elements.append(Paragraph(customer_info, normal_style))
+    elements.append(Spacer(1, 8))
+    
+    # Shipping Address
+    elements.append(Paragraph("Shipping Address:", heading_style))
+    if order.shipping_address:
+        shipping_info = f"""
+        <b>Contact Person:</b> {order.shipping_address.contact_person}<br/>
+        <b>Province:</b> {order.shipping_address.province}<br/>
+        <b>District:</b> {order.shipping_address.district}<br/>
+        <b>City:</b> {order.shipping_address.city}<br/>
+        <b>Location:</b> {order.shipping_address.location}<br/>
+        <b>Landmark:</b> {order.shipping_address.landmark if order.shipping_address.landmark else 'N/A'}<br/>
+        <b>Phone:</b> {order.shipping_address.contact_number if order.shipping_address else 'N/A'}<br/>
+        """
+        elements.append(Paragraph(shipping_info, normal_style))
+    elements.append(Spacer(1, 12))
+    
+    # Order Items Table
+    elements.append(Paragraph("Order Details:", heading_style))
+    elements.append(Spacer(1, 6))
+    
+    # Build items table
+    items_data = [
+        ['SKU', 'Variant',  'Size', 'Quantity', 'Unit Price', 'Amount']
+    ]
+    
+    for item in order.items.all():
+        items_data.append([
+            item.variant.sku,
+            item.variant.variant_name,
+            item.variant.size,
+            str(item.quantity),
+            f"NPR {item.price:,.2f}",
+            f"NPR {item.total_orderitem_amount:,.2f}"
+        ])
+    
+    items_table = Table(
+        items_data,
+        colWidths=[1.0*inch, 2.5*inch, 0.6*inch, 0.6*inch, 1.2*inch, 1.5*inch]
+    )
+    items_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#E0E0E0")),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+    ]))
+    elements.append(items_table)
+    elements.append(Spacer(1, 12))
+    
+    # Summary Section
+    summary_data = [
+        ['', 'Subtotal:', f"NPR {order.subtotal:,.2f}"],
+        ['', 'Shipping Fee:', f"NPR {order.shipping_fee:,.2f}"],
+        ['', 'Total Amount:', f"NPR {order.total_amount:,.2f}"],
+    ]
+    
+    summary_table = Table(summary_data, colWidths=[2.5*inch, 1.5*inch, 1.5*inch])
+    summary_table.setStyle(TableStyle([
+        ('ALIGN', (1, 0), (-1, -1), 'RIGHT'),
+        ('FONT', (1, 0), (1, -2), 'Helvetica', 9),
+        ('FONT', (1, -1), (1, -1), 'Helvetica-Bold', 12),
+        ('FONT', (2, 0), (2, -2), 'Helvetica', 9),
+        ('FONT', (2, -1), (2, -1), 'Helvetica-Bold', 12),
+        ('TEXTCOLOR', (2, -1), (2, -1), colors.HexColor('#080033')),
+        ('BACKGROUND', (1, -1), (-1, -1), colors.HexColor('#e5e7eb')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]))
+    elements.append(summary_table)
+    elements.append(Spacer(1, 12))
+    
+    # Payment Information
+    payment = order.payments.first()
+    if payment:
+        payment_info = f"""
+        <b>Payment Method:</b> {payment.payment_method.upper()}<br/>
+        <b>Payment Status:</b> {payment.payment_status.upper()}<br/>
+        <b>Amount Paid:</b> NPR {payment.paid_amount:,.2f}
+        """
+        elements.append(Paragraph("Payment Information:", heading_style))
+        elements.append(Paragraph(payment_info, normal_style))
+        elements.append(Spacer(1, 12))
+    
+    # Order Status
+    elements.append(Paragraph("Order Status:", heading_style))
+    status_text = f"""
+    <b>Status:</b> {order.status.upper()}<br/>
+    <b>Order ID:</b> {order.id}
+    """
+    elements.append(Paragraph(status_text, normal_style))
+    elements.append(Spacer(1, 20))
+    
+    # Footer
+    footer_text = """
+    Thank you for your purchase from Sneakee!<br/>
+    For inquiries, please contact us through our website.<br/>
+    <font size=8>This is a computer-generated invoice. No signature is required.</font>
+    """
+    elements.append(Paragraph(footer_text, ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=9,
+        alignment=TA_CENTER,
+        textColor=colors.grey,
+    )))
+    
+    # Build PDF
+    doc.build(elements)
+    
+    # Return the relative path for storing in database
+    relative_path = os.path.join('invoices', invoice_filename)
+    return relative_path
+
+
+# ───────────────────────────────────
+# Payment Views
+# ───────────────────────────────────
+
+@login_required
+@never_cache
+def make_payment(request):
+    """Handle payment method selection and processing"""
+    if request.method == "POST":
+        order_id = request.POST.get('order_id')
+        payment_method = request.POST.get('payment_method', '').strip()
+
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        # ───────── VALIDATION ─────────
+        if not payment_method:
+            messages.error(request, "Please select a payment method.")
+            return render(request, "payment.html", {"order": order})
+
+        # If order already has successful payment
+        if Payment.objects.filter(order=order, payment_status="success").exists():
+            messages.info(request, "This order is already paid.")
+            return redirect('order_list')
+
+        # ───────── CASH ON DELIVERY ─────────
+        if payment_method == "cod":
+            # Create payment record
+            Payment.objects.create(
+                order=order,
+                payment_method="cod",
+                payment_status="success",
+                paid_amount=order.total_amount,
+            )
+
+            # Reduce inventory for paid order
+            success, message = reduce_inventory_for_order(order)
+            if not success:
+                messages.error(request, f"Error reducing inventory: {message}")
+
+            # Update order status to confirmed (payment successful)
+            order.status = "confirmed"
+            order.save()
+
+            # Generate invoice
+            generate_invoice_pdf(order)
+
+            # Delete cart items
+            delete_user_cart(request.user)
+
+            messages.success(request, "Order placed successfully! Payment will be collected on delivery.")
+            return redirect('order_list')
+
+        # ───────── ESEWA PAYMENT ─────────
+        elif payment_method == "esewa":
+            # Create payment record with pending status
+            payment = Payment.objects.create(
+                order=order,
+                payment_method="esewa",
+                payment_status="pending",
+                paid_amount=order.total_amount,
+            )
+
+            # Store order info in session for callback
+            request.session['order_id'] = order.id
+            
+            # eSewa payment details
+            total_amount = str(int(order.total_amount))
+            transaction_uuid = str(uuid.uuid4())
+            product_code = settings.ESEWA_MERCHANT_CODE
+            secret_key = settings.ESEWA_SECRET_KEY
+
+            # Generate signature
+            signature = generate_signature(total_amount, transaction_uuid, product_code, secret_key)
+
+            # Create eSewa form
+            html_response = f"""
+            <html>
+            <head>
+                <title>Redirecting to eSewa...</title>
+            </head>
+            <body onload="document.getElementById('esewa-form').submit();">
+                <form id="esewa-form" action="{settings.ESEWA_BASE_URL}" method="POST">
+                    <input type="hidden" name="amount" value="{total_amount}">
+                    <input type="hidden" name="tax_amount" value="0">
+                    <input type="hidden" name="total_amount" value="{total_amount}">
+                    <input type="hidden" name="transaction_uuid" value="{transaction_uuid}">
+                    <input type="hidden" name="product_code" value="{product_code}">
+                    <input type="hidden" name="product_service_charge" value="0">
+                    <input type="hidden" name="product_delivery_charge" value="0">
+                    <input type="hidden" name="success_url" value="{settings.ESEWA_SUCCESS_URL}">
+                    <input type="hidden" name="failure_url" value="{settings.ESEWA_FAILURE_URL}">
+                    <input type="hidden" name="signed_field_names" value="total_amount,transaction_uuid,product_code">
+                    <input type="hidden" name="signature" value="{signature}">
+                </form>
+                <p>Redirecting to eSewa payment gateway...</p>
+            </body>
+            </html>
+            """
+            return HttpResponse(html_response)
+
+        else:
+            messages.error(request, "Invalid payment method selected.")
+            return render(request, "payment.html", {"order": order})
+
+    return redirect('home')
+
+
+@login_required
+@never_cache
+def esewa_payment_success(request):
+    """Handle successful eSewa payment callback"""
+    order_id = request.session.get('order_id')
+
+    if not order_id:
+        messages.error(request, "Session expired. Please try again.")
+        return redirect('order_list')
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    payment = order.payments.first()
+
+    if not payment:
+        messages.error(request, "Payment record not found.")
+        return redirect('order_list')
+
+    # Get eSewa response
+    encoded_response = request.GET.get('data')
+
+    if not encoded_response:
+        messages.error(request, "No response from eSewa payment gateway.")
+        return redirect('order_detail', order_id=order.id)
+
+    # Decode response
+    response_data = decode_base64_response(encoded_response)
+
+    if response_data is None:
+        messages.error(request, "Invalid response format from eSewa.")
+        payment.payment_status = "failed"
+        payment.save()
+        order.status = "canceled"
+        order.save()
+        return redirect('order_detail', order_id=order.id)
+
+    # Check payment status
+    status = response_data.get('status')
+    transaction_uuid = response_data.get('transaction_uuid')
+
+    if status == "COMPLETE" and transaction_uuid:
+        # Update payment record
+        payment.payment_status = "success"
+        payment.transaction_id = transaction_uuid
+        payment.save()
+
+        # Reduce inventory
+        success, message = reduce_inventory_for_order(order)
+        if not success:
+            messages.error(request, f"Error reducing inventory: {message}")
+
+        # Update order status
+        order.status = "confirmed"
+        order.save()
+
+        # Generate invoice
+        generate_invoice_pdf(order)
+
+        # Delete cart
+        delete_user_cart(request.user)
+
+        # Clear session
+        request.session.pop('order_id', None)
+
+        messages.success(request, "Payment successful! Your order has been confirmed.")
+        return redirect('order_list')
+    else:
+        # Payment failed
+        payment.payment_status = "failed"
+        payment.save()
+        order.status = "canceled"
+        order.save()
+        request.session.pop('order_id', None)
+        messages.error(request, "Payment failed. Order has been canceled.")
+        return redirect('order_detail', order_id=order.id)
+
+
+@login_required
+@never_cache
+def esewa_payment_failure(request):
+    """Handle failed eSewa payment callback"""
+    order_id = request.session.get('order_id')
+
+    if not order_id:
+        request.session.pop('order_id', None)
+        messages.error(request, "Session expired.")
+        return redirect('order_list')
+
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    payment = order.payments.first()
+
+    if not payment:
+        messages.error(request, "Payment record not found.")
+        return redirect('order_list')
+
+    # Get eSewa response
+    encoded_response = request.GET.get('data')
+
+    if not encoded_response:
+        request.session.pop('order_id', None)
+        messages.error(request, "Payment canceled by user.")
+        order.status = "canceled"
+        order.save()
+        payment.payment_status = "failed"
+        payment.save()
+        return redirect('order_detail', order_id=order.id)
+
+    # Decode response
+    response_data = decode_base64_response(encoded_response)
+
+    if response_data is None:
+        messages.error(request, "Invalid response format from eSewa.")
+        payment.payment_status = "failed"
+        payment.save()
+        order.status = "canceled"
+        order.save()
+        request.session.pop('order_id', None)
+        return redirect('order_detail', order_id=order.id)
+
+    # Payment failed
+    status = response_data.get('status')
+    if status != "COMPLETE":
+        request.session.pop('order_id', None)
+        payment.payment_status = "failed"
+        payment.save()
+        order.status = "canceled"
+        order.save()
+        messages.error(request, "Payment failed or was canceled.")
+        return redirect('order_detail', order_id=order.id)
+
+    messages.error(request, "Payment processing failed.")
+    return redirect('order_list')
+
+
+@login_required
+def cancel_order(request, order_id):
+    """
+    Cancel order - Industry standard approach
+    Only allowed for COD paid orders in pending or confirmed status
+    Restores inventory when order is canceled
+    """
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    # Get the payment record
+    payment = order.payments.first()
+
+    # Can only cancel if:
+    # 1. Payment method is COD (not eSewa)
+    # 2. Payment status is success (paid)
+    # 3. Order status is pending or confirmed (NOT processing/shipped/delivered)
+    if payment and payment.payment_method == "cod" and payment.payment_status == "success":
+        if order.status in ["pending", "confirmed"]:
+            # Restore inventory before canceling
+            success, message = restore_inventory_for_order(order)
+            
+            if not success:
+                messages.error(request, f"Error restoring inventory: {message}")
+                return redirect('order_list')
+            
+            # Cancel the order
+            order.status = "canceled"
+            order.save()
+            
+            messages.success(request, "Order has been canceled successfully. Stock has been restored.")
+        else:
+            messages.warning(request, "Cannot cancel orders that are being processed, shipped, or delivered.")
+    else:
+        messages.warning(request, "Cannot cancel eSewa orders or unpaid orders.")
+
+    return redirect('order_list')
+
+
+@login_required
+def download_invoice(request, order_id):
+    """
+    Download invoice PDF for an order
+    """
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Check if order is confirmed and payment is successful
+    payment = order.payments.first()
+    if not (order.status == "confirmed" and payment and payment.payment_status == "success"):
+        messages.error(request, "Invoice not available for this order.")
+        return redirect('order_list')
+    
+    # Generate invoice if it doesn't exist
+    invoice_filename = f"invoice_order_{order.id}_{order.order_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+    invoice_path = os.path.join(settings.MEDIA_ROOT, 'invoices', invoice_filename)
+    
+    if not os.path.exists(invoice_path):
+        # Pass order object, not order_id
+        generate_invoice_pdf(order)
+    
+    # Check if file was created successfully
+    if not os.path.exists(invoice_path):
+        messages.error(request, "Error generating invoice. Please try again.")
+        return redirect('order_list')
+    
+    # Return file for download
+    try:
+        response = FileResponse(open(invoice_path, 'rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="invoice_order_{order.id}.pdf"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Error downloading invoice: {str(e)}")
+        return redirect('order_list')
+
+
+@login_required
+def view_invoice(request, order_id):
+    """
+    View invoice PDF in browser
+    """
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Check if order is confirmed and payment is successful
+    payment = order.payments.first()
+    if not (order.status == "confirmed" and payment and payment.payment_status == "success"):
+        messages.error(request, "Invoice not available for this order.")
+        return redirect('order_list')
+    
+    # Generate invoice if it doesn't exist
+    invoice_filename = f"invoice_order_{order.id}_{order.order_date.strftime('%Y%m%d_%H%M%S')}.pdf"
+    invoice_path = os.path.join(settings.MEDIA_ROOT, 'invoices', invoice_filename)
+    
+    if not os.path.exists(invoice_path):
+        # Pass order object, not order_id
+        generate_invoice_pdf(order)
+    
+    # Check if file was created successfully
+    if not os.path.exists(invoice_path):
+        messages.error(request, "Error generating invoice. Please try again.")
+        return redirect('order_list')
+    
+    # Return file for viewing
+    try:
+        response = FileResponse(open(invoice_path, 'rb'), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="invoice.pdf"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Error viewing invoice: {str(e)}")
+        return redirect('order_list')
+
+# saved upto here
+#now frmo the praiidshahi
+# shipping

@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, get_object_or_404, render
 from .models import Cart, CartItem
 from products.models import ProductVariant
+from products.views import backtoproductdetails
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
@@ -15,9 +16,11 @@ def cart_view(request):
     else:
         return redirect('signin')
 
+
 def _get_cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     return cart
+
 
 def remove_from_cart(request):
     if request.user.is_authenticated:
@@ -32,28 +35,54 @@ def remove_from_cart(request):
 
     return redirect('signin')
 
+    
 def add_to_cart(request):
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            variant_id = request.POST.get("variant_id")
-            quantity = int(request.POST.get("quantity", 1))
-            
-            
-            variant = get_object_or_404(ProductVariant, id=variant_id)        
-            cart = _get_cart(request)
-
-            cart_item, created = CartItem.objects.get_or_create(cart=cart, variant=variant)
-
-            if created:
-                cart_item.quantity = quantity
-            else:
-                cart_item.quantity += quantity
-            
-            cart_item.save()
-        
-        return redirect('cart_view')
-    else:
+    if not request.user.is_authenticated:
         return redirect('signin')
 
+    if request.method == "POST":
+        product_slug = request.POST.get("product_slug")
+        variant_id = request.POST.get("variant_id")
+        quantity = int(request.POST.get("quantity", 1))
 
+        # Fetch variant
+        variant = get_object_or_404(ProductVariant, id=variant_id)
 
+        # Check stock
+        available_stock = getattr(variant.inventorystocks, "quantity", 0)
+        
+        # If user tries to add more than stock, redirect back
+        if quantity > available_stock:
+            messages.error(request, f"Insufficient stock available. Only {available_stock} items in stock.")
+            return redirect('productdetails', slug=product_slug)
+
+        cart = _get_cart(request)
+
+        # Check if item already exists in cart
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, variant=variant)
+
+        if created:
+            # New cart item
+            if quantity > available_stock:
+                messages.error(request, f"Insufficient stock available. Only {available_stock} items in stock.")
+                return redirect('productdetails', slug=product_slug)
+            cart_item.quantity = quantity
+        else:
+            # Existing item → check cumulative quantity
+            new_quantity = cart_item.quantity + quantity
+
+            if new_quantity > available_stock:
+                remaining = available_stock - cart_item.quantity
+                if remaining > 0:
+                    messages.error(request, f"You already have {cart_item.quantity} in your cart. You can only add {remaining} more (Total stock: {available_stock}).")
+                else:
+                    messages.error(request, f"You already have {cart_item.quantity} in your cart. No more stock available (Total stock: {available_stock}).")
+                return redirect('productdetails', slug=product_slug)
+
+            cart_item.quantity = new_quantity
+
+        cart_item.save()
+
+        messages.success(request, f"Item added to cart successfully! You now have {cart_item.quantity} in your cart.")
+
+    return redirect('cart_view')

@@ -9,20 +9,47 @@
     position:relative;
     z-index:999;
 }
+.message-container {
+    position: fixed;
+    top: 80px; /* Adjust based on your header height */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: 90%;
+    max-width: 600px;
+    pointer-events: none; /* Allows clicking through empty space */
+}
+
 .alert {
-    z-index:999;
-    position:relative;
+    pointer-events: auto; /* Re-enables clicking on actual alerts */
     padding: 10px 15px;
     border-radius: 5px;
     margin-bottom: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    animation: slideDown 0.3s ease-out;
 }
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .alert.success { 
     background-color: #d1fae5;
     color: #065f46;
+    border-left: 4px solid #10b981;
 }
+
 .alert.error {
     background-color: #fee2e2;
     color: #b91c1c;
+    border-left: 4px solid #ef4444;
 }
 .payment-container {
     display: flex;
@@ -208,7 +235,7 @@
 
         <div class="payment">
             <img src="{% static 'images/esewa.png' %}" class="pay-option"  data-value="esewa" alt="eSewa">
-            <img src="{% static 'images/cashondelivery.png' %}" class="pay-option" data-value="cod"alt="Cash on Delivery">
+            <img src="{% static 'images/cashondelivery.png' %}" class="pay-option" data-value="cod" alt="Cash on Delivery">
         </div>
 
         <div class="payment-description">
@@ -233,23 +260,14 @@
     <div class="order-summary">
         <h3>Order Summary </h3>
         <div class="order-amount">
-            <table>
-                <tr>
-                    <td>Subtotal</td>
-                    <td>Rs.10000 </td>
-                </tr>
-                <tr>
-                    <td>Shipping Fee</td>
-                    <td>Rs. 1000</td>
-                </tr>
                 <tr style="font-weight:bold;">
                     <td>Total Amount</td>
-                    <td>Rs. 1000</td>
+                    <td>{{ order.total_amount|floatformat:2 }}</td>
                 </tr>
-            </table>
         </div>
-        <form action="#" method="GET">
+        <form action="{% url 'make_payment' %}" method="POST">
             {% csrf_token %}
+            <input type="hidden" name="order_id" value="{{order.id}}">
             <input type="hidden" name="payment_method" id="payment_method" value="">
             <button type="submit" class="checkout-btn">Pay Now</button>
         </form>
@@ -276,6 +294,17 @@
         // Set hidden input value
         document.getElementById('payment_method').value = this.dataset.value;
     });
+
+    
 });
+  // ───────── Auto-cancel order if no payment method selected ─────────
+  const AUTO_CANCEL_TIME = 5 * 60 * 1000; // 5 minutes
+  setTimeout(() => {
+    const paymentMethod = document.getElementById('payment_method').value;
+    if (!paymentMethod) {
+        // Redirect to cancel_order view
+        window.location.href = "{% url 'cancel_order' order.id %}";
+    }
+  }, AUTO_CANCEL_TIME);
 </script>
 {% endblock %}

@@ -22,23 +22,6 @@ def productdetails(request, slug):
     return render(request, 'productdetails.html', context)
 
 
-'''
-def productdetails(request, slug):
-    """
-    Fetch product by slug
-    """
-    product = get_object_or_404(Product, slug=slug)
-    first_variant = product.productvariants.first()  # get the first variant
-
-    context = {
-        'product': product,
-        'first_variant': first_variant,  # pass first variant separately
-    }
-    return render(request, 'productdetails.html', context)
-'''
-
-
-
 def brand_view(request, brand_slug):
     # Fetch the brand
     brand = get_object_or_404(Brand, slug=brand_slug)
@@ -563,8 +546,19 @@ def editproductvariant(request):
 
     return redirect("productvariantlist")
 
+def backtoproductdetails(request, variant_id):
+    variant = ProductVariant.objects.filter(id=variant_id).first()
+    if not variant:
+        messages.error(request, "Variant not found.")
+        return redirect('home')  # fallback if variant doesn't exist
 
+    product = variant.product  # CHANGE: get parent product (not `.all()`)
+    variants = product.productvariants.all().order_by('id')
 
-
+    context = {
+        'product': product,
+        'variants': variants,
+    }
+    return render(request, 'productdetails.html', context)
 
 # Create your views here.

@@ -5,6 +5,15 @@
 <link rel="stylesheet" href="{% static 'css/productdetails.css' %}">
 <link rel="canonical" href="{% url 'productdetails' product.slug %}" />
 <main>
+  {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+  {% endif %}
   <div class="product-detail-container">
 
     <div class="product-gallery">
@@ -47,6 +56,7 @@
 
 <form id="product-form" method="POST" action="">
   {% csrf_token %}
+  <input type="hidden" name="product_slug" value="{{ product.slug }}">
   <input type="hidden" name="variant_id" id="variant-id-input" value="">
   <input type="hidden" name="quantity" id="quantity-input">
   
@@ -233,7 +243,7 @@
     });
   });
 
-  // Form submission validation
+  // Form submission - minimal client-side validation
   productForm.addEventListener('submit', function(e) {
     const variantId = variantIdInput.value;
     const quantity = parseInt(qtyDisplay.value);
@@ -241,22 +251,11 @@
     // Always sync quantity before submission
     quantityInput.value = quantity;
     
-    if (!variantId) {
+    // Only check if variant is selected (let backend handle stock validation)
+    if (!variantId || !currentSelectedVariant) {
       e.preventDefault();
-      alert('Please select a variant and size before proceeding.');
-      return false;
-    }
-    
-    if (!currentSelectedVariant) {
-      e.preventDefault();
-      alert('Please select a variant and size.');
-      return false;
-    }
-    
-    // Check stock
-    if (quantity > currentSelectedVariant.stock) {
-      e.preventDefault();
-      alert(`Only ${currentSelectedVariant.stock} items available in stock.`);
+      // Show message inline instead of alert
+      showInlineMessage('Please select a variant and size before proceeding.', 'error');
       return false;
     }
     
@@ -267,10 +266,31 @@
       if (action === 'add_to_cart') {
         this.action = "{% url 'add_to_cart' %}";
       } else if (action === 'buy_now') {
-        this.action = "{% url 'add_to_cart' %}";
+        this.action = "{% url 'buy_now_view' %}";
       }
     }
   });
+
+  // Function to show inline messages
+  function showInlineMessage(message, type) {
+    const messageContainer = document.querySelector('.message-container');
+    if (!messageContainer) {
+      const container = document.createElement('div');
+      container.className = 'message-container';
+      document.querySelector('main').insertBefore(container, document.querySelector('main').firstChild);
+    }
+    
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${type}`;
+    alertDiv.textContent = message;
+    
+    document.querySelector('.message-container').appendChild(alertDiv);
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      alertDiv.style.display = 'none';
+    }, 4000);
+  }
 
   // Initialize quantity input with default value
   quantityInput.value = qtyDisplay.value;
@@ -280,5 +300,10 @@
     variantSelect.selectedIndex = 1;
     variantSelect.dispatchEvent(new Event('change'));
   }
+
+  // Auto-hide Django messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
 </script>
 {% endblock %}

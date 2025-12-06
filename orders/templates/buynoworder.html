@@ -5,6 +5,11 @@
 {% comment %} <link rel="stylesheet" href="{% static 'css/cart.css' %}"> {% endcomment %}
 <style>
 .message-container {
+    margin-bottom: 1rem;
+    position:relative;
+    z-index:999;
+}
+.message-container {
     position: fixed;
     top: 80px; /* Adjust based on your header height */
     left: 50%;
@@ -51,8 +56,8 @@
     gap: 30px;
     padding: 40px;
     font-family: 'Segoe UI', sans-serif;
-    min-height: 80vh;
-    flex-wrap: wrap;
+    min-height: 80vh; /* optional, keeps initial spacing */
+    flex-wrap: wrap; /* optional, for small screens */
 }   
 
 .order-items {
@@ -288,7 +293,8 @@
                     {% if shipping_address|length < 2 %}
                     <form action="{% url 'shippingaddress_order' %}" method="POST">
                         {% csrf_token %}
-                        <input type="hidden" name="cart_id" value="{{cart.id}}">
+                        <input type="hidden" name="variant_id" value="{{ variant.id }}">
+                        <input type="hidden" name="quantity" value="{{ quantity }}">
                         <input type="hidden" name="next_page" value="order">
                         <button class="btn-add" name="btn-edit">Add New</button>
                     </form>
@@ -303,7 +309,8 @@
                         <form action="{% url 'shippingaddress_order'%}" method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="shippingaddress_id" value="{{ address.id }}">
-                            <input type="hidden" name="cart_id" value="{{cart.id}}">
+                            <input type="hidden" name="variant_id" value="{{ variant.id }}">
+                            <input type="hidden" name="quantity" value="{{ quantity }}">
                             <input type="hidden" name="next_page" value="order">   <!-- IMPORTANT -->
                             <button class="btn-edit" type="submit" name="btn-edit">Edit</button>
                         </form>
@@ -321,54 +328,40 @@
             <span style="width:12.5%; text-align:center">Quantity</span>
             <span style="width:12.5%; text-align:center">Price</span>
         </div>
-        {% if cart_items %}
-            {% for item in cart_items %}
-                <div class="order-item">
+            <div class="order-item">
 
-                    <!-- Product Image -->
-                    
-                    <div class="item-details">
-                        <div>
-                            <img src="{{ item.variant.main_image.url }}" class="item-img" alt="{{ item.variant.variant_name }}">
-                        </div>
-                        <div>
-                            <p class="item-name">{{ item.variant.variant_name }}</p>
-                            <p>Size: {{ item.variant.size }}</p>
-                            <p>SKU: {{ item.variant.sku }}</p>
-                            <p class="item-price">Unit Price: <strong>Rs. {{ item.variant.product.base_price }}</strong></p>
-
-                            <form action="{% url 'remove_item' %}" method="POST">
-                                {% csrf_token %}
-                                <input type="hidden" name="cart_id" value="{{cart.id}}">
-                                <input type="hidden" name="item_id" value="{{item.id}}">
-                                <button type="submit" class="remove-btn">Remove</button>
-                            </form>
-                        </div>
+                <!-- Product Image -->
+                
+                <div class="item-details">
+                    <div>
+                        <img src="{{ variant.main_image.url }}" class="item-img" alt="{{ variant.variant_name }}">
                     </div>
-
-                    <div class="item-quantity">
-                        <span class="qty-input">{{ item.quantity }}</span>
+                    <div>
+                        <p class="item-name">{{ variant.variant_name }}</p>
+                        <p>Size: {{ variant.size }}</p>
+                        <p>SKU: {{ variant.sku }}</p>
+                        <p class="item-price">Unit Price: <strong>Rs. {{ variant.product.base_price }}</strong></p>
                     </div>
-
-                    <div class="item-amount">
-                        Rs. {{ item.item_amount|floatformat:2 }}
-                    </div>
-
-
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>Your cart is empty.</p>
-        {% endif %} 
 
+                <div class="item-quantity">
+                    <span class="qty-input">{{ quantity }}</span>
+                </div>
+
+                <div class="item-amount">
+                    Rs. {{ total_amount|floatformat:2 }}
+                </div>
+
+
+            </div>
     </div>
 
     <div class="order-summary">
-        <h3>Order Summary ({{ cart.total_quantity }} Unit{{ cart.total_quantity|pluralize }})</h3>
+        <h3>Order Summary ({{ quantity }} Unit{{ quantity|pluralize }})</h3>
         <div class="order-amount">
             <table>
                 <tr>
-                    <td>Subtotal({{ cart.total_quantity }} Unit{{ cart.total_quantity|pluralize }})</td>
+                    <td>Subtotal({{ quantity }} Unit{{ quantity|pluralize }})</td>
                     <td>Rs. {{ sub_total|floatformat:2 }}</td>
                 </tr>
                 <tr>
@@ -382,9 +375,9 @@
             </table>
         </div>
         {% comment %} sadas {% endcomment %}
-        <form action="{% url 'create_cart_order' %}" method="POST">
+        <form action="{% url 'create_buy_order' %}" method="POST">
             {% csrf_token %}
-            <input type="hidden" name="cart_id" value="{{ cart.id }}">
+            <input type="hidden" name="variant_id" value="{{ variant.id }}">
             <select class="select-shipping-address" name="shipping_address_id" required>
                 <option disabled selected>Select Shipping Address</option>
                 {% for address in shipping_address %}
