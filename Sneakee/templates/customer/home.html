@@ -18,9 +18,8 @@
                 <div class="slide active">
                     <img src="{% static 'images/slider1.png' %}" alt="Slide 1" />
                     <div class="caption">
-                        <h2>Step into Style</h2>
+                        <h2 style="color:white;">Step into Style</h2>
                         <p>Discover the latest trends in footwear.</p>
-                        <a href="#" class="btn">Shop Now</a>
                     </div>
                 </div>
                 <div class="slide">
@@ -28,15 +27,13 @@
                     <div class="caption">
                         <h2>Comfort Meets Fashion</h2>
                         <p>Experience unmatched comfort with our new collection.</p>
-                        <a href="#" class="btn">Explore</a>
                     </div>
                 </div>
                 <div class="slide">
                     <img src="{% static 'images/slider3.png' %}" alt="Slide 2" />
                     <div class="caption">
-                        <h2>Comfort Meets Fashion</h2>
+                        <h2 style="color:white;">Sports Meets Fashion</h2>
                         <p>Experience unmatched comfort with our new collection.</p>
-                        <a href="#" class="btn">Explore</a>
                     </div>
                 </div>
                 <div class="slide">
@@ -44,7 +41,6 @@
                     <div class="caption">
                         <h2>Comfort Meets Fashion</h2>
                         <p>Experience unmatched comfort with our new collection.</p>
-                        <a href="#" class="btn">Explore</a>
                     </div>
                 </div>
             </div>
@@ -59,25 +55,11 @@
         <section class="brand-showcase">
             <h2>Popular Brands</h2>
             <div class="brands">
-                <a href="nike/">
-                    <img src="{% static 'images/nike_logo.png' %}" alt="Nike" />
+                {% for brand in brands%}
+                <a href="{% url 'brand' brand.slug %}">
+                    <img src="{{ brand.brand_logo.url }}" alt="{{ brand.brand_name }}" />
                 </a>
-                <a href="adidas/">
-                    <img src="{% static 'images/adidas_logo.png' %}" alt="Adidas" />
-                </a>
-                <a href="puma/">
-                    <img src="{% static 'images/puma_logo.png' %}" alt="Puma" />
-                </a>
-                <a href="erke/">
-                    <img src="{% static 'images/erke_black_logo.png' %}" alt="Erke" />
-                </a>
-                <a href="caliber/">
-                    <img src="{% static 'images/caliber_black_logo.png' %}" alt="Caliber" />
-                </a>
-                <a href="goldstar/">
-                    <img src="{% static 'images/goldstar_logo.png' %}" alt="Goldstar" />
-                </a>
-                <!-- Add more brands as needed -->
+                {% endfor %}
             </div>
         </section>
         
@@ -87,77 +69,54 @@
             <h2>New Arrivals</h2>
             <div class="products">
                 <div class="product-grid">
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
+                    {% for product in products|slice:":4"%}
+                        <div class="product-card">
+                            <div class="product-image">
+                            {% if product.main_image %}
+                                <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
+                            {% else %}
+                                <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
+                            {% endif %}
+                            </div>
+                            <div class="product-info">
+                            <h3>{{ product.product_name }}</h3>
+                            <p>{{ product.category.category_name }}</p>
+                            <p class="price">Rs {{ product.base_price }}</p>
+                            <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
+                            </div>
                         </div>
-                        <div class="product-info">
-                            <h3>AirMax One</h3>
-                            <p>Best Sports wear</p>
-                            <p class="price">₹1,499</p>
-                            <a href="#" class="btn">Quick View</a>
-                        </div>
-                    </div>
-
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
-                        </div>
-                        <div class="product-info">
-                            <h3>AirMax One</h3>
-                            <p class="price">₹1,499</p>
-                            <a href="#" class="btn">Quick View</a>
-                        </div>
-                    </div>
-
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
-                        </div>
-                        <div class="product-info">
-                            <h3>AirMax One</h3>
-                            <p class="price">₹1,499</p>
-                            <a href="#" class="btn">Quick View</a>
-                        </div>
-                    </div>
-                    
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="{% static 'images/Sneakeelogo.png' %}" alt="Product 1" />
-                        </div>
-                        <div class="product-info">
-                            <h3>AirMax One</h3>
-                            <p class="price">₹1,499</p>
-                            <a href="#" class="btn">Quick View</a>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </section>
 
 <!-- Sneakee Lifestyle Picks -->
 <section class="lifestyle-picks">
+    {% if casual_product %}
     <div class="pick-card urban">
         <div class="pick-content">
-      <h3>Urban Essentials</h3>
-      <p>Designed for daily hustle, crafted for city comfort.</p>
-      <a href="#" class="btn urban-btn">Shop Casual</a>
+            <h3>Urban Essentials</h3>
+            <p>Designed for daily hustle, crafted for city comfort.</p>
+            <a href="{% url 'productdetails' casual_product.slug %}" class="urban-btn">Shop Casual</a>
+        </div>
+        <div class="pick-img">
+            <img src="{{ casual_product.main_image.url }}" alt="{{ casual_product.product_name }}" />
+        </div>
     </div>
-    <div class="pick-img">
-        <img src="{% static 'images/sneakeelogo.png' %}" alt="Urban Sneakers" />
-    </div>
-  </div>
+    {% endif %}
   
-  <div class="pick-card outdoor">
-    <div class="pick-content">
-      <h3>Outdoor Explorer</h3>
-      <p>Built for adventure. Conquer every terrain in style.</p>
-      <a href="#" class="btn outdoor-btn">Shop Outdoor</a>
+    {% if sport_product %}
+    <div class="pick-card outdoor">
+        <div class="pick-content">
+            <h3>Outdoor Explorer</h3>
+            <p>Built for adventure. Conquer every terrain in style.</p>
+            <a href="{% url 'productdetails' sport_product.slug %}" class="outdoor-btn">Shop Outdoor</a>
+        </div>
+        <div class="pick-img">
+            <img src="{{ sport_product.main_image.url }}" alt="{{ sport_product.product_name }}" />
+        </div>
     </div>
-    <div class="pick-img">
-      <img src="{% static 'images/sneakeelogo.png' %}" alt="Outdoor Sneakers" />
-    </div>
-</div>
+    {% endif %}
 </section>
 
     </body> 

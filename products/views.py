@@ -1,20 +1,60 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.http import urlencode
+
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
-import os
+from django.db.models import Q, Sum, Prefetch
 
 from products.models import Brand, Category, Product, ProductVariant
 
-from django.shortcuts import render, get_object_or_404
-from .models import Product
+
+def is_admin(user):
+    return user.is_staff or user.is_superuser
+
 
 def productdetails(request, slug):
-    product = Product.objects.filter(slug=slug).first()
-    variants = product.productvariants.all().order_by('id')
+    # Only show active products
+    product = Product.objects.filter(slug=slug, is_active=True).first()
     
+    if not product:
+        messages.error(request, "Product not found or unavailable.")
+        return redirect('home')
+    
+    # Only get active variants that have an associated Stock record
+    variants = product.productvariants.filter(
+        is_active=True,
+        inventorystocks__isnull=False
+    ).order_by('id')
+    
+    context = {
+        'product': product,
+        'variants': variants,
+    }
+    return render(request, 'productdetails.html', context)
+
+
+def backtoproductdetails(request, variant_id):
+    # Only show active variants
+    variant = ProductVariant.objects.filter(id=variant_id, is_active=True).first()
+    if not variant:
+        messages.error(request, "Variant not found or unavailable.")
+        return redirect('home')
+
+    product = variant.product
+    
+    # Check if parent product is active
+    if not product.is_active:
+        messages.error(request, "Product not available.")
+        return redirect('home')
+    
+    # Only get active variants
+    variants = product.productvariants.filter(
+        is_active=True,
+        inventorystocks__isnull=False
+    ).order_by('id')
+
     context = {
         'product': product,
         'variants': variants,
@@ -27,7 +67,10 @@ def brand_view(request, brand_slug):
     brand = get_object_or_404(Brand, slug=brand_slug)
 
     # Get all categories that include this brand
-    categories = Category.objects.filter(brands=brand).prefetch_related('products')
+    # Prefetch only active products for each category
+    categories = Category.objects.filter(brands=brand).prefetch_related(
+        Prefetch('products', queryset=Product.objects.filter(is_active=True))
+    )
 
     context = {
         'brand': brand,
@@ -37,10 +80,61 @@ def brand_view(request, brand_slug):
     return render(request, 'brand.html', context)
 
 
-def categories(request):
-    return render(request,'categories.html')
+def category_view(request, category_slug):
+    query = request.GET.get("query", "")
+    
+    # Fetch the category
+    category = get_object_or_404(Category, slug=category_slug)
+    
+    # Get only active products in this category
+    products = category.products.filter(is_active=True).order_by("-id")
+    
+    # Search logic
+    if query:
+        products = products.filter(product_name__icontains=query)
+    
+    # Pagination - 12 products per page
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'category': category,
+        'page_obj': page_obj,
+        'query': query,
+    }
+    
+    return render(request, 'categories.html', context)
+
+def trending_products(request):
+    query = request.GET.get("query", "")
+
+    trending_products = (
+        Product.objects
+        .filter(is_active=True)
+        .annotate(total_orders=Sum('productvariants__orderitem__quantity'))
+        .filter(total_orders__gt=0)
+        .order_by("-total_orders")
+    )
+
+    if query:
+        trending_products = trending_products.filter(
+            Q(product_name__icontains=query) |
+            Q(category__category_name__icontains=query)
+        )
+
+    paginator = Paginator(trending_products, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'trendingproducts.html', {
+        "page_obj": page_obj,
+        "query": query,
+    })
 
 
+@login_required
+@user_passes_test(is_admin)
 def addbrand(request):
     context={}
     if request.method == 'POST':
@@ -79,7 +173,8 @@ def addbrand(request):
         return redirect('addcategory')
     return render(request, 'addbrand.html')
 
-
+@login_required
+@user_passes_test(is_admin)
 def addcategory(request):
     brands=Brand.objects.all()
     context={}
@@ -123,7 +218,8 @@ def addcategory(request):
         return redirect('addproduct')
     return render(request, 'addcategory.html',{'brands':brands})
 
-
+@login_required
+@user_passes_test(is_admin)
 def addproduct(request):
     categories =  Category.objects.all()#Used to render all categories in the form
     if request.method == 'POST':
@@ -176,7 +272,8 @@ def addproduct(request):
         return redirect('addproductvariant')
     return render(request,'addproduct.html',{'categories':categories})
 
-
+@login_required
+@user_passes_test(is_admin)
 def addproductvariant(request):
     products = Product.objects.all()
 
@@ -251,7 +348,8 @@ def addproductvariant(request):
 
     return render(request, 'addproductvariant.html', {'products': products})
 
-
+@login_required
+@user_passes_test(is_admin)
 def brandlist(request):
     query = request.GET.get("query", "")
     brands=Brand.objects.all().order_by("id")#for descending order:-created_at
@@ -272,6 +370,8 @@ def brandlist(request):
     return render(request, "brandlist.html", context)
 
 
+@login_required
+@user_passes_test(is_admin)
 def categorylist(request, brand_slug=None):
     query = request.GET.get("query", "")
 
@@ -299,6 +399,8 @@ def categorylist(request, brand_slug=None):
     return render(request, "categorylist.html",context)
 
 
+@login_required
+@user_passes_test(is_admin)
 def productlist(request, category_slug=None):
     query = request.GET.get("query", "")
 
@@ -326,6 +428,8 @@ def productlist(request, category_slug=None):
     return render(request, "productlist.html", context)
 
 
+@login_required
+@user_passes_test(is_admin)
 def productvariantlist(request, product_slug=None):
     """
     Shows:
@@ -358,6 +462,9 @@ def productvariantlist(request, product_slug=None):
     return render(request, "productvariantlist.html", context)
 
 
+'''
+@login_required
+@user_passes_test(is_admin)
 def deletebrand(request):
     if request.method == "POST":
         brand_id = request.POST.get("brand_id")
@@ -369,7 +476,8 @@ def deletebrand(request):
         messages.success(request, "Brand deleted successfully!")
         return redirect("brandlist")
 
-
+@login_required
+@user_passes_test(is_admin)
 def deletecategory(request):
     if request.method == "POST":
         category_id = request.POST.get("category_id")
@@ -378,26 +486,51 @@ def deletecategory(request):
         category.delete()
         messages.success(request, "Category deleted successfully!")
         return redirect("categorylist")
-
-def deleteproduct(request):
+'''
+    
+@login_required
+@user_passes_test(is_admin)
+def update_product_status(request):
     if request.method == "POST":
         product_id = request.POST.get("product_id")
         product = get_object_or_404(Product, id=product_id)
+        productvariants=ProductVariant.objects.filter(product=product).all()
 
-        product.delete()
-        messages.success(request, "Product and its variants deleted successfully!")
-        return redirect("productlist")
-    
-def deleteproductvariant(request):
+        if product.is_active:
+            productvariants.update(is_active=False)
+            product.is_active=False
+            product.save()
+            messages.success(request, "Product and its variant deactivated successfully.")
+            return redirect("productlist")
+        else:
+            productvariants.update(is_active=True)
+            product.is_active=True
+            product.save()
+            messages.success(request, "Product and its variant activated successfully.")
+            return redirect("productlist")
+
+
+@login_required
+@user_passes_test(is_admin)    
+def update_productvariant_status(request):
     if request.method == "POST":
         productvariant_id = request.POST.get("productvariant_id")
         productvariant = get_object_or_404(ProductVariant, id=productvariant_id)
 
-        productvariant.delete()
-        messages.success(request, "Product variant deleted successfully!")
-        return redirect("productvariantlist")
+        if productvariant.is_active:
+            productvariant.is_active=False
+            productvariant.save()
+            messages.success(request, "Product variant deactivated successfully.")
+            return redirect("productvariantlist")
+        else:
+            productvariant.is_active=True
+            productvariant.save()
+            messages.success(request, "Product variant activated successfully.")
+            return redirect("productvariantlist")
+        
 
-
+@login_required
+@user_passes_test(is_admin)
 def editbrand(request):
     if request.method == "POST":
         brand_id = request.POST.get("brand_id")
@@ -427,7 +560,8 @@ def editbrand(request):
 
     return redirect("brandlist")
 
-
+@login_required
+@user_passes_test(is_admin)
 def editcategory(request):
     if request.method == "POST":
         category_id = request.POST.get("category_id")
@@ -461,6 +595,8 @@ def editcategory(request):
     return redirect("categorylist")
 
 
+@login_required
+@user_passes_test(is_admin)
 def editproduct(request):
     if request.method == "POST":
         product_id = request.POST.get("product_id")
@@ -504,7 +640,8 @@ def editproduct(request):
 
     return redirect("productlist")
 
-
+@login_required
+@user_passes_test(is_admin)
 def editproductvariant(request):
     if request.method == "POST":
         variant_id = request.POST.get("variant_id")
@@ -546,19 +683,21 @@ def editproductvariant(request):
 
     return redirect("productvariantlist")
 
-def backtoproductdetails(request, variant_id):
-    variant = ProductVariant.objects.filter(id=variant_id).first()
-    if not variant:
-        messages.error(request, "Variant not found.")
-        return redirect('home')  # fallback if variant doesn't exist
 
-    product = variant.product  # CHANGE: get parent product (not `.all()`)
-    variants = product.productvariants.all().order_by('id')
+@login_required
+@user_passes_test(is_admin)
+def top_products(request):
+    product_variants = (
+        ProductVariant.objects
+        .select_related('product', 'product__category')  # Optimize queries
+        .annotate(total_orders=Sum("orderitem__quantity"))
+        .filter(total_orders__gt=0)
+        .order_by("-total_orders")
+    )
 
-    context = {
-        'product': product,
-        'variants': variants,
-    }
-    return render(request, 'productdetails.html', context)
+    paginator = Paginator(product_variants, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
+    return render(request, "admin_topproducts.html", {"page_obj": page_obj})
 # Create your views here.

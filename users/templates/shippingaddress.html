@@ -14,12 +14,23 @@
     <div class="form-box">
 
         <h2>
-            {% if shippingaddress %}
+            {% if shippingaddress and shippingaddress.id %}
                 Edit Shipping Address
             {% else %}
                 Add New Shipping Address
             {% endif %}
         </h2>
+
+        <!-- Display error messages -->
+        {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
         <!-- Form posts to different views based on next_page -->
         {% if next_page == 'order' %}
@@ -28,7 +39,7 @@
             <form method="POST" action="{% url 'shippingaddress' %}">
         {% endif %}
             {% csrf_token %}
-            <input type="hidden" name="formshippingaddress_id" value="{{shippingaddress.id|default:''}}">
+            <input type="hidden" name="formshippingaddress_id" value="{% if shippingaddress.id %}{{ shippingaddress.id }}{% endif %}">
             <input type="hidden" name="next_page" value="{{ next_page }}">
             <input type="hidden" name="cart_id" value="{{ cart_id|default:'' }}">
             <input type="hidden" name="variant_id" value="{{ variant_id|default:'' }}">
@@ -37,21 +48,23 @@
 
             <!-- Contact Person-->
             <div>
-                <label>Contact Person</label>
-                <input type="text" name="contact_person" placeholder="Please enter your contact person" value="{{ shippingaddress.contact_person|default:request.user.username }}">
+                <label>Contact Person <span style="color: red;">*</span></label>
+                <input type="text" name="contact_person" placeholder="Please enter your contact person" 
+                       value="{% if shippingaddress.contact_person %}{{ shippingaddress.contact_person }}{% else %}{{ request.user.username }}{% endif %}">
             </div>
 
             <!-- Contact Number-->
             <div>
-                <label>Contact Number</label>
-                <input type="text" name="contact_number" placeholder="Please enter your contact number" value="{{ shippingaddress.contact_number|default:request.user.phone }}">
+                <label>Contact Number <span style="color: red;">*</span></label>
+                <input type="text" name="contact_number" placeholder="Please enter your contact number" 
+                       value="{% if shippingaddress.contact_number %}{{ shippingaddress.contact_number }}{% else %}{{ request.user.phone }}{% endif %}">
             </div>
 
             <!-- Location -->
             <div>
-                <label>Location of</label>
+                <label>Location of <span style="color: red;">*</span></label>
                 <select name="location_of">
-                    <option value="Home" {% if shippingaddress and shippingaddress.location_of == "Home" %}selected{% endif %}>Home</option>
+                    <option value="Home" {% if not shippingaddress or not shippingaddress.location_of or shippingaddress.location_of == "Home" %}selected{% endif %}>Home</option>
                     <option value="Office" {% if shippingaddress and shippingaddress.location_of == "Office" %}selected{% endif %}>Office</option>
                     <option value="Others" {% if shippingaddress and shippingaddress.location_of == "Others" %}selected{% endif %}>Others</option>
                 </select>
@@ -59,9 +72,9 @@
 
             <!-- Province -->
             <div>
-                <label>Province</label>
+                <label>Province <span style="color: red;">*</span></label>
                 <select name="province">
-                    <option disabled {% if not shippingaddress %}selected{% endif %}>Please choose your province</option>
+                    <option value="" disabled {% if not shippingaddress or not shippingaddress.province %}selected{% endif %}>Please choose your province</option>
 
                     <option value="Koshi" {% if shippingaddress and shippingaddress.province == "Koshi" %}selected{% endif %}>Koshi</option>
                     <option value="Madhesh" {% if shippingaddress and shippingaddress.province == "Madhesh" %}selected{% endif %}>Madhesh</option>
@@ -75,32 +88,32 @@
 
             <!-- District -->
             <div>
-                <label>District</label>
-                <input type="text" name="district" placeholder="Please enter" value="{{ shippingaddress.district|default:'' }}">
+                <label>District <span style="color: red;">*</span></label>
+                <input type="text" name="district" placeholder="Please enter" value="{% if shippingaddress and shippingaddress.district %}{{ shippingaddress.district }}{% endif %}">
             </div>
 
             <!-- City -->
             <div>
-                <label>City</label>
-                <input type="text" name="city" placeholder="Please enter" value="{{ shippingaddress.city|default:'' }}">
+                <label>City <span style="color: red;">*</span></label>
+                <input type="text" name="city" placeholder="Please enter" value="{% if shippingaddress and shippingaddress.city %}{{ shippingaddress.city }}{% endif %}">
             </div>
 
             <!-- Location -->
             <div>
-                <label>Location</label>
-                <input type="text" name="location" placeholder="For Example: Street #123, ABC Road" value="{{ shippingaddress.location|default:'' }}">
+                <label>Location <span style="color: red;">*</span></label>
+                <input type="text" name="location" placeholder="For Example: Street #123, ABC Road" value="{% if shippingaddress and shippingaddress.location %}{{ shippingaddress.location }}{% endif %}">
             </div>
 
             <!-- Landmark -->
             <div>
                 <label>Landmark</label>
-                <input type="text" name="landmark" placeholder="Please enter" value="{{ shippingaddress.landmark|default:'' }}">
+                <input type="text" name="landmark" placeholder="Please enter" value="{% if shippingaddress and shippingaddress.landmark %}{{ shippingaddress.landmark }}{% endif %}">
             </div>
 
             <!-- Location Description -->
             <div>
                 <label>Location Description</label>
-                <textarea name="location_description" placeholder="Description">{{ shippingaddress.location_description|default:'' }}</textarea>
+                <textarea name="location_description" placeholder="Description">{% if shippingaddress and shippingaddress.location_description %}{{ shippingaddress.location_description }}{% endif %}</textarea>
             </div>
 
             <!-- Buttons -->
@@ -122,5 +135,11 @@
     </div>
 </main>
 </body>
+<script>
+  // auto hide messages after 4 seconds
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
+  }, 4000);
+</script>
 </html>
 {% endblock %}

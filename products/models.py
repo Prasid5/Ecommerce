@@ -53,6 +53,7 @@ class Product(models.Model):
     material = models.CharField(max_length=100, blank=True, help_text="e.g., Mesh, Leather, Synthetic")
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     main_image = models.ImageField(upload_to='images/products/', blank=True, null=True)
+    is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
@@ -90,6 +91,7 @@ class ProductVariant(models.Model):
     color = models.CharField(max_length=50)
     size = models.CharField(max_length=10)
     low_stock_threshold = models.PositiveIntegerField(default=5)
+    is_active = models.BooleanField(default=True)
 
     sku = models.CharField(max_length=100, unique=True, blank=True, default="sku")
 

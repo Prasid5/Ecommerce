@@ -57,10 +57,26 @@
             border-radius: 5px;
         }
 
-        .topbar input[type=text]{
-            padding:8px 10px;
-            border-radius:5px;
-            border:1px solid #cbd5e1;
+        .topbar form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topbar input[type=text] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-btn {
+            background-color: #080033;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
         }
 
     /* ---------- TABLE CONTAINER ---------- */
@@ -95,6 +111,24 @@
             border-radius: 5px;
         }
 
+    /* Status dots */
+        .status-badge{
+            display: flex;
+            align-items: center;
+            justify-content:center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .dot{
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .active-dot { background:#10b981; }
+        .inactive-dot { background:#ef4444; }   
 
     /* Action buttons (Edit/Delete) */
         .actions{
@@ -177,7 +211,7 @@
         <form method="get">
             <input type="text" name="query" placeholder="Search variants..." value="{{ query }}">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
-            <button type="submit" class="page-btn">Search</button>
+            <button type="submit" class="search-btn">Search</button>
         </form>
     </div>
 
@@ -194,6 +228,7 @@
                     <th>Size</th>
                     <th>Price</th>
                     <th>Stock</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -213,6 +248,15 @@
                     <td>NPR {{ productvariant.price }}</td>
                     <td>{{ productvariant.inventorystocks.quantity|default:0 }}</td>
                     <td>
+                        <div class="status-badge">
+                            {% if productvariant.is_active %}
+                                <span class="dot active-dot"></span> Active
+                            {% else %}
+                                <span class="dot inactive-dot"></span> Inactive
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
                         <div class="actions">
                             <!-- Edit Button -->
                             <form action="{% url 'editproductvariant' %}" method="POST">
@@ -224,11 +268,11 @@
                             </form>
 
                             <!-- Delete Button -->
-                            <form action="{% url 'deleteproductvariant' %}" method="POST">
+                            <form action="{% url 'update_product_status' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="productvariant_id" value="{{ productvariant.id }}">
                                 <button type="submit" class="action-btn">
-                                    <img src="{% static 'images/Bin.png' %}" alt="Delete">
+                                    <img src="{% static 'images/Deactivate.png' %}" alt="Delete"  style="height:24px; width:24px;">
                                 </button>
                             </form>
                         </div>

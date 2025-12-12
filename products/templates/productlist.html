@@ -59,10 +59,26 @@
             border-radius: 5px;
         }
 
-        .topbar input[type=text]{
-            padding:8px 10px;
-            border-radius:5px;
-            border:1px solid #cbd5e1;
+        .topbar form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topbar input[type=text] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-btn {
+            background-color: #080033;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
         }
     /* ---------- TABLE CONTAINER ---------- */
         .table-wrapper{
@@ -224,7 +240,7 @@
         <form action="{% url 'productlist' %}" method="get">
             <input type="text" name="query" value="{{ query }}" placeholder="Search products...">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
-            <button type="submit" class="page-btn">Search</button>
+            <button type="submit" class="search-btn">Search</button>
         </form>
     </div>
 
@@ -241,6 +257,7 @@
                     <th>Total Variants</th>
                     <th>Total Stock</th>
                     <th>Variants</th>
+                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -268,6 +285,15 @@
                         <a href="{% url 'productvariantlist_by_product' product.slug %}" class="btn">View</a>
                     </td>
                     <td>
+                        <div class="status-badge">
+                            {% if product.is_active %}
+                                <span class="dot active-dot"></span> Active
+                            {% else %}
+                                <span class="dot inactive-dot"></span> Inactive
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
                         <div class="actions">
                             <!-- Edit Button -->
                             <form action="{% url 'editproduct' %}" method="POST">
@@ -279,11 +305,11 @@
                             </form>
 
                             <!-- Delete Button -->
-                            <form action="{% url 'deleteproduct' %}" method="POST">
+                            <form action="{% url 'update_product_status' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="product_id" value="{{ product.id }}">
                                 <button type="submit" class="action-btn">
-                                    <img src="{% static 'images/Bin.png' %}" alt="Delete">
+                                    <img src="{% static 'images/Deactivate.png' %}" alt="Delete"  style="height:24px; width:24px;">
                                 </button>
                             </form>
                         </div>

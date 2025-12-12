@@ -20,10 +20,10 @@ from Sneakee import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/',views.home, name="home"),
+    path('search/', views.search_products, name='search_products'),
     path('admindashboard/',views.admindashboard, name="admindashboard"),
     path('productdashboard/',views.productdashboard, name="productdashboard"),
     path('userdashboard/',views.userdashboard, name="userdashboard"),
-    path('salesdashboard/',views.salesdashboard, name="salesdashboard"),
     path('orderdashboard/', views.orderdashboard, name="orderdashboard"),
     path("inventorydashboard/", views.inventorydashboard, name="inventorydashboard"),
 

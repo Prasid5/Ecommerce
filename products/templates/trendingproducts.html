@@ -1,0 +1,67 @@
+{% extends 'customer/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Trending Products{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/categories.css' %}">
+  <script src="{% static 'js/categories.js' %}"></script>
+</head>
+<body>
+<main>
+  <section class="category-section">
+    <div class="topbar">
+      <p>Trending Products</p>
+      <form method="get">
+        <input type="text" name="query" value="{{ query }}" placeholder="Search products...">
+        {% if page_obj.number %}
+          <input type="hidden" name="page" value="{{ page_obj.number }}">
+        {% endif %}
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+    </div>
+
+    <section class="products">
+      <div class="product-grid">
+        {% for product in page_obj %}
+          <div class="product-cart-container">
+            <div class="product-card">
+              <div class="product-image">
+                {% if product.main_image %}
+                  <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
+                {% else %}
+                  <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
+                {% endif %}
+              </div>
+              <div class="product-info">
+                <h3>{{ product.product_name }}</h3>
+                <p>{{ product.category.category_name }}</p>
+                <p class="price">Rs {{ product.base_price }}</p>
+                <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p style="grid-column: 1/-1; text-align: center; padding: 40px;">No products found.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </section>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
+    {% endif %}
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    {% if page_obj.has_next %}
+      <a class="page-btn" href="?query={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+    {% endif %}
+  </div>
+</main>
+</body>
+</html>
+{% endblock %}

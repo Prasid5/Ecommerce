@@ -1,16 +1,21 @@
 import re
 from django.shortcuts import render, redirect,  get_object_or_404
 from django.contrib import messages
+
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
 from django.views.decorators.cache import never_cache
-from django.db.models import Q
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+from django.db.models import Q, Count
 from django.core.paginator import Paginator
-from carts.models import Cart
+
 from users.models import User, ShippingAddress
+from carts.models import Cart
 from products.models import ProductVariant
 
+
+def is_admin(user):
+    return user.is_staff or user.is_superuser
 
 @never_cache
 def signup(request):
@@ -33,7 +38,6 @@ def signup(request):
             'phone': phone,
         }
 
-        # === Validation checks ===
         if not username or not email or not password or not address or not phone:
             messages.error(request, "All fields are required.")
             return render(request, 'signup.html', context)
@@ -76,6 +80,7 @@ def signup(request):
     
     return render(request, 'signup.html')
 
+
 @never_cache
 def signin(request):
     if request.method == 'POST':
@@ -85,17 +90,19 @@ def signin(request):
 
         user_obj = None
 
-        # Try login_input as email
         try:
             user_obj = User.objects.get(email=login_input)
         except User.DoesNotExist:
-            # Try login_input as username
             try:
                 user_obj = User.objects.get(username=login_input)
             except User.DoesNotExist:
                 user_obj = None
 
         if user_obj:
+            if not user_obj.is_active:
+                messages.error(request, "Your account has been deactivated. Please contact support.")
+                return render(request, 'signin.html', context)
+            
             # username= maps to USERNAME_FIELD which is email in your model
             user = authenticate(request, username=user_obj.email, password=password)
             if user is not None:
@@ -110,6 +117,7 @@ def signin(request):
 
     return render(request, 'signin.html')
 
+
 @login_required
 def signout(request):
     cart = Cart.objects.filter(user=request.user).first()
@@ -122,6 +130,61 @@ def signout(request):
 
 @never_cache
 @login_required
+def editprofile(request):
+    user = request.user  # already the authenticated user
+    if user.is_staff:
+        base_template='administrator/base.html'
+    else:
+        base_template='customer/base.html'
+
+    phone_pattern1 = r"^98\d{8}$"
+    phone_pattern2 = r"^97\d{8}$"
+    shipping_address = ShippingAddress.objects.filter(user=user).all()
+    context = {
+        "base_template":base_template,
+        "username": user.username,
+        "email": user.email,
+        "user_id": user.id,
+        "address":user.address,
+        "phone":user.phone,
+        'shippingaddress':shipping_address,
+    }
+
+    if request.method == "POST":
+        # Update password if provided
+        user=User.objects.filter(id=user.id).first()
+        password = request.POST.get('password', '').strip()
+        phone = request.POST.get('phone', '').strip()
+
+        if password and not len(password)>=6:
+            messages.error(request, "Password must be atleast 6 characters long.")
+            return render(request, 'editprofile.html', context) 
+
+        elif not (re.match(phone_pattern1, phone) or re.match(phone_pattern2, phone)):
+            messages.error(request, "Invalid phone number. Must start with 97 or 98 and be 10 digits long.")
+            return render(request,'editprofile.html', context)
+        
+        elif User.objects.filter(phone=phone).exclude(id=int(user.id)).exists():
+            messages.error(request, "Phone already exists.")
+            return render(request,'editprofile.html',context)
+        
+        if password:
+            user.set_password(password) # always use set_password
+
+        if phone:
+            user.phone = phone  # assuming you have a Profile model with phone
+            user.save()
+
+        user.save()
+        messages.success(request, "Profile updated successfully.")
+        return redirect("editprofile")
+    
+    return render(request, 'editprofile.html', context)
+
+
+@never_cache
+@login_required
+@user_passes_test(is_admin)
 def addadmin(request):
     if request.user.is_superuser:
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -185,17 +248,24 @@ def addadmin(request):
             messages.success(request, "Admin Created")
             return render(request, 'signin.html')  
         return render(request, 'addadmin.html')
+    else:
+        messages.error(request, "Only superadmins can view the admin list.")
+        return redirect("userdashboard")
 
 
 @never_cache
 @login_required
+@user_passes_test(is_admin)
 def userlist(request, mode=None):
     if request.user.is_staff:
         query = request.GET.get("query", "")
         if mode == "customer":
             users = User.objects.filter(is_staff=False)
         elif mode == "admin":
-            users=User.objects.filter(is_staff=True)
+            if not request.user.is_superuser:
+                messages.error(request, "Only superadmins can view the admin list.")
+                return redirect("userdashboard")
+            users=User.objects.filter(is_staff=True, is_superuser=False)
         
         users=users.order_by("created_at")#for descending order:-created_at
 
@@ -205,7 +275,7 @@ def userlist(request, mode=None):
             else:
                 users = users.filter(Q(username__icontains=query) | Q(email__icontains=query) | Q(phone__icontains=query))#__icontains for case insensitive
 
-        paginator = Paginator(users, 1)
+        paginator = Paginator(users, 8)
         page_number = request.GET.get("page")#for first-time page load, request.get={}
         page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
 
@@ -218,6 +288,7 @@ def userlist(request, mode=None):
 
 @never_cache
 @login_required
+@user_passes_test(is_admin)
 def edituserform(request):
     if request.user.is_staff:
         if request.method == 'POST':
@@ -240,6 +311,7 @@ def edituserform(request):
 
 @never_cache
 @login_required
+@user_passes_test(is_admin)
 def edituser(request):
     if request.user.is_staff:
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -329,7 +401,8 @@ def edituser(request):
 
 @never_cache
 @login_required
-def deleteuser(request):
+@user_passes_test(is_admin)
+def update_user_status(request):
     if request.user.is_staff:
         if request.method=='POST':
             user_id=request.POST.get('user_id','').strip()
@@ -343,91 +416,82 @@ def deleteuser(request):
                 else:
                     return redirect('customerlist')
             else:
-                user.delete()
-                messages.success(request, "User Deleted Successfully.")
-                if user.is_staff:
-                    messages.success(request, "Admin edited successfully.")
-                    return redirect('adminlist')
+                if user.is_active == True:
+                    user.is_active=False
+                    user.save()
+                    if user.is_staff:
+                        messages.success(request, "Admin deactivated successfully.")
+                        return redirect('adminlist')
+                    else:
+                        messages.success(request, "Customer deactivated successfully.")
+                        return redirect('customerlist')
                 else:
-                    messages.success(request, "Customer edited successfully.")
-                    return redirect('customerlist')
+                    user.is_active=True
+                    user.save()
+                    if user.is_staff:
+                        messages.success(request, "Admin activated successfully.")
+                        return redirect('adminlist')
+                    else:
+                        messages.success(request, "Customer activated successfully.")
+                        return redirect('customerlist')
 
 
-@never_cache
-@login_required
-def editprofile(request):
-    user = request.user  # already the authenticated user
-    if user.is_staff:
-        base_template='administrator/base.html'
-    else:
-        base_template='customer/base.html'
-
-    phone_pattern1 = r"^98\d{8}$"
-    phone_pattern2 = r"^97\d{8}$"
-    shipping_address = ShippingAddress.objects.filter(user=user).all()
-    context = {
-        "base_template":base_template,
-        "username": user.username,
-        "email": user.email,
-        "user_id": user.id,
-        "address":user.address,
-        "phone":user.phone,
-        'shippingaddress':shipping_address,
-    }
-
-    if request.method == "POST":
-        # Update password if provided
-        user=User.objects.filter(id=user.id).first()
-        password = request.POST.get('password', '').strip()
-        phone = request.POST.get('phone', '').strip()
-
-        if password and not len(password)>=6:
-            messages.error(request, "Password must be atleast 6 characters long.")
-            return render(request, 'editprofile.html', context) 
-
-        elif not (re.match(phone_pattern1, phone) or re.match(phone_pattern2, phone)):
-            messages.error(request, "Invalid phone number. Must start with 97 or 98 and be 10 digits long.")
-            return render(request,'editprofile.html', context)
-        
-        elif User.objects.filter(phone=phone).exclude(id=int(user.id)).exists():
-            messages.error(request, "Phone already exists.")
-            return render(request,'editprofile.html',context)
-        
-        if password:
-            user.set_password(password) # always use set_password
-
-        if phone:
-            user.phone = phone  # assuming you have a Profile model with phone
-            user.save()
-
-        user.save()
-        messages.success(request, "Profile updated successfully.")
-        return redirect("editprofile")
-    
-    return render(request, 'editprofile.html', context)
-
-
-@never_cache
 @login_required
 def shippingaddress(request):
     """Handle shipping address management from edit profile page"""
     user = request.user
     next_page = request.POST.get("next_page", "editprofile")
+    
+    phone_pattern1 = r"^98\d{8}$"
+    phone_pattern2 = r"^97\d{8}$"
 
     # SAVE BUTTON (Add or Update)
     if request.method == "POST" and 'btn-save' in request.POST:
 
         formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
 
-        contact_person = request.POST.get('contact_person', '').strip()
-        contact_number = request.POST.get('contact_number', '').strip()
-        location_of = request.POST.get('location_of', '').strip()
-        province = request.POST.get('province', '').strip()
-        district = request.POST.get('district', '').strip()
-        city = request.POST.get('city', '').strip()
-        location = request.POST.get('location', '').strip()
-        landmark = request.POST.get('landmark', '').strip()
-        location_description = request.POST.get('location_description', '').strip()
+        contact_person = request.POST.get('contact_person').strip()
+        contact_number = request.POST.get('contact_number').strip()
+        location_of = request.POST.get('location_of').strip()
+        province = request.POST.get('province').strip()
+        district = request.POST.get('district').strip()
+        city = request.POST.get('city').strip()
+        location = request.POST.get('location').strip()
+        landmark = request.POST.get('landmark').strip()
+        location_description = request.POST.get('location_description').strip()
+
+        # Create a simple class to hold the data
+        class ShippingAddressData:
+            def __init__(self, data):
+                for key, value in data.items():
+                    setattr(self, key, value)
+
+        shipping_address_obj = ShippingAddressData({
+            'id': formshippingaddress_id,
+            'contact_person': contact_person,
+            'contact_number': contact_number,
+            'location_of': location_of,
+            'province': province,
+            'district': district,
+            'city': city,
+            'location': location,
+            'landmark': landmark,
+            'location_description': location_description,
+        })
+
+        context = {
+            'shippingaddress': shipping_address_obj,
+            'next_page': next_page
+        }
+
+        # === Validation checks ===
+        if not contact_person or not contact_number or not location_of or not province or not district or not city or not location or not landmark:
+            messages.error(request, "All fields are required except landmark and location description.")
+            return render(request, 'shippingaddress.html', context)
+        
+        if not (re.match(phone_pattern1, contact_number) or re.match(phone_pattern2, contact_number)):
+            messages.error(request, "Invalid contact number. Must start with 97 or 98 and be 10 digits long.")
+            return render(request, 'shippingaddress.html', context)
 
         # UPDATE
         if formshippingaddress_id:
@@ -522,6 +586,7 @@ def render_order_page(request, cart_id, user):
         "total_amount": total_amount,
     })
 
+
 def render_buy_now_order_page(request, variant_id, quantity, user):
     """Helper function to render buynoworder.html with all necessary data"""
     variant = ProductVariant.objects.filter(id=variant_id).first()
@@ -551,7 +616,7 @@ def render_buy_now_order_page(request, variant_id, quantity, user):
         "shipping_address": shipping_address,
     })
 
-@never_cache
+
 @login_required
 def shippingaddress_order(request):
     """Handle shipping address management from order page"""
@@ -560,24 +625,60 @@ def shippingaddress_order(request):
     cart_id = request.POST.get("cart_id", "")
     variant_id = request.POST.get("variant_id", "")
     quantity = request.POST.get("quantity", "")
-
-    # Debug: Print to check if cart_id is being received
-    print(f"DEBUG: cart_id = {cart_id}, variant_id = {variant_id}, next_page = {next_page}")
+    
+    phone_pattern1 = r"^98\d{8}$"
+    phone_pattern2 = r"^97\d{8}$"
 
     # SAVE BUTTON (Add or Update)
     if request.method == "POST" and 'btn-save' in request.POST:
 
         formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
 
-        contact_person = request.POST.get('contact_person', '').strip()
-        contact_number = request.POST.get('contact_number', '').strip()
-        location_of = request.POST.get('location_of', '').strip()
-        province = request.POST.get('province', '').strip()
-        district = request.POST.get('district', '').strip()
-        city = request.POST.get('city', '').strip()
-        location = request.POST.get('location', '').strip()
-        landmark = request.POST.get('landmark', '').strip()
-        location_description = request.POST.get('location_description', '').strip()
+        contact_person = request.POST.get('contact_person').strip()
+        contact_number = request.POST.get('contact_number').strip()
+        location_of = request.POST.get('location_of').strip()
+        province = request.POST.get('province').strip()
+        district = request.POST.get('district').strip()
+        city = request.POST.get('city').strip()
+        location = request.POST.get('location').strip()
+        landmark = request.POST.get('landmark').strip()
+        location_description = request.POST.get('location_description').strip()
+
+        # Create a simple class to hold the data
+        class ShippingAddressData:
+            def __init__(self, data):
+                for key, value in data.items():
+                    setattr(self, key, value)
+
+        shipping_address_obj = ShippingAddressData({
+            'id': formshippingaddress_id,
+            'contact_person': contact_person,
+            'contact_number': contact_number,
+            'location_of': location_of,
+            'province': province,
+            'district': district,
+            'city': city,
+            'location': location,
+            'landmark': landmark,
+            'location_description': location_description,
+        })
+
+        context = {
+            'shippingaddress': shipping_address_obj,
+            'next_page': next_page,
+            'cart_id': cart_id,
+            'variant_id': variant_id,
+            'quantity': quantity
+        }
+
+        # === Validation checks ===
+        if not contact_person or not contact_number or not location_of or not province or not district or not city or not location or not landmark:
+            messages.error(request, "All fields are required except landmark and location description.")
+            return render(request, 'shippingaddress.html', context)
+        
+        if not (re.match(phone_pattern1, contact_number) or re.match(phone_pattern2, contact_number)):
+            messages.error(request, "Invalid contact number. Must start with 97 or 98 and be 10 digits long.")
+            return render(request, 'shippingaddress.html', context)
 
         # UPDATE
         if formshippingaddress_id:
@@ -669,3 +770,24 @@ def shippingaddress_order(request):
         return render_order_page(request, cart_id, user)
     else:
         return render_buy_now_order_page(request, variant_id, quantity, user)
+    
+
+@never_cache
+@login_required
+@user_passes_test(is_admin)
+def top_customers(request):
+    # Annotate users with total number of orders
+    customers = (
+        User.objects
+        .annotate(total_orders=Count("orders"))
+        .filter(total_orders__gt=0)
+        .order_by("-total_orders")
+    )
+
+    paginator = Paginator(customers, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "admin_topcustomers.html", {
+        "page_obj": page_obj
+    })

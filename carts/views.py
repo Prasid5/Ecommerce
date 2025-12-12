@@ -1,10 +1,12 @@
 from django.shortcuts import redirect, get_object_or_404, render
+from django.views.decorators.cache import never_cache
+from django.contrib import messages
+
 from .models import Cart, CartItem
 from products.models import ProductVariant
 from products.views import backtoproductdetails
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 
+@never_cache
 def cart_view(request):
     if request.user.is_authenticated:
         cart = _get_cart(request)
@@ -16,11 +18,9 @@ def cart_view(request):
     else:
         return redirect('signin')
 
-
 def _get_cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     return cart
-
 
 def remove_from_cart(request):
     if request.user.is_authenticated:
@@ -34,8 +34,7 @@ def remove_from_cart(request):
         return redirect('cart_view')
 
     return redirect('signin')
-
-    
+  
 def add_to_cart(request):
     if not request.user.is_authenticated:
         return redirect('signin')
@@ -45,7 +44,6 @@ def add_to_cart(request):
         variant_id = request.POST.get("variant_id")
         quantity = int(request.POST.get("quantity", 1))
 
-        # Fetch variant
         variant = get_object_or_404(ProductVariant, id=variant_id)
 
         # Check stock

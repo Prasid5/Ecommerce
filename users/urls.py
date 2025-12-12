@@ -11,8 +11,12 @@ urlpatterns = [
     path('customerlist/', views.userlist,{"mode":"customer"}, name="customerlist"),
     path('edituserform/', views.edituserform, name="edituserform"),
     path('edituser/', views.edituser, name="edituser"),
-    path('deleteuser/', views.deleteuser, name="deleteuser"),
+    path('update_user_status/', views.update_user_status, name="update_user_status"),
 
     path('shippingaddress/', views.shippingaddress, name="shippingaddress"),
     path('shippingaddressorder/', views.shippingaddress_order, name="shippingaddress_order"),
+
+
+    path("admintopcustomers/", views.top_customers, name="admin_top_customers"),
+
 ]

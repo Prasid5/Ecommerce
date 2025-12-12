@@ -146,5 +146,5 @@ ESEWA_SUCCESS_URL = "http://127.0.0.1:8000/payment-success/"
 ESEWA_FAILURE_URL = "http://127.0.0.1:8000/payment-failure/"
 
 # Session expires after 30 minutes of inactivity
-SESSION_COOKIE_AGE = 60*10 # 30 minutes = 1800 seconds
+SESSION_COOKIE_AGE = 60*30 # 30 minutes = 1800 seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # optional - logout when browser closes

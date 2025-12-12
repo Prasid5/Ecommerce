@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-            /* === Content Area === */
+    /* === Content Area === */
     /* === Content Area (Separate, outside headerbar) === */
     .content-area {
         position: absolute;
@@ -22,13 +22,409 @@
         transition: left 0.3s ease;
     }
     .sidebar.hide ~ .content-area { left: 0; }
+
+    /* === Dashboard Header === */
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+    .dashboard-header h1 {
+        font-size: 28px;
+        color: #222;
+        margin-bottom: 0.5rem;
+    }
+    .dashboard-header p {
+        color: #555;
+    }
+
+    /* === Quick Stats Horizontal Bar === */
+    .quick-stats-horizontal {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        border: 1px solid #e0e0e0;
+    }
+    .quick-stats-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-right: 1px solid #e0e0e0;
+        padding: 0 1rem;
+    }
+    .quick-stats-item:last-child {
+        border-right: none;
+    }
+    .quick-stats-item h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #222;
+    }
+    .quick-stats-item p {
+        margin: 0.2rem 0 0;
+        font-size: 16px;
+        color: #666;
+    }
+
+    /* === Dashboard Boxes === */
+    .dashboard-boxes {
+        margin-bottom: 2rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    .dashboard-box-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    .dashboard-box {
+        background: #fff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    .dashboard-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .dashboard-box .icon {
+        width: 50px;
+        height: 50px;
+        background: #fff;
+        border:1px solid rgba(0,0,0,0.12);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 24px;
+    }
+    .dashboard-box h3 {
+        margin: 0.5rem 0;
+        font-size: 18px;
+        color: #222;
+    }
+    .dashboard-box p {
+        color: #666;
+        font-size: 14px;
+    }
+
+    /* ---------- TABLE CONTAINER ---------- */
+
+    .recent-order-header {
+        margin-bottom: 2rem;
+    }
+    .recent-order-header h1 {
+        font-size: 28px;
+        color: #222;
+        margin-bottom: 0.5rem;
+    }
+    .recent-order-header p {
+        color: #555;
+    }
+
+    .table-wrapper {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 14px;
+    }
+
+    thead tr {
+        background: #ffffffff;
+        color: #000000ff;
+        font-weight: 600;
+    }
+
+    th {
+        padding: 14px 16px;
+        text-align: center;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 16px;
+    }
+
+    td {
+        text-align: center;
+        vertical-align: middle;
+        padding: 12px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+        cursor: pointer;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-confirmed {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-processing {
+        background-color: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .status-shipped {
+        background-color: #ddd6fe;
+        color: #5b21b6;
+    }
+
+    .status-delivered {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-cancelled {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+
+    .payment-status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .payment-pending { 
+        background-color: #fef3c7; 
+        color: #92400e; 
+    }
+
+    .payment-success { 
+        background-color: #d1fae5; 
+        color: #065f46; 
+    }
+
+    .payment-failed { 
+        background-color: #fee2e2; 
+        color: #b91c1c; 
+    }
+
+    /* Action buttons */
+    .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        background-color: #080033;
+        color: #fff;
+        text-decoration: none;
+        padding: 6px 12px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+    .action-btn:hover {
+        background-color: #1a0052;
+    }
+
+    .action-btn.danger {
+        background-color: #ef4444;
+    }
+
+    .action-btn.danger:hover {
+        background-color: #dc2626;
+    }
+
+    .action-btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
     </style>
 </head>
 <body>
-        <!-- Content Area -->
     <div class="content-area">
-        <h1>Welcome to the Admin Dashboard</h1>
-        <p>This content area expands to full width when the sidebar collapses — smoothly animated.</p>
+
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p>Monitor overall statistics and performance overview.</p>
+        </div>
+
+        <!-- Quick Stats Horizontal Box -->
+        <div class="quick-stats-horizontal">
+            <div class="quick-stats-item">
+                <div class="stat-info">
+                    <h3>Total Revenue</h3>
+                    <p>Rs {{ total_revenue }}</p>
+                </div>
+            </div>
+            <div class="quick-stats-item">
+                <div class="stat-info">
+                    <h3>Total Orders</h3>
+                    <p>{{ total_orders }}</p>
+                </div>
+            </div>
+            <div class="quick-stats-item">
+                <div class="stat-info">
+                    <h3>Total Products</h3>
+                    <p>{{ total_products }}</p>
+                </div>
+            </div>
+            <div class="quick-stats-item">
+                <div class="stat-info">
+                    <h3>Total Stocks</h3>
+                    <p>{{ total_stocks }}</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Dashboard Boxes -->
+        <div class="dashboard-boxes">
+
+            <a href="{% url 'admin_top_products' %}" class="dashboard-box-link">
+                <div class="dashboard-box">
+                    <div class="icon">🧾</div>
+                    <h3>Top Selling Products</h3>
+                    <p>View best products.</p>
+                </div>
+            </a>
+
+            <a href="{% url 'admin_top_customers' %}" class="dashboard-box-link">
+                <div class="dashboard-box">
+                    <div class="icon">📅</div>
+                    <h3>Top Customers</h3>
+                    <p>View customers with maximum orders.</p>
+                </div>
+            </a>
+
+        </div>
+
+        <div class="recent-order">
+
+            <div class="recent-order-header">
+                <h2>Recent Order</h2>
+                <p>Recent Confirmed Order By Customer</p>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Total Amount</th>
+                            <th>Order Status</th>
+                            <th>Payment Method</th>
+                            <th>Payment Status</th>
+                            <th>Order Date</th>
+                            <th>Invoice</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>NPR {{ order.total_amount|floatformat:2 }}</td>
+                            <td>
+                                {% if order.status == "pending" %}
+                                    <span class="status-badge status-pending">Pending</span>
+                                {% elif order.status == "confirmed" %}
+                                    <span class="status-badge status-confirmed">Confirmed</span>
+                                {% elif order.status == "processing" %}
+                                    <span class="status-badge status-processing">Processing</span>
+                                {% elif order.status == "shipped" %}
+                                    <span class="status-badge status-shipped">Shipped</span>
+                                {% elif order.status == "delivered" %}
+                                    <span class="status-badge status-delivered">Delivered</span>
+                                {% elif order.status == "cancelled" %}
+                                    <span class="status-badge status-cancelled">Cancelled</span>
+                                {% else %}
+                                    <span class="status-badge">{{ order.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% with order.payments.first as payment %}
+                                    {% if payment %}
+                                        {{ payment.payment_method|upper }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>
+                                {% with order.payments.first as payment %}
+                                    {% if payment %}
+                                        <span class="payment-status-badge payment-{{ payment.payment_status|lower }}">
+                                            {{ payment.payment_status|title }}
+                                        </span>
+                                    {% else %}
+                                        <span class="payment-status-badge payment-pending">
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                {% endwith %}
+                            </td>
+                            <td>{{ order.order_date|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if order.status in "confirmed,processing,shipped,delivered" %}
+                                <a href="{% url 'view_invoice' order.id %}" class="action-btn" title="View Invoice" target="_blank">
+                                    View
+                                </a>
+                                {% else %}
+                                    <span style="color: #999; font-size: 12px;">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td> 
+                                <div class="actions">
+                                    <!-- View Details Button -->
+                                    <a href="{% url 'admin_order_list'%}" class="action-btn">
+                                        In Orderlist
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8" class="no-orders">No orders found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>

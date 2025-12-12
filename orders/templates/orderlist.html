@@ -139,41 +139,43 @@
 
         .status-badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 4px 12px;
+            border-radius: 12px;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        .status-pending { 
-            background-color: #fef3c7; 
-            color: #92400e; 
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
         }
 
-        .status-confirmed { 
-            background-color: #d1fae5; 
-            color: #065f46; 
+        .status-confirmed {
+            background-color: #dbeafe;
+            color: #1e40af;
         }
 
-        .status-processing { 
-            background-color: #bfdbfe; 
-            color: #1e40af; 
+        .status-processing {
+            background-color: #e0e7ff;
+            color: #4338ca;
         }
 
-        .status-shipped { 
-            background-color: #dbeafe; 
-            color: #1e3a8a; 
+        .status-shipped {
+            background-color: #ddd6fe;
+            color: #5b21b6;
         }
 
-        .status-delivered { 
-            background-color: #d1fae5; 
-            color: #065f46; 
+        .status-delivered {
+            background-color: #d1fae5;
+            color: #065f46;
         }
 
-        .status-canceled { 
-            background-color: #fee2e2; 
-            color: #b91c1c; 
+        .status-cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
         }
+
 
         .payment-status-badge {
             display: inline-block;
@@ -333,7 +335,7 @@
         <form action="{% url 'order_list' %}" method="get">
             <input type="text" name="query" value="{{ query }}" placeholder="Search by Order ID or Name...">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
-            <button type="submit" class="page-btn">Search</button>
+            <button type="submit" class="search-btn">Search</button>
         </form>
     </div>
 
@@ -348,6 +350,7 @@
                     <th>Payment Method</th>
                     <th>Payment Status</th>
                     <th>Order Date</th>
+                    <th>Invoice</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -357,9 +360,21 @@
                     <td>#{{ order.id }}</td>
                     <td>NPR {{ order.total_amount|floatformat:2 }}</td>
                     <td>
-                        <span class="status-badge status-{{ order.status|lower }}">
-                            {{ order.status|title }}
-                        </span>
+                        {% if order.status == "pending" %}
+                            <span class="status-badge status-pending">Pending</span>
+                        {% elif order.status == "confirmed" %}
+                            <span class="status-badge status-confirmed">Confirmed</span>
+                        {% elif order.status == "processing" %}
+                            <span class="status-badge status-processing">Processing</span>
+                        {% elif order.status == "shipped" %}
+                            <span class="status-badge status-shipped">Shipped</span>
+                        {% elif order.status == "delivered" %}
+                            <span class="status-badge status-delivered">Received</span>
+                        {% elif order.status == "cancelled" %}
+                            <span class="status-badge status-cancelled">Cancelled</span>
+                        {% else %}
+                            <span class="status-badge">{{ order.status|title }}</span>
+                        {% endif %}
                     </td>
                     <td>
                         {% with order.payments.first as payment %}
@@ -385,24 +400,24 @@
                     </td>
                     <td>{{ order.order_date|date:"M d, Y H:i" }}</td>
                     <td>
+                        {% if order.status in "confirmed,processing,shipped,delivered" %}
+                        <a href="{% url 'view_invoice' order.id %}" class="action-btn" title="View Invoice" target="_blank">
+                            View
+                        </a>
+                        {% else %}
+                            <span style="color: #999; font-size: 12px;">N/A</span>
+                        {% endif %}
+                    </td>
+                    <td> 
                         <div class="actions">
                             <!-- View Details Button -->
                             <a href="{% url 'order_detail' order.id %}" class="action-btn">
                                 View Details
                             </a>
 
-                            <!-- Download Invoice - Only if confirmed and paid -->
+                            <!-- Cancel Order Button - Only for COD orders in pending/confirmed status -->
                             {% with order.payments.first as payment %}
-                                {% if order.status == "confirmed" and payment and payment.payment_status == "success" %}
-                                <a href="{% url 'download_invoice' order.id %}" class="action-btn" title="Download Invoice">
-                                    Download Invoice
-                                </a>
-                                {% endif %}
-                            {% endwith %}
-
-                            <!-- Cancel Order Button - Only if COD, paid, and pending/confirmed (NOT processing) -->
-                            {% with order.payments.first as payment %}
-                                {% if payment and payment.payment_method == "cod" and payment.payment_status == "success" and order.status in "pending,confirmed" %}
+                                {% if payment and payment.payment_method == "cod" and payment.payment_status == "pending" and order.status in "pending,confirmed" %}
                                 <form action="{% url 'cancel_order' order.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this order?');">
                                     {% csrf_token %}
                                     <button type="submit" class="action-btn danger">
@@ -411,11 +426,21 @@
                                 </form>
                                 {% endif %}
                             {% endwith %}
+
+                            <!-- Received Button - Only for shipped orders -->
+                            {% if order.status == "shipped" %}
+                            <form action="{% url 'mark_order_received' order.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Have you received this order?');">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn" style="background-color: #10b981;">
+                                    Mark as Received
+                                </button>
+                            </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="no-orders">No orders found.</td></tr>
+                <tr><td colspan="8" class="no-orders">No orders found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -1,0 +1,554 @@
+{% extends 'administrator/base.html' %}
+{% load static %}
+{% block title %}Sneakee | Monthly Report{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .content-area {
+            position: absolute;
+            top: 60px;
+            left: 250px;
+            right: 0;
+            bottom: 0;
+            background: #f9fafb;
+            overflow-y: auto;
+            padding: 2rem;
+            transition: left 0.1s ease;
+        }
+        .sidebar.hide ~ .content-area { left: 0; }
+
+        .content-area h1 {
+            margin-bottom: 10px;
+            color: #080033;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border-left: 4px solid #080033;
+        }
+
+        .stat-card h3 {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            color: #080033;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .label {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* Filter Form */
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .filter-form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #080033;
+            box-shadow: 0 0 5px rgba(8, 0, 51, 0.3);
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            background-color: #080033;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            background-color: #0d004d;
+            transform: translateY(-1px);
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .chart-card h2 {
+            color: #080033;
+            font-size: 18px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .chart-placeholder {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #64748b;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Status Breakdown */
+        .status-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-count {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #080033;
+        }
+
+        /* Top Products */
+        .products-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+
+        .product-item:hover {
+            background: #f8fafc;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #080033;
+            margin-bottom: 4px;
+        }
+
+        .product-variant {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .product-stats {
+            text-align: right;
+        }
+
+        .product-quantity {
+            font-weight: 600;
+            color: #080033;
+        }
+
+        .product-revenue {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        /* Table */
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 14px;
+        }
+
+        thead tr {
+            background: #ffffff;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        th {
+            padding: 14px 16px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 16px;
+        }
+
+        td {
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-confirmed { background: #dbeafe; color: #1e40af; }
+        .status-processing { background: #e0e7ff; color: #4338ca; }
+        .status-shipped { background: #ddd6fe; color: #5b21b6; }
+        .status-delivered { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #fee2e2; color: #b91c1c; }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            text-decoration: none;
+            color: #080033;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            background: #f1f5f9;
+            border-color: #080033;
+        }
+
+        /* Monthly Data Table */
+        .monthly-table {
+            margin-bottom: 30px;
+        }
+
+        .monthly-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    
+<div class="content-area">
+    <h1>📅 Monthly Report</h1>
+    <p style="color: #64748b; margin-bottom: 20px;">Analyze orders by month and trends</p>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <form action="{% url 'admin_monthly_report' %}" method="get" class="filter-form">
+            <select name="year" class="filter-select">
+                {% for yr in available_years %}
+                    <option value="{{ yr }}" {% if yr == year %}selected{% endif %}>{{ yr }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="month" class="filter-select">
+                <option value="all" {% if month == "all" %}selected{% endif %}>All Months</option>
+                <option value="1" {% if month == "1" %}selected{% endif %}>January</option>
+                <option value="2" {% if month == "2" %}selected{% endif %}>February</option>
+                <option value="3" {% if month == "3" %}selected{% endif %}>March</option>
+                <option value="4" {% if month == "4" %}selected{% endif %}>April</option>
+                <option value="5" {% if month == "5" %}selected{% endif %}>May</option>
+                <option value="6" {% if month == "6" %}selected{% endif %}>June</option>
+                <option value="7" {% if month == "7" %}selected{% endif %}>July</option>
+                <option value="8" {% if month == "8" %}selected{% endif %}>August</option>
+                <option value="9" {% if month == "9" %}selected{% endif %}>September</option>
+                <option value="10" {% if month == "10" %}selected{% endif %}>October</option>
+                <option value="11" {% if month == "11" %}selected{% endif %}>November</option>
+                <option value="12" {% if month == "12" %}selected{% endif %}>December</option>
+            </select>
+
+            <select name="status" class="filter-select">
+                <option value="all" {% if status == "all" %}selected{% endif %}>All Status</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="filter-btn">Apply Filters</button>
+        </form>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Orders</h3>
+            <div class="value">{{ stats.total_orders|default:"0" }}</div>
+            <div class="label">Orders in selected period</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <div class="value">Rs. {{ stats.total_revenue|floatformat:2|default:"0.00" }}</div>
+            <div class="label">Revenue generated</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Avg Order Value</h3>
+            <div class="value">Rs. {{ stats.avg_order_value|floatformat:2|default:"0.00" }}</div>
+            <div class="label">Per order average</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Items Sold</h3>
+            <div class="value">{{ stats.total_items_sold|default:"0" }}</div>
+            <div class="label">Total items sold</div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <!-- Status Breakdown -->
+        <div class="chart-card">
+            <h2>Order Status Breakdown</h2>
+            {% if status_breakdown %}
+                <ul class="status-list">
+                    {% for item in status_breakdown %}
+                        <li class="status-item">
+                            <span class="status-name">
+                                <span class="status-dot" style="background: 
+                                    {% if item.status == 'delivered' %}#10b981
+                                    {% elif item.status == 'shipped' %}#8b5cf6
+                                    {% elif item.status == 'processing' %}#6366f1
+                                    {% elif item.status == 'confirmed' %}#3b82f6
+                                    {% elif item.status == 'cancelled' %}#ef4444
+                                    {% else %}#f59e0b{% endif %}"></span>
+                                {{ item.status|title }}
+                            </span>
+                            <span class="status-count">{{ item.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <p>No status data available</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Top Products -->
+        <div class="chart-card">
+            <h2>Top Selling Products</h2>
+            {% if top_products %}
+                <div class="products-list">
+                    {% for product in top_products %}
+                        <div class="product-item">
+                            <div class="product-info">
+                                <div class="product-name">{{ product.variant__product__product_name }}</div>
+                                <div class="product-variant">{{ product.variant__variant_name }}</div>
+                            </div>
+                            <div class="product-stats">
+                                <div class="product-quantity">{{ product.total_quantity }} sold</div>
+                                <div class="product-revenue">Rs. {{ product.total_revenue|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <p>No product data available</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Monthly Trends Table -->
+    {% if monthly_data %}
+    <div class="chart-card monthly-table">
+        <h2>Monthly Trends for {{ year }}</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Total Orders</th>
+                        <th>Total Revenue</th>
+                        <th>Avg Order Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in monthly_data %}
+                    <tr>
+                        <td style="text-align: left;">{{ data.month|date:"F Y" }}</td>
+                        <td>{{ data.total_orders }}</td>
+                        <td>Rs. {{ data.total_revenue|floatformat:2 }}</td>
+                        <td>Rs. {{ data.avg_order_value|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Orders Table -->
+    <div class="table-wrapper">
+        <h2 style="padding: 20px 20px 0; color: #080033;">Recent Orders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in page_obj %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.user.email }}</td>
+                    <td>{{ order.order_date|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td>Rs. {{ order.total_amount|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📦</div>
+                            <p>No orders found for the selected filters</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="?year={{ year }}&month={{ month }}&status={{ status }}&page={{ page_obj.previous_page_number }}">Prev</a>
+        {% endif %}
+
+        <span style="color: #64748b;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="?year={{ year }}&month={{ month }}&status={{ status }}&page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+</body>
+</html>
+{% endblock %}

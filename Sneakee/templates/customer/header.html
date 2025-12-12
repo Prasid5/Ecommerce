@@ -13,6 +13,7 @@
         <div class="nav-left">
             <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo" />
             <a href="{% url 'home' %}" class="nav-left-option">Home</a>
+            
             <!-- Categories Dropdown -->
             <div class="dropdown" id="categoriesDropdown">
                 <div class="dropdown-btn">
@@ -20,7 +21,7 @@
                 </div>
                 <div class="dropdown-menu">
                     {% for category in home_categories %}
-                        <a href="#">{{ category.category_name }}</a>
+                        <a href="{% url 'category' category.slug %}">{{ category.category_name }}</a>
                     {% empty %}
                         <span style="padding: 10px;">No categories</span>
                     {% endfor %}
@@ -40,19 +41,23 @@
                     {% endfor %}
                 </div>
             </div>
-            <a href="#" class="nav-left-option">Offers</a>
+            <a href="{% url 'trending_products' %}" class="nav-left-option">Trendings</a>
         </div>
         
         <!-- Center: Search -->
         <div class="nav-center">
-            <div class="search-box">
-                <input type="text" placeholder="Search products..." />
-                <button type="submit">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
-                </svg>
-                </button>      
-
+            <div class="dropdown" id="searchDropdown">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off" />
+                    <button type="button" id="searchButton">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="dropdown-menu search-results" id="searchResults">
+                    <span style="padding: 10px; color: #999;">Start typing to search...</span>
+                </div>
             </div>
         </div>
         
@@ -84,13 +89,6 @@
                 <a href="{% url 'signin' %}" class="nav-right-option">Sign In</a>
                 <a href="{% url 'signup' %}" class="nav-right-option">Sign Up</a>
             {% endif %}
-            {% comment %} <a href="#">
-                <svg class="person-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M12 12c2.7 0 4.5-1.8 4.5-4.5S14.7 3 12 3 7.5 4.8 7.5 7.5 9.3 12 12 12zM4 21c0-3 4.5-5 8-5s8 2 8 5v1H4v-1z"/>
-                </svg>
-                Profile
-            </a>
-            <a href="#">Logout</a> {% endcomment %}
     </div>
 </nav>
 </body>
@@ -102,9 +100,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const btn = dropdown.querySelector(".dropdown-btn");
         const menu = dropdown.querySelector(".dropdown-menu");
 
+        // Skip search dropdown for regular click handling
+        if (dropdown.id === 'searchDropdown') return;
+
         btn.addEventListener("click", (e) => {
-            e.preventDefault(); // if using href="#", avoid jump
-            e.stopPropagation(); // keep event from bubbling up to document click
+            e.preventDefault();
+            e.stopPropagation();
 
             // Close any other open dropdown menus
             document.querySelectorAll(".dropdown-menu.show").forEach(openMenu => {
@@ -117,10 +118,77 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Close all dropdowns when clicking anywhere outside
-    document.addEventListener("click", () => {
+    document.addEventListener("click", (e) => {
+        // Don't close if clicking inside search input or results
+        if (e.target.closest('#searchDropdown')) return;
+        
         document.querySelectorAll(".dropdown-menu").forEach(menu => {
             menu.classList.remove("show");
         });
+    });
+
+    // ============ SEARCH FUNCTIONALITY ============
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchDropdown = document.getElementById('searchDropdown');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+
+        // Clear previous timeout
+        clearTimeout(searchTimeout);
+
+        if (query.length < 2) {
+            searchResults.innerHTML = '<span style="padding: 10px; color: #999;">Start typing to search...</span>';
+            searchResults.classList.remove('show');
+            return;
+        }
+
+        // Show loading state
+        searchResults.innerHTML = '<span style="padding: 10px; color: #999;">Searching...</span>';
+        searchResults.classList.add('show');
+
+        // Debounce search requests (wait 300ms after user stops typing)
+        searchTimeout = setTimeout(() => {
+            fetch(`{% url 'search_products' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displaySearchResults(data.products);
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    searchResults.innerHTML = '<span style="padding: 10px; color: #f44;">Error loading results</span>';
+                });
+        }, 300);
+    });
+
+    function displaySearchResults(products) {
+        if (products.length === 0) {
+            searchResults.innerHTML = '<span style="padding: 10px; color: #999;">No products found</span>';
+            searchResults.classList.add('show');
+            return;
+        }
+
+        searchResults.innerHTML = products.map(product => 
+            `<a href="${product.url}">${product.name}</a>`
+        ).join('');
+        
+        searchResults.classList.add('show');
+    }
+
+    // Close search results when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchDropdown.contains(e.target)) {
+            searchResults.classList.remove('show');
+        }
+    });
+
+    // Focus input shows results if they exist
+    searchInput.addEventListener('focus', () => {
+        if (searchInput.value.trim().length >= 2) {
+            searchResults.classList.add('show');
+        }
     });
 });
 </script>

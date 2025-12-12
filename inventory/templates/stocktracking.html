@@ -69,27 +69,40 @@
         }
 
 
-    /* ---------- Top Bar ---------- */
-        .topbar{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:15px;
+        /* ---------- Top Bar ---------- */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
         }
-        .add-btn{
+
+        .topbar form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topbar input[type=text] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-btn {
             background-color: #080033;
             color: #fff;
-            text-decoration:none;
+            text-decoration: none;
             padding: 8px 10px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
+            font-weight: 500;
         }
 
-        .topbar input[type=text]{
-            padding:8px 10px;
-            border-radius:5px;
-            border:1px solid #cbd5e1;
+        .search-btn:hover {
+            background-color: #1a0052;
         }
 
     /* ---------- TABLE CONTAINER ---------- */
@@ -189,11 +202,9 @@
         </div>
     {% endif %}
 
-    <h1>
-            Stock Tracking
-    </h1>
-
+    
     <div class="topbar">
+        <h1>Stock Tracking</h1>
 
         {% comment %} <a href="{% url 'addproductvariant' %}" class="add-btn">
             +&nbsp;Add Product Variant
@@ -202,7 +213,7 @@
         <form method="get">
             <input type="text" name="query" placeholder="Search variants..." value="{{ query }}">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
-            <button type="submit" class="page-btn">Search</button>
+            <button type="submit" class="search-btn">Search</button>
         </form>
     </div>
 

@@ -57,10 +57,26 @@
             border-radius: 5px;
         }
 
-        .topbar input[type=text]{
-            padding:8px 10px;
-            border-radius:5px;
-            border:1px solid #cbd5e1;
+        .topbar form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .topbar input[type=text] {
+            padding: 8px 10px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-btn {
+            background-color: #080033;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
         }
 
     /* ---------- TABLE CONTAINER ---------- */
@@ -171,7 +187,7 @@
         <form method="get">
             <input type="text" name="query" placeholder="Search variants..." value="{{ query }}">
             <input type="hidden" name="page" value="{{ page_obj.number }}">
-            <button type="submit" class="page-btn">Search</button>
+            <button type="submit" class="search-btn">Search</button>
         </form>
     </div>
 
@@ -204,15 +220,14 @@
                                     <img src="{% static 'images/Pencil.png' %}" alt="Edit">
                                 </button>
                             </form>
-
                             <!-- Delete Button -->
-                            <form action="{% url 'deletebrand' %}" method="POST">
+                            {% comment %} <form action="{% url 'deletebrand' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="brand_id" value="{{ brand.id }}">
                                 <button type="submit" class="action-btn">
                                     <img src="{% static 'images/Bin.png' %}" alt="Delete">
                                 </button>
-                            </form>
+                            </form> {% endcomment %}
                         </div>
                     </td>
                 </tr>

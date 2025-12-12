@@ -44,7 +44,8 @@
 
                             <div class="product-info">
                                 <h3>{{ product.product_name }}</h3>
-                                <p class="price">₹{{ product.base_price }}</p>
+                                <p>{{ product.category.category_name }}</p>
+                                <p class="price">Rs {{ product.base_price }}</p>
                                 <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
                             </div>
 
