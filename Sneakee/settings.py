@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,10 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z^52p870yw1l)dfd4kwo2-=#p6pcd$l9&3e_b9_z7rpl0q$&bq'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', cast=bool, default=False)
 
 ALLOWED_HOSTS = []
 
@@ -138,12 +138,12 @@ MEDIA_ROOT=BASE_DIR/"media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ESEWA_BASE_URL = "https://rc-epay.esewa.com.np/api/epay/main/v2/form"
-ESEWA_STATUS_URL = "https://rc.esewa.com.np/api/epay/transaction/status/"
-ESEWA_SECRET_KEY = "8gBm/:&EnhH.1/q"
-ESEWA_MERCHANT_CODE = "EPAYTEST"
-ESEWA_SUCCESS_URL = "http://127.0.0.1:8000/payment-success/"
-ESEWA_FAILURE_URL = "http://127.0.0.1:8000/payment-failure/"
+ESEWA_BASE_URL = config('ESEWA_BASE_URL')
+ESEWA_STATUS_URL = config('ESEWA_STATUS_URL')
+ESEWA_SECRET_KEY = config('ESEWA_SECRET_KEY')
+ESEWA_MERCHANT_CODE = config('ESEWA_MERCHANT_CODE')
+ESEWA_SUCCESS_URL = config('ESEWA_SUCCESS_URL')
+ESEWA_FAILURE_URL = config('ESEWA_FAILURE_URL')
 
 # Session expires after 30 minutes of inactivity
 SESSION_COOKIE_AGE = 60*30 # 30 minutes = 1800 seconds
