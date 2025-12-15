@@ -16,6 +16,21 @@
             <button class="close-sidebar" id="closeSidebar">&times;</button>
         </div>
         
+        <!-- Mobile Search Box -->
+        <div class="mobile-search-container">
+            <div class="mobile-search-box">
+                <input type="text" id="mobileSearchInput" placeholder="Search products..." autocomplete="off" />
+                <button type="button" id="mobileSearchButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M10 2a8 8 0 105.293 14.293l4.707 4.707 1.414-1.414-4.707-4.707A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="mobile-search-results" id="mobileSearchResults">
+                <span style="padding: 10px; color: #999;">Start typing to search...</span>
+            </div>
+        </div>
+        
         <div class="sidebar-menu">
             <a href="{% url 'home' %}" class="sidebar-menu-item">Home</a>
             
@@ -217,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // ============ SEARCH FUNCTIONALITY ============
+    // ============ DESKTOP SEARCH FUNCTIONALITY ============
     const searchInput = document.getElementById('searchInput');
     const searchResults = document.getElementById('searchResults');
     const searchDropdown = document.getElementById('searchDropdown');
@@ -273,6 +288,66 @@ document.addEventListener("DOMContentLoaded", () => {
     searchInput.addEventListener('focus', () => {
         if (searchInput.value.trim().length >= 2) {
             searchResults.classList.add('show');
+        }
+    });
+
+    // ============ MOBILE SEARCH FUNCTIONALITY ============
+    const mobileSearchInput = document.getElementById('mobileSearchInput');
+    const mobileSearchResults = document.getElementById('mobileSearchResults');
+    let mobileSearchTimeout;
+
+    mobileSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+
+        clearTimeout(mobileSearchTimeout);
+
+        if (query.length < 2) {
+            mobileSearchResults.innerHTML = '<span style="padding: 10px; color: #999;">Start typing to search...</span>';
+            mobileSearchResults.classList.remove('show');
+            return;
+        }
+
+        mobileSearchResults.innerHTML = '<span style="padding: 10px; color: #999;">Searching...</span>';
+        mobileSearchResults.classList.add('show');
+
+        mobileSearchTimeout = setTimeout(() => {
+            fetch(`{% url 'search_products' %}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayMobileSearchResults(data.products);
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    mobileSearchResults.innerHTML = '<span style="padding: 10px; color: #f44;">Error loading results</span>';
+                });
+        }, 300);
+    });
+
+    function displayMobileSearchResults(products) {
+        if (products.length === 0) {
+            mobileSearchResults.innerHTML = '<span style="padding: 10px; color: #999;">No products found</span>';
+            mobileSearchResults.classList.add('show');
+            return;
+        }
+
+        mobileSearchResults.innerHTML = products.map(product => 
+            `<a href="${product.url}">${product.name}</a>`
+        ).join('');
+        
+        mobileSearchResults.classList.add('show');
+    }
+
+    mobileSearchInput.addEventListener('focus', () => {
+        if (mobileSearchInput.value.trim().length >= 2) {
+            mobileSearchResults.classList.add('show');
+        }
+    });
+
+    // Close mobile search results when clicking outside
+    document.addEventListener('click', (e) => {
+        const mobileSearchContainer = document.querySelector('.mobile-search-container');
+        if (mobileSearchContainer && !mobileSearchContainer.contains(e.target)) {
+            mobileSearchResults.classList.remove('show');
         }
     });
 });

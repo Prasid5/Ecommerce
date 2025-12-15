@@ -71,16 +71,16 @@
   </div>
 </form>
 
-      <div class="other-variants">
-        <label for="product-variants"><strong>Variants:</strong></label>
-        <select id="product-variants" name="product-variants" class="variant-select">
-          <option disabled selected>Select Variant</option>
-          {% regroup variants by variant_name as variant_groups %}
-          {% for group in variant_groups %}
-            <option value="{{ group.grouper }}">{{ group.grouper }}</option>
-          {% endfor %}
-        </select>
-      </div>
+<div class="other-variants">
+  <label for="product-variants"><strong>Variants:</strong></label>
+  <select id="product-variants" name="product-variants" class="variant-select">
+    <option disabled selected>Select Variant</option>
+    {% regroup variants by variant_name as variant_groups %}
+    {% for group in variant_groups %}
+      <option value="{{ group.grouper }}">{{ group.grouper }}</option>
+    {% endfor %}
+  </select>
+</div>
 
       <div class="description">
         <strong>Description:</strong>
@@ -93,7 +93,6 @@
   </div>
 </main>
 
-<script>
 <script>
   // ═══════════════════════════════════════════════════════
   // GA4 VIEW_ITEM EVENT - Track when product page loads
@@ -110,7 +109,7 @@
           price: {{ product.base_price }}
         }]
       });
-      console.log('✅ GA4 view_item event tracked');
+      //console.log('✅ GA4 view_item event tracked');
     }
   });
 
@@ -170,15 +169,19 @@
   let currentSelectedVariant = null;
 
   if (variantSelect) {
+    // When variant name is selected
     variantSelect.addEventListener('change', function() {
       const selectedVariantName = this.value;
       
       if (selectedVariantName) {
+        // Filter variants with this variant_name
         const matchingVariants = allVariantsData.filter(v => v.variant_name === selectedVariantName);
         
         if (matchingVariants.length > 0) {
+          // Show size options
           sizeOptionsContainer.style.display = 'block';
           
+          // Populate size buttons
           sizeButtonsContainer.innerHTML = '';
           matchingVariants.forEach(variant => {
             const sizeSpan = document.createElement('span');
@@ -186,15 +189,19 @@
             sizeSpan.dataset.variantId = variant.id;
             sizeSpan.style.cursor = 'pointer';
             
+            // Click handler for size
             sizeSpan.addEventListener('click', function() {
+              // Remove active class from all sizes
               sizeButtonsContainer.querySelectorAll('span').forEach(s => {
                 s.style.borderColor = '#ccc';
                 s.style.backgroundColor = 'transparent';
               });
               
+              // Add active style to clicked size
               this.style.borderColor = '#000';
               this.style.backgroundColor = '#f0f0f0';
               
+              // Find and update with this variant's data
               const variantId = parseInt(this.dataset.variantId);
               const selectedVariant = allVariantsData.find(v => v.id === variantId);
               
@@ -202,6 +209,7 @@
                 updateVariantDisplay(selectedVariant);
                 currentSelectedVariant = selectedVariant;
                 variantIdInput.value = selectedVariant.id;
+                // Sync quantity with current displayed value
                 quantityInput.value = qtyDisplay.value;
               }
             });
@@ -209,6 +217,7 @@
             sizeButtonsContainer.appendChild(sizeSpan);
           });
           
+          // Auto-select first size
           const firstSizeButton = sizeButtonsContainer.querySelector('span');
           if (firstSizeButton) {
             firstSizeButton.click();
@@ -218,15 +227,19 @@
     });
   }
 
+  // Function to update all display elements
   function updateVariantDisplay(variant) {
+    // Update text information
     displaySku.textContent = variant.sku || '-';
     displayColor.textContent = variant.color || '-';
     displayStock.textContent = variant.stock || '0';
     
+    // Update main image
     if (variant.main_image && variant.main_image.trim() !== '') {
       mainDisplayImage.src = variant.main_image;
     }
     
+    // Update thumbnail images
     updateThumbnail(displayTopImage, variant.top_image);
     updateThumbnail(displayRightImage, variant.right_image);
     updateThumbnail(displayLeftImage, variant.left_image);
@@ -242,6 +255,7 @@
     }
   }
 
+  // Click thumbnail to show in main image
   [displayTopImage, displayRightImage, displayLeftImage, displayBackImage].forEach(thumb => {
     thumb.addEventListener('click', function() {
       if (this.src) mainDisplayImage.src = this.src;
@@ -267,13 +281,16 @@
     }, 4000);
   }
 
+  // Initialize quantity input with default value
   quantityInput.value = qtyDisplay.value;
 
+  // Initialize with first variant on page load
   if (variantSelect && variantSelect.options.length > 1) {
     variantSelect.selectedIndex = 1;
     variantSelect.dispatchEvent(new Event('change'));
   }
 
+  // Auto-hide Django messages after 4 seconds
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
@@ -285,8 +302,10 @@
     const variantId = variantIdInput.value;
     const quantity = parseInt(qtyDisplay.value);
     
+    // Always sync quantity before submission
     quantityInput.value = quantity;
     
+    // Only check if variant is selected (let backend handle stock validation)
     if (!variantId || !currentSelectedVariant) {
       e.preventDefault();
       showInlineMessage('Please select a variant and size before proceeding.', 'error');
@@ -314,17 +333,17 @@
           }]
         });
         
-        console.log('✅ GA4 add_to_cart event tracked:', {
+        /*console.log('✅ GA4 add_to_cart event tracked:', {
           product: '{{ product.product_name }}',
           variant: currentSelectedVariant.variant_name,
           quantity: quantity,
           value: basePrice * quantity
-        });
+        });*/
       }
     }
 
     // ─────────────────────────────────────────────────────
-    // GA4: begin_checkout event
+    // GA4: begin_checkout event for BUY NOW
     // ─────────────────────────────────────────────────────
     if (submitter && submitter.value === 'buy_now' && currentSelectedVariant) {
       if (typeof gtag !== 'undefined') {
@@ -341,7 +360,7 @@
           }]
         });
         
-        console.log('✅ GA4 begin_checkout event tracked');
+        //console.log('✅ GA4 begin_checkout event tracked');
       }
     }
     

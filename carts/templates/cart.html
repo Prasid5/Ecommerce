@@ -630,7 +630,7 @@ body {
                             <p>SKU: {{ item.variant.sku }}</p>
                             <p class="item-price">Unit Price: <strong>Rs. {{ item.variant.product.base_price }}</strong></p>
 
-                            <form action="{% url 'remove_from_cart' %}" method="POST">
+                            <form class="remove-form" action="{% url 'remove_from_cart' %}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="item_id" value="{{item.id}}">
                                 <button class="remove-btn">Remove</button>
@@ -658,7 +658,7 @@ body {
     <div class="cart-summary">
         <h3>Total Cart Amount ({{ cart.total_quantity }} Unit{{ cart.total_quantity|pluralize }})</h3>
         <p class="cart-amount">Rs. {{ cart.total_cart_amount|floatformat:2 }}</p>
-        <form action="{% url 'order_view' %}" method="POST">
+        <form id="checkout-form" action="{% url 'order_view' %}" method="POST">
             {% csrf_token %}
             <input type="hidden" name="cart_id" value="{{cart.id}}">
             <button class="checkout-btn" type="submit">Checkout</button>
@@ -667,10 +667,76 @@ body {
     </div>
 
 </div>
+{% block extra_js %}
 <script>
-  // auto hide messages after 4 seconds
+  // GA4 VIEW_CART EVENT
+  window.addEventListener('load', function() {
+    if (typeof gtag !== 'undefined') {
+      const cartItems = [];
+      document.querySelectorAll('.cart-item').forEach(item => {
+        cartItems.push({
+          item_id: item.dataset.variantId,
+          item_name: item.dataset.productName,
+          item_variant: item.dataset.variantName,
+          item_category: item.dataset.category,
+          price: parseFloat(item.dataset.price),
+          quantity: parseInt(item.dataset.quantity)
+        });
+      });
+
+      if (cartItems.length > 0) {
+        const totalValue = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        gtag('event', 'view_cart', { currency: 'NPR', value: totalValue, items: cartItems });
+        //console.log('✅ GA4 view_cart event tracked with', cartItems.length, 'items');
+      }
+    }
+  });
+
+  // GA4 REMOVE_FROM_CART EVENT
+  document.querySelectorAll('.remove-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      const cartItem = this.closest('.cart-item');
+      if (cartItem && typeof gtag !== 'undefined') {
+        const itemData = {
+          item_id: cartItem.dataset.variantId,
+          item_name: cartItem.dataset.productName,
+          item_variant: cartItem.dataset.variantName,
+          item_category: cartItem.dataset.category,
+          price: parseFloat(cartItem.dataset.price),
+          quantity: parseInt(cartItem.dataset.quantity)
+        };
+        gtag('event', 'remove_from_cart', { currency: 'NPR', value: itemData.price * itemData.quantity, items: [itemData] });
+        //console.log('✅ GA4 remove_from_cart event tracked');
+      }
+    });
+  });
+
+  // GA4 BEGIN_CHECKOUT EVENT
+  document.getElementById('checkout-form').addEventListener('submit', function(e) {
+    if (typeof gtag !== 'undefined') {
+      const cartItems = [];
+      document.querySelectorAll('.cart-item').forEach(item => {
+        cartItems.push({
+          item_id: item.dataset.variantId,
+          item_name: item.dataset.productName,
+          item_variant: item.dataset.variantName,
+          item_category: item.dataset.category,
+          price: parseFloat(item.dataset.price),
+          quantity: parseInt(item.dataset.quantity)
+        });
+      });
+      if (cartItems.length > 0) {
+        const totalValue = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        gtag('event', 'begin_checkout', { currency: 'NPR', value: totalValue, items: cartItems });
+        //console.log('✅ GA4 begin_checkout event tracked from cart');
+      }
+    }
+  });
+
+  // Auto hide messages after 4 seconds
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
 </script>
+{% endblock %}
 {% endblock %}

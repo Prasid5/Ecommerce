@@ -779,14 +779,14 @@
       ]
     });
 
-    console.log('✅ GA4 purchase event tracked:', {
+    /*console.log('✅ GA4 purchase event tracked:', {
       order_id: '{{ new_order.id }}',
       total: {{ new_order.total_amount }},
       items_count: {{ new_order.orderitem_set.count }}
-    });
-  } else {
+    });*/
+  } /*else {
     console.error('❌ gtag not loaded - purchase event NOT tracked');
-  }
+  }*/
 })();
 </script>
 {% endif %}

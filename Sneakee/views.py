@@ -24,7 +24,7 @@ def search_products(request):
     products = Product.objects.filter(
         Q(product_name__icontains=query) | Q(description__icontains=query),
         is_active=True
-    )[:8]  # Limit to 8 results
+    )[:5]
     
     results = []
     for product in products:
