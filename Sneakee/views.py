@@ -10,8 +10,6 @@ from inventory.models import Stock
 from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
 
-def custom_404(request, exception):
-    return render(request, '404.html', status=404)
 
 def is_admin(user):
     return user.is_staff or user.is_superuser

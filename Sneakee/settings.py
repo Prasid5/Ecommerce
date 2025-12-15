@@ -66,7 +66,7 @@ ROOT_URLCONF = 'Sneakee.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],      # <-- empty list, or remove this line entirely
+        'DIRS': [],      # <-- empty list, or remove this line entirely
         'APP_DIRS': True,  # important to find templates inside app folders
         'OPTIONS': {
             'context_processors': [
@@ -131,17 +131,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"
-
-MEDIA_URL = '/static/media/'
-MEDIA_ROOT = BASE_DIR / "staticfiles" / "media"
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]  # list required
+STATIC_ROOT = BASE_DIR / "staticfiles"   # Render will serve from here
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

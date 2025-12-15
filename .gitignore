@@ -4,13 +4,14 @@ __pycache__/
 
 # Django
 db.sqlite3
+media/
 staticfiles/
 
 # Environment
 .env
 
 # Virtual environment
-virenv/
+venv/
 
 # OS
 Thumbs.db
