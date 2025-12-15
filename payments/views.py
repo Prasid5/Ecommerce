@@ -165,15 +165,16 @@ def make_payment(request):
             order.status = "confirmed"
             order.save()
 
-            # Generate invoice (shows "PENDING - Cash on Delivery")
             try:
                 generate_invoice_pdf(order)
             except Exception as e:
-                # Log error but don't block order
                 print(f"Invoice generation failed for order {order.id}: {e}")
 
             # Delete cart items
             delete_user_cart(request.user)
+
+            # Store order ID in session for GA4 tracking
+            request.session['new_order_id'] = order.id
 
             messages.success(request, "Order confirmed! Invoice generated. Payment will be collected on delivery.")
             return redirect('order_list')
@@ -317,6 +318,9 @@ def esewa_payment_success(request):
         # Delete cart
         delete_user_cart(request.user)
 
+        # Store order ID for GA4 tracking before clearing session
+        request.session['new_order_id'] = order.id
+        
         # Clear session
         request.session.pop('order_id', None)
 

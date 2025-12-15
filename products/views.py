@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.http import urlencode
+from django.utils.text import slugify
 
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -79,27 +80,66 @@ def brand_view(request, brand_slug):
 
     return render(request, 'brand.html', context)
 
-
-def category_view(request, category_slug):
+def category_view_by_name(request, category_name):
     query = request.GET.get("query", "")
     
-    # Fetch the category
+    categories = Category.objects.filter(category_name=category_name)
+    
+    if not categories.exists():
+        messages.error(request, "Category not found.")
+        return redirect('home')
+    
+    products = Product.objects.filter(
+        category__in=categories,
+        is_active=True
+    ).select_related('category').prefetch_related('productvariants', 'category__brands').order_by("-id")
+    
+    if query:
+        # Search by product name, brand name, or variant name
+        products = products.filter(
+            Q(product_name__icontains=query) |
+            Q(category__brands__brand_name__icontains=query) |
+            Q(productvariants__variant_name__icontains=query)
+        ).distinct()
+    
+    paginator = Paginator(products, 12)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'category_name': category_name,
+        'page_obj': page_obj,
+        'query': query,
+    }
+    
+    return render(request, 'categories.html', context)
+
+
+def category_view(request, category_slug):
+    """
+    Original view - shows products from a SPECIFIC category (brand-specific)
+    """
+    query = request.GET.get("query", "")
+    
     category = get_object_or_404(Category, slug=category_slug)
     
-    # Get only active products in this category
-    products = category.products.filter(is_active=True).order_by("-id")
+    products = category.products.filter(is_active=True).select_related('category').prefetch_related('productvariants', 'category__brands').order_by("-id")
     
-    # Search logic
     if query:
-        products = products.filter(product_name__icontains=query)
+        # Search by product name, brand name, or variant name
+        products = products.filter(
+            Q(product_name__icontains=query) |
+            Q(category__brands__brand_name__icontains=query) |
+            Q(productvariants__variant_name__icontains=query)
+        ).distinct()
     
-    # Pagination - 12 products per page
     paginator = Paginator(products, 12)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
     
     context = {
         'category': category,
+        'category_name': category.category_name,
         'page_obj': page_obj,
         'query': query,
     }
@@ -136,100 +176,115 @@ def trending_products(request):
 @login_required
 @user_passes_test(is_admin)
 def addbrand(request):
-    context={}
+    context = {}
     if request.method == 'POST':
-        brand_name=request.POST.get('brand_name','').strip()
-        slug=request.POST.get('slug','').strip()
-        brand_logo=request.FILES.get('brand_logo')
-        brand_picture=request.FILES.get('brand_picture')
+        brand_name = request.POST.get('brand_name', '').strip()
+        slug = request.POST.get('slug', '').strip()
+        brand_logo = request.FILES.get('brand_logo')
+        brand_picture = request.FILES.get('brand_picture')
 
         context = {
             'brand_name': brand_name,
             'slug': slug,
         }
 
-        if not brand_name:
-            messages.error(request, "All fields are required.")
+        # Validate all required fields
+        if not brand_name or not slug:
+            messages.error(request, "Brand name and slug are required.")
             return render(request, 'addbrand.html', context)
         
-        if Brand.objects.filter(brand_name=brand_name):
-            messages.error(request,"Brand name already exists")
+        if not brand_logo or not brand_picture:
+            messages.error(request, "Brand logo and picture are required.")
             return render(request, 'addbrand.html', context)
         
-        if Brand.objects.filter(slug=slug):
-            messages.error(request,"Slug already exists.")
+        if Brand.objects.filter(brand_name=brand_name).exists():
+            messages.error(request, "Brand name already exists")
+            return render(request, 'addbrand.html', context)
+        
+        if Brand.objects.filter(slug=slug).exists():
+            messages.error(request, "Slug already exists.")
             return render(request, 'addbrand.html', context)
 
-        brand=Brand.objects.create(
+        Brand.objects.create(
             brand_name=brand_name,
             slug=slug,
             brand_logo=brand_logo,
             brand_picture=brand_picture,
         )
 
-        brand.save()
         messages.success(request, "Brand created successfully")
-
         return redirect('addcategory')
-    return render(request, 'addbrand.html')
+    
+    return render(request, 'addbrand.html', context)
+
 
 @login_required
 @user_passes_test(is_admin)
 def addcategory(request):
-    brands=Brand.objects.all()
-    context={}
+    brands = Brand.objects.all()
+    context = {'brands': brands}
+    
     if request.method == 'POST':
-        brand_id=request.POST.get('brand')
-        category_name=request.POST.get('category_name','').strip()
-        slug=request.POST.get('slug','').strip()
-        description=request.POST.get('description','').strip()
+        brand_id = request.POST.get('brand')
+        category_name = request.POST.get('category_name', '').strip()
+        slug = request.POST.get('slug', '').strip()
+        description = request.POST.get('description', '').strip()
 
-        context = {
-            'brands':brands,
+        context.update({
             'category_name': category_name,
             'slug': slug,
-            'description': description
-        }
+            'description': description,
+            'selected_brand': brand_id,
+        })
 
+        # Validate required fields
+        if not brand_id:
+            messages.error(request, "Please select a brand.")
+            return render(request, 'addcategory.html', context)
+        
         if not category_name or not description:
             messages.error(request, "All fields are required.")
             return render(request, 'addcategory.html', context)
         
-        if Category.objects.filter(category_name=category_name):
-            messages.error(request,"Category name already exists")
-            return render(request, 'addcategory.html', context)
+        # Get the brand
+        brand = get_object_or_404(Brand, id=brand_id)
         
-        if Category.objects.filter(slug=slug):
-            messages.error(request,"Slug already exists.")
+        # Auto-generate slug with brand name if not provided
+        if not slug:
+            slug = slugify(f"{brand.brand_name}-{category_name}")
+        
+        # Check if slug already exists
+        if Category.objects.filter(slug=slug).exists():
+            messages.error(request, "Slug already exists. Try a different one.")
             return render(request, 'addcategory.html', context)
 
-        # Step 1: create category WITHOUT brands
+        # Create category with explicit slug
         category = Category.objects.create(
             category_name=category_name,
             slug=slug,
             description=description
         )
-
-        # Step 2: add brand to ManyToMany field
         category.brands.add(brand_id)
 
-        category.save()
         messages.success(request, "Category created successfully")
         return redirect('addproduct')
-    return render(request, 'addcategory.html',{'brands':brands})
+    
+    return render(request, 'addcategory.html', context)
 
 @login_required
 @user_passes_test(is_admin)
 def addproduct(request):
-    categories =  Category.objects.all()#Used to render all categories in the form
+    # Optimize query to avoid N+1 problem
+    categories = Category.objects.prefetch_related('brands').all()
+    
     if request.method == 'POST':
-        category_id=request.POST.get('category')
-        slug=request.POST.get('slug','').strip()
-        product_name=request.POST.get('product_name','').strip()
-        material=request.POST.get('material','').strip()
-        base_price=request.POST.get('base_price','').strip()
-        main_image=request.FILES.get('main_image')
-        description=request.POST.get('description')
+        category_id = request.POST.get('category')
+        slug = request.POST.get('slug', '').strip()
+        product_name = request.POST.get('product_name', '').strip()
+        material = request.POST.get('material', '').strip()
+        base_price = request.POST.get('base_price', '').strip()
+        main_image = request.FILES.get('main_image')
+        description = request.POST.get('description')
 
         context = {
             'categories': categories,
@@ -249,16 +304,16 @@ def addproduct(request):
             return render(request, "addproduct.html", context)
 
         if not main_image:
-            messages.error(request,"Main image of product is required")
+            messages.error(request, "Main image of product is required")
             return render(request, "addproduct.html", context)
 
         if slug and Product.objects.filter(slug=slug).exists():
-            messages.error(request,"Slug already exits")
-            return render(request,"addproduct.html", context)
+            messages.error(request, "Slug already exists")
+            return render(request, "addproduct.html", context)
 
-        category=Category.objects.get(id=category_id)
+        category = Category.objects.get(id=category_id)
 
-        product=Product.objects.create(
+        product = Product.objects.create(
             category=category,
             slug=slug,
             product_name=product_name,
@@ -270,7 +325,8 @@ def addproduct(request):
 
         messages.success(request, "Product added successfully")
         return redirect('addproductvariant')
-    return render(request,'addproduct.html',{'categories':categories})
+    
+    return render(request, 'addproduct.html', {'categories': categories})
 
 @login_required
 @user_passes_test(is_admin)
@@ -359,7 +415,7 @@ def brandlist(request):
             brands = brands.filter(Q(id=int(query)) | Q(brand_name__icontains=query))
         else:
             brands = brands.filter(brand_name__icontains=query)
-    paginator = Paginator(brands, 1)
+    paginator = Paginator(brands, 5)
     page_number = request.GET.get("page")#for first-time page load, request.get={}
     page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
 
@@ -387,7 +443,7 @@ def categorylist(request, brand_slug=None):
             categories = categories.filter(Q(id=int(query)) | Q(category_name__icontains=query))
         else:
             categories = categories.filter(category_name__icontains=query)
-    paginator = Paginator(categories, 1)
+    paginator = Paginator(categories, 10)
     page_number = request.GET.get("page")#for first-time page load, request.get={}
     page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
 
@@ -416,7 +472,7 @@ def productlist(request, category_slug=None):
             products = products.filter(Q(id=int(query)) | Q(product_name__icontains=query))
         else:
             products = products.filter(product_name__icontains=query)
-    paginator = Paginator(products, 1)
+    paginator = Paginator(products, 10)
     page_number = request.GET.get("page")#for first-time page load, request.get={}
     page_obj = paginator.get_page(page_number)#for None, Paginator.get_page() default to 1. It also contain page object_list from paginator var
 
@@ -537,8 +593,40 @@ def editbrand(request):
         brand = get_object_or_404(Brand, id=brand_id)
 
         if "save_changes" in request.POST:
-            brand.brand_name = request.POST.get("brand_name")
-            brand.slug = request.POST.get("slug")
+            brand_name = request.POST.get("brand_name", "").strip()
+            slug = request.POST.get("slug", "").strip()
+            
+            # Validation
+            if not brand_name or not slug:
+                messages.error(request, "Brand name and slug are required.")
+                return render(request, "addbrand.html", {
+                    "edit_mode": True,
+                    "brand": brand,
+                    "brand_name": brand_name,
+                    "slug": slug,
+                })
+            
+            # Check uniqueness (excluding current brand)
+            if Brand.objects.filter(brand_name=brand_name).exclude(id=brand.id).exists():
+                messages.error(request, "Brand name already exists")
+                return render(request, "addbrand.html", {
+                    "edit_mode": True,
+                    "brand": brand,
+                    "brand_name": brand_name,
+                    "slug": slug,
+                })
+            
+            if Brand.objects.filter(slug=slug).exclude(id=brand.id).exists():
+                messages.error(request, "Slug already exists")
+                return render(request, "addbrand.html", {
+                    "edit_mode": True,
+                    "brand": brand,
+                    "brand_name": brand_name,
+                    "slug": slug,
+                })
+            
+            brand.brand_name = brand_name
+            brand.slug = slug
 
             if request.FILES.get("brand_logo"):
                 brand.brand_logo = request.FILES["brand_logo"]
@@ -560,6 +648,7 @@ def editbrand(request):
 
     return redirect("brandlist")
 
+
 @login_required
 @user_passes_test(is_admin)
 def editcategory(request):
@@ -568,14 +657,62 @@ def editcategory(request):
         category = get_object_or_404(Category, id=category_id)
 
         if "save_changes" in request.POST:
-            category.category_name = request.POST.get("category_name")
-            category.slug = request.POST.get("slug")
-            category.description = request.POST.get("description")
-
-            # Updating the brand M2M
+            category_name = request.POST.get("category_name", "").strip()
+            slug = request.POST.get("slug", "").strip()
+            description = request.POST.get("description", "").strip()
             selected_brand = request.POST.get("brand")
-            if selected_brand:
-                category.brands.set([selected_brand])
+
+            # Validation
+            if not category_name or not description:
+                messages.error(request, "Category name and description are required.")
+                return render(request, "addcategory.html", {
+                    "edit_mode": True,
+                    "category": category,
+                    "category_name": category_name,
+                    "slug": slug,
+                    "description": description,
+                    "brands": Brand.objects.all(),
+                    "selected_brand": selected_brand,
+                })
+            
+            if not selected_brand:
+                messages.error(request, "Please select a brand.")
+                return render(request, "addcategory.html", {
+                    "edit_mode": True,
+                    "category": category,
+                    "category_name": category_name,
+                    "slug": slug,
+                    "description": description,
+                    "brands": Brand.objects.all(),
+                    "selected_brand": selected_brand,
+                })
+            
+            # Get the brand
+            brand = get_object_or_404(Brand, id=selected_brand)
+            
+            # Auto-generate slug with brand name if not provided
+            if not slug:
+                slug = slugify(f"{brand.brand_name}-{category_name}")
+            
+            # Check uniqueness (excluding current category)
+            if Category.objects.filter(slug=slug).exclude(id=category.id).exists():
+                messages.error(request, "Slug already exists. Try a different one.")
+                return render(request, "addcategory.html", {
+                    "edit_mode": True,
+                    "category": category,
+                    "category_name": category_name,
+                    "slug": slug,
+                    "description": description,
+                    "brands": Brand.objects.all(),
+                    "selected_brand": selected_brand,
+                })
+
+            category.category_name = category_name
+            category.slug = slug
+            category.description = description
+
+            # Update brand M2M
+            category.brands.set([selected_brand])
 
             category.save()
             messages.success(request, "Category updated successfully!")
@@ -615,11 +752,8 @@ def editproduct(request):
             if category_id:
                 product.category_id = category_id
 
-            # ---------------------------
             # Handle main image replacement
-            # ---------------------------
             if request.FILES.get("main_image"):
-                # Assign new image
                 product.main_image = request.FILES["main_image"]
 
             product.save()
@@ -630,7 +764,7 @@ def editproduct(request):
         return render(request, "addproduct.html", {
             "edit_mode": True,
             "product": product,
-            "categories": Category.objects.all(),
+            "categories": Category.objects.prefetch_related('brands').all(),
             "name": product.product_name,
             "slug": product.slug,
             "material": product.material,
@@ -639,6 +773,7 @@ def editproduct(request):
         })
 
     return redirect("productlist")
+
 
 @login_required
 @user_passes_test(is_admin)

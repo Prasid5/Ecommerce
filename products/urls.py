@@ -4,7 +4,8 @@ from django.urls import path
 from products import views
 urlpatterns = [
     path('brand/<slug:brand_slug>/',views.brand_view, name='brand'),
-    path('category/<slug:category_slug>/',views.category_view, name='category'),
+    path('category/name/<str:category_name>/', views.category_view_by_name, name='category_by_name'),
+    path('category/<slug:category_slug>/', views.category_view, name='category'),
     path('trending/', views.trending_products, name='trending_products'),
     path('product/<slug:slug>/', views.productdetails, name='productdetails'),
     

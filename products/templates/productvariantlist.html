@@ -240,12 +240,12 @@
                     <td>
                         <img src="{{ productvariant.main_image.url }}" alt="{{ productvariant.variant_name }}" class="product-img">
                     </td>
-                    <td>{{ productvariant.variant_name }} - {{ productvariant.color }} ({{ productvariant.size }})</td>
+                    <td>{{ productvariant.variant_name }} - ({{ productvariant.size }})</td>
                     <td>{{ productvariant.product.product_name }}</td>
                     <td>{{productvariant.sku}}</td>
                     <td>{{ productvariant.color }}</td>
                     <td>{{ productvariant.size }}</td>
-                    <td>NPR {{ productvariant.price }}</td>
+                    <td>NPR {{ productvariant.inventorystocks.cost_per_unit }}</td>
                     <td>{{ productvariant.inventorystocks.quantity|default:0 }}</td>
                     <td>
                         <div class="status-badge">

@@ -7,86 +7,419 @@ body {
 }
 
 .custom-footer {
-  background-color: #222;
-  color: #ddd;
-  padding: 40px 20px 20px;
-  font-family: 'Arial', sans-serif;
+    background-color: #222;
+    color: #ddd;
+    padding: 40px 20px 20px;
+    font-family: 'Arial', sans-serif;
 }
 
 .footer-container {
-  display: flex;
-  justify-content: space-evenly;
-  gap: 30px;
+    display: flex;
+    justify-content: space-evenly;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    flex-wrap: wrap;
 }
 
-.footer-container > .footer-column-logo-column img{
-    width:125px;
+.footer-column-logo-column,
+.footer-column {
+    flex: 1 1 250px;
+    min-width: 200px;
+}
+
+.footer-container > .footer-column-logo-column img {
+    width: 125px;
     height: 100px;
     object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.footer-column-logo-column p {
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.5;
 }
 
 .footer-column span {
-  color: #fff;
-  margin-bottom: 15px;
-  font-size: 16px;
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    display: block;
 }
 
 .footer-column ul {
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0 0;
 }
 
 .footer-column ul li {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .footer-column ul li a {
-  color: #ccc;
-  text-decoration: none;
-  font-size: 14px;
+    color: #ccc;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
 }
 
 .footer-column ul li a:hover {
-  color: #fff;
-}
-
-.logo-column img {
-  height: 40px;
-  margin-bottom: 10px;
+    color: #fff;
 }
 
 .footer-column p {
-  font-size: 14px;
-  margin: 5px 0;
+    font-size: 14px;
+    margin: 8px 0;
+    color: #ccc;
 }
 
 .footer-column form input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 4px;
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 .footer-column form button {
-  margin-top: 10px;
-  padding: 8px 12px;
-  background-color: #00bcd4;
-  border: none;
-  color: white;
-  cursor: pointer;
-  border-radius: 4px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #00bcd4;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
 }
 
 .footer-column form button:hover {
-  background-color: #0097a7;
+    background-color: #0097a7;
 }
 
 .footer-bottom {
-  text-align: center;
-  border-top: 1px solid #444;
-  margin-top: 40px;
-  padding-top: 15px;
-  font-size: 13px;
-  color: #aaa;
+    text-align: center;
+    border-top: 1px solid #444;
+    margin-top: 40px;
+    padding-top: 15px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+/* ============================================
+   TABLET RESPONSIVE (768px - 1024px)
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .custom-footer {
+        padding: 35px 20px 20px;
+    }
+    
+    .footer-container {
+        gap: 25px;
+    }
+    
+    .footer-column-logo-column,
+    .footer-column {
+        flex: 1 1 220px;
+        min-width: 180px;
+    }
+    
+    .footer-container > .footer-column-logo-column img {
+        width: 110px;
+        height: 90px;
+    }
+    
+    .footer-column span {
+        font-size: 15px;
+    }
+    
+    .footer-column ul li a,
+    .footer-column p,
+    .footer-column-logo-column p {
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .custom-footer {
+        padding: 30px 15px 15px;
+    }
+    
+    .footer-container {
+        gap: 20px;
+        justify-content: space-between;
+    }
+    
+    .footer-column-logo-column,
+    .footer-column {
+        flex: 1 1 180px;
+        min-width: 150px;
+    }
+    
+    .footer-container > .footer-column-logo-column img {
+        width: 90px;
+        height: 75px;
+    }
+    
+    .footer-column-logo-column p {
+        font-size: 12px;
+    }
+    
+    .footer-column span {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .footer-column ul {
+        margin: 10px 0 0 0;
+    }
+    
+    .footer-column ul li {
+        margin-bottom: 7px;
+    }
+    
+    .footer-column ul li a {
+        font-size: 12px;
+    }
+    
+    .footer-column p {
+        font-size: 12px;
+        margin: 6px 0;
+    }
+    
+    .footer-column form input {
+        font-size: 12px;
+    }
+    
+    .footer-column form button {
+        font-size: 12px;
+    }
+    
+    .footer-bottom {
+        margin-top: 30px;
+        padding-top: 12px;
+        font-size: 11px;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    .custom-footer {
+        padding: 25px 10px 12px;
+    }
+    
+    .footer-container {
+        gap: 15px;
+    }
+    
+    .footer-column-logo-column,
+    .footer-column {
+        flex: 1 1 140px;
+        min-width: 120px;
+    }
+    
+    .footer-container > .footer-column-logo-column img {
+        width: 75px;
+        height: 60px;
+    }
+    
+    .footer-column-logo-column p {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+    
+    .footer-column span {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+    
+    .footer-column ul li {
+        margin-bottom: 6px;
+    }
+    
+    .footer-column ul li a,
+    .footer-column p {
+        font-size: 10px;
+    }
+    
+    .footer-column form input {
+        padding: 6px;
+        font-size: 11px;
+    }
+    
+    .footer-column form button {
+        padding: 6px 8px;
+        font-size: 11px;
+    }
+    
+    .footer-bottom {
+        margin-top: 25px;
+        font-size: 10px;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL DEVICES (max-width: 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    .custom-footer {
+        padding: 20px 10px 10px;
+    }
+    
+    .footer-container {
+        gap: 20px;
+    }
+    
+    .footer-container > .footer-column-logo-column img {
+        width: 80px;
+        height: 65px;
+    }
+    
+    .footer-column-logo-column p {
+        font-size: 11px;
+    }
+    
+    .footer-column span {
+        font-size: 14px;
+    }
+    
+    .footer-column ul li a,
+    .footer-column p {
+        font-size: 11px;
+    }
+    
+    .footer-column form input {
+        padding: 6px;
+        font-size: 12px;
+    }
+    
+    .footer-column form button {
+        padding: 6px 9px;
+        font-size: 12px;
+    }
+    
+    .footer-bottom {
+        margin-top: 20px;
+        font-size: 10px;
+    }
+}
+
+/* ============================================
+   LARGE SCREENS (min-width: 1440px)
+   ============================================ */
+
+@media (min-width: 1440px) {
+    .custom-footer {
+        padding: 50px 40px 25px;
+    }
+    
+    .footer-container {
+        max-width: 1600px;
+        gap: 40px;
+    }
+    
+    .footer-column-logo-column,
+    .footer-column {
+        flex: 1 1 280px;
+    }
+    
+    .footer-container > .footer-column-logo-column img {
+        width: 140px;
+        height: 110px;
+    }
+    
+    .footer-column-logo-column p {
+        font-size: 15px;
+    }
+    
+    .footer-column span {
+        font-size: 17px;
+        margin-bottom: 18px;
+    }
+    
+    .footer-column ul li {
+        margin-bottom: 12px;
+    }
+    
+    .footer-column ul li a,
+    .footer-column p {
+        font-size: 15px;
+    }
+    
+    .footer-column form input {
+        padding: 10px;
+        font-size: 15px;
+    }
+    
+    .footer-column form button {
+        padding: 10px 15px;
+        font-size: 15px;
+    }
+    
+    .footer-bottom {
+        margin-top: 50px;
+        padding-top: 18px;
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   EXTRA LARGE SCREENS (min-width: 1920px)
+   ============================================ */
+
+@media (min-width: 1920px) {
+    .footer-container {
+        max-width: 1800px;
+    }
+    
+    .footer-column span {
+        font-size: 18px;
+    }
+    
+    .footer-column ul li a,
+    .footer-column p,
+    .footer-column-logo-column p {
+        font-size: 16px;
+    }
+}
+
+/* Landscape Mobile Optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .custom-footer {
+        padding: 20px 15px;
+    }
+    
+    .footer-container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 20px;
+        text-align: left;
+    }
+    
+    .footer-column-logo-column,
+    .footer-column {
+        flex: 1 1 calc(50% - 10px);
+        min-width: calc(50% - 10px);
+    }
+    
+    .footer-container > .footer-column-logo-column img {
+        margin: 0 0 8px 0;
+    }
+    
+    .footer-bottom {
+        margin-top: 20px;
+    }
 }

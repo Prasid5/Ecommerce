@@ -35,7 +35,7 @@
             <!-- Heading with Back Link -->
             <div class="form-header">
                 <h2>{% if edit_mode %}Edit Product Variant{% else %}Add Product Variant{% endif %}</h2>
-                <a href="#" class="back-link">&larr; Back</a>
+                <a href="#" onclick="history.back();" class="back-link">&larr; Back</a>
             </div>
 
             {% if messages %}

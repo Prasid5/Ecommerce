@@ -118,16 +118,9 @@
 
             <!-- Buttons -->
             <div class="form-actions">
-                {% if next_page == 'order' %}
-                    <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'order_view' %}'">
-                        CANCEL
-                    </button>
-                {% else %}
-                    <button type="button" class="btn-cancel" onclick="window.location.href='{% url 'editprofile' %}'">
-                        CANCEL
-                    </button>
-                {% endif %}
-
+                <button type="button" class="btn-cancel" onclick="history.back();">
+                    CANCEL
+                </button>
                 <button type="submit" class="btn-save" name="btn-save">SAVE</button>
             </div>
 

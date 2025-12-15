@@ -37,6 +37,12 @@ def remove_from_cart(request):
   
 def add_to_cart(request):
     if not request.user.is_authenticated:
+        request.session['post_login_action'] = 'add_to_cart'
+        request.session['post_login_data'] = {
+            'product_slug': request.POST.get('product_slug'),
+            'variant_id': request.POST.get('variant_id'),
+            'quantity': request.POST.get('quantity', 1),
+        }
         return redirect('signin')
 
     if request.method == "POST":

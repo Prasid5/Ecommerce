@@ -17,9 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from Sneakee import views
+
+from django.conf import settings
+from django.conf.urls.static import static
+from django.conf.urls import handler404
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home/',views.home, name="home"),
+    path('',views.home, name="home"),
+    path('home/', views.home, name="home"),
     path('search/', views.search_products, name='search_products'),
     path('admindashboard/',views.admindashboard, name="admindashboard"),
     path('productdashboard/',views.productdashboard, name="productdashboard"),
@@ -34,3 +39,10 @@ urlpatterns = [
     path('',include('inventory.urls')),
     path('',include('payments.urls')),
 ]
+# Add this line at the bottom
+handler404 = 'Sneakee.views.custom_404'
+
+# Static/media files config
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

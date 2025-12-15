@@ -2,26 +2,33 @@
 {% load static %}
 {% block title%}Sneakee | Order{%endblock%}
 {% block content%}
-{% comment %} <link rel="stylesheet" href="{% static 'css/cart.css' %}"> {% endcomment %}
 <style>
-.message-container {
-    margin-bottom: 1rem;
-    position:relative;
-    z-index:999;
+/* Base Styles */
+* {
+    box-sizing: border-box;
 }
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+/* Message Container */
 .message-container {
     position: fixed;
-    top: 80px; /* Adjust based on your header height */
+    top: 80px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 50;
+    z-index: 999;
     width: 90%;
     max-width: 600px;
-    pointer-events: none; /* Allows clicking through empty space */
+    pointer-events: none;
 }
 
 .alert {
-    pointer-events: auto; /* Re-enables clicking on actual alerts */
+    pointer-events: auto;
     padding: 10px 15px;
     border-radius: 5px;
     margin-bottom: 5px;
@@ -51,135 +58,160 @@
     color: #b91c1c;
     border-left: 4px solid #ef4444;
 }
+
+/* Order Container */
 .order-container {
     display: flex;
     gap: 30px;
     padding: 40px;
-    font-family: 'Segoe UI', sans-serif;
-    min-height: 80vh; /* optional, keeps initial spacing */
-    flex-wrap: wrap; /* optional, for small screens */
+    min-height: 80vh;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    margin: 0 auto;
 }   
 
 .order-items {
     flex: 3;
+    min-width: 0;
 }
-.shipping-address-container{
-    margin-bottom:50px;
+
+.shipping-address-container {
+    margin-bottom: 50px;
 }
 
 /* Shipping Address */
-.shipping-address-heading{
+.shipping-address-heading {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 15px;
 }
 
 .shipping-address-heading h2 {
     margin: 10px 0;
+    font-size: 24px;
 }
 
-.shipping-address > .address form{
-    width:10%;
+.shipping-address > .address form {
+    width: 10%;
+    min-width: 80px;
 }
-.btn-add{
+
+.btn-add {
     width: 100%;
     margin-top: 10px;
     padding: 12px;
-
     background-color: #000;
     border: none;
-
     font-weight: bold;
     color: #fff;
     cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
 }
 
-.shipping-address{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    
-    flex-direction:column;
+.btn-add:hover {
+    background-color: #333;
 }
 
-.shipping-address > .address{
-    width:100%;
-
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    flex-direction:row;
+.shipping-address {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.shipping-address > .address textarea{
-    width: 85%;
+.shipping-address > .address {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.shipping-address > .address textarea {
+    flex: 1;
     margin: 10px 0;
     padding: 12px 15px;
-
     border: 1px solid #ddd;
     border-radius: 8px;
-    box-sizing: border-box;
-
     font-size: 1rem;
-}
-.shipping-address > .address form{
-    width:10%;
+    resize: vertical;
+    min-height: 80px;
 }
 
-.btn-edit{
+.btn-edit {
     width: 100%;
     margin: 10px 0;
     padding: 12px;
-
     background-color: #000;
     border: none;
-
     font-weight: bold;
     color: #fff;
     cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
-/* Order Item Heading*/
-.order-items > .order-heading{
-    display:flex;
-    padding-bottom:10px;
-    border-bottom: 1px solid #ddd;
+.btn-edit:hover {
+    background-color: #333;
 }
 
-.order-items > .order-heading span{
-    font: 16px;
-    font-weight: 500;
+/* Order Item Heading */
+.order-items > h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
 }
 
-/* Order Item Class */
+.order-items > .order-heading {
+    display: flex;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.order-items > .order-heading span {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Order Item */
 .order-item {
-    
     display: flex;
     align-items: center;
     border-bottom: 1px solid #edd;
     padding: 20px 0;
+    gap: 20px;
 }
 
-/* Item Details Class */
+/* Item Details - KEEP HORIZONTAL */
 .item-details {
     flex: 7;
-    display:flex;
-    align-items:center;
-    gap:80px;
-    justify-content:flex-start;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    justify-content: flex-start;
+    min-width: 0;
 }
 
 .item-img {
     width: 125px;
     height: 125px;
     object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
 }
 
 .item-name {
     font-weight: 600;
     color: #c64c1c;
+    margin-bottom: 5px;
 }
 
 .item-price {
@@ -192,38 +224,55 @@
     border: 1px solid #999;
     padding: 5px 10px;
     cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
-/* Item Quantity Class */
+.remove-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #666;
+}
+
+/* Item Quantity */
 .item-quantity {
-    flex:1;
+    flex: 1;
     display: flex;
     align-items: center;
-    justify-content:center;
+    justify-content: center;
     gap: 10px;
-    margin: 0 30px;
-    
 }
 
 .qty-input {   
-    width: 40px;
+    width: 50px;
     text-align: center;
     border: 1px solid #ccc;
     font-size: 16px;
-    padding: 4px 6px;
+    padding: 8px;
+    border-radius: 4px;
 }
 
-/* Item Amount Class */
+/* Item Amount */
 .item-amount {
-    flex:1;
-    width: 100px;
+    flex: 1;
+    min-width: 100px;
     font-weight: 600;
+    text-align: right;
 }
 
+/* Order Summary */
 .order-summary {
     flex: 1;
+    min-width: 300px;
     border-left: 1px solid #edd;
     padding-left: 30px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.order-summary h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
 }
 
 .order-amount {
@@ -231,11 +280,26 @@
     font-size: 14px;
 }
 
-.order-amount table{
+.order-amount table {
     width: 100%;
+    border-collapse: collapse;
 }
-.order-amount table tr{
-    margin-top:10px;
+
+.order-amount table tr {
+    margin-top: 10px;
+}
+
+.order-amount table td {
+    padding: 8px 0;
+}
+
+.order-amount table td:last-child {
+    text-align: right;
+}
+
+.order-amount table tr:last-child {
+    border-top: 2px solid #ddd;
+    padding-top: 10px;
 }
 
 .note {
@@ -247,30 +311,431 @@
     width: 100%;
     background-color: #000;
     color: #fff;
-    padding: 12px;
+    padding: 14px;
     border: none;
-    margin-top: 10px;
+    margin-top: 15px;
     font-weight: bold;
     cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.checkout-btn:hover {
+    background-color: #333;
+    transform: translateY(-2px);
 }
 
 .continue-link {
     display: block;
     margin-top: 15px;
-    cursor:pointer;
+    cursor: pointer;
     color: #000;
     text-decoration: none;
     text-align: center;
+    font-weight: 500;
+    transition: color 0.3s ease;
 }
 
-.select-shipping-address{
+.continue-link:hover {
+    color: #666;
+}
+
+.select-shipping-address {
     width: 100%;
     padding: 12px 15px;
     margin: 10px 0;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
-    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.select-shipping-address:focus {
+    outline: none;
+    border-color: #000;
+}
+
+.select-shipping-address option:disabled {
+    color: #999;
+    font-style: italic;
+}
+
+/* ============================================
+   TABLET RESPONSIVE (768px - 1024px)
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .order-container {
+        padding: 30px;
+        gap: 25px;
+    }
+    
+    .item-details {
+        gap: 20px;
+    }
+    
+    .item-img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .order-summary {
+        padding-left: 25px;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .message-container {
+        top: 70px;
+        width: 95%;
+    }
+    
+    .order-container {
+        padding: 20px;
+        gap: 20px;
+        flex-direction: column;
+    }
+    
+    .order-items {
+        flex: 1;
+        width: 100%;
+    }
+    
+    .shipping-address-container {
+        margin-bottom: 30px;
+    }
+    
+    .shipping-address-heading {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .shipping-address-heading h2 {
+        font-size: 20px;
+    }
+    
+    .shipping-address > .address {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .shipping-address > .address form {
+        width: 100%;
+    }
+    
+    .shipping-address > .address textarea {
+        width: 100%;
+        margin: 0;
+        font-size: 14px;
+    }
+    
+    .btn-add,
+    .btn-edit {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    /* Order Heading - Hide on mobile */
+    .order-items > .order-heading {
+        display: none;
+    }
+    
+    .order-items > h2 {
+        font-size: 20px;
+    }
+    
+    /* Order Item - Stack vertically */
+    .order-item {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 15px 0;
+        gap: 15px;
+    }
+    
+    /* Item Details - STAY HORIZONTAL on mobile */
+    .item-details {
+        flex-direction: row;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+    }
+    
+    .item-img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .item-details > div:last-child {
+        flex: 1;
+    }
+    
+    /* Quantity and Amount in row */
+    .item-quantity,
+    .item-amount {
+        flex: none;
+        width: 100%;
+        justify-content: space-between;
+        display: flex;
+        align-items: center;
+    }
+    
+    .item-quantity::before {
+        content: 'Quantity:';
+        font-weight: 600;
+    }
+    
+    .item-amount::before {
+        content: 'Total:';
+        font-weight: 600;
+    }
+    
+    .item-amount {
+        text-align: left;
+        justify-content: space-between;
+    }
+    
+    /* Order Summary */
+    .order-summary {
+        width: 100%;
+        border-left: none;
+        border-top: 2px solid #ddd;
+        padding-left: 0;
+        padding-top: 20px;
+        position: static;
+    }
+    
+    .order-summary h3 {
+        font-size: 18px;
+    }
+    
+    .order-amount {
+        font-size: 13px;
+    }
+    
+    .checkout-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    .select-shipping-address {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    .order-container {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .shipping-address-heading h2,
+    .order-items > h2 {
+        font-size: 18px;
+    }
+    
+    .shipping-address > .address textarea {
+        font-size: 13px;
+        padding: 10px;
+        min-height: 70px;
+    }
+    
+    .btn-add,
+    .btn-edit {
+        padding: 9px;
+        font-size: 13px;
+    }
+    
+    .order-item {
+        padding: 12px 0;
+    }
+    
+    .item-details {
+        gap: 12px;
+    }
+    
+    .item-img {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .item-name {
+        font-size: 14px;
+    }
+    
+    .item-details p {
+        font-size: 12px;
+    }
+    
+    .qty-input {
+        width: 45px;
+        font-size: 14px;
+        padding: 6px;
+    }
+    
+    .item-quantity::before,
+    .item-amount::before {
+        font-size: 13px;
+    }
+    
+    .item-amount {
+        font-size: 14px;
+    }
+    
+    .order-summary h3 {
+        font-size: 17px;
+    }
+    
+    .order-amount {
+        font-size: 12px;
+    }
+    
+    .order-amount table td {
+        padding: 6px 0;
+    }
+    
+    .select-shipping-address {
+        font-size: 13px;
+        padding: 10px;
+    }
+    
+    .checkout-btn {
+        padding: 11px;
+        font-size: 14px;
+    }
+    
+    .continue-link {
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL DEVICES (max-width: 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    .order-container {
+        padding: 12px;
+    }
+    
+    .shipping-address-heading h2,
+    .order-items > h2 {
+        font-size: 17px;
+    }
+    
+    .shipping-address > .address textarea {
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    .btn-add,
+    .btn-edit {
+        padding: 8px;
+        font-size: 12px;
+    }
+    
+    .item-details {
+        gap: 10px;
+    }
+    
+    .item-img {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .item-name {
+        font-size: 13px;
+    }
+    
+    .item-details p {
+        font-size: 11px;
+    }
+    
+    .qty-input {
+        width: 40px;
+        font-size: 13px;
+    }
+    
+    .item-quantity::before,
+    .item-amount::before {
+        font-size: 12px;
+    }
+    
+    .item-amount {
+        font-size: 13px;
+    }
+    
+    .order-summary h3 {
+        font-size: 16px;
+    }
+    
+    .order-amount {
+        font-size: 11px;
+    }
+    
+    .select-shipping-address {
+        font-size: 12px;
+    }
+    
+    .checkout-btn {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   LARGE SCREENS (min-width: 1440px)
+   ============================================ */
+
+@media (min-width: 1440px) {
+    .order-container {
+        padding: 50px;
+        gap: 40px;
+        max-width: 1600px;
+    }
+    
+    .shipping-address-heading h2,
+    .order-items > h2 {
+        font-size: 26px;
+    }
+    
+    .item-details {
+        gap: 40px;
+    }
+    
+    .item-img {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .order-summary {
+        padding-left: 40px;
+        min-width: 350px;
+    }
+    
+    .order-summary h3 {
+        font-size: 22px;
+    }
+    
+    .order-amount {
+        font-size: 15px;
+    }
+    
+    .checkout-btn {
+        padding: 16px;
+        font-size: 17px;
+    }
 }
 
 </style>
@@ -304,6 +769,7 @@
                 {% if shipping_address %}
                     {% for address in shipping_address %}
                     <div class="address">
+                        <p>Address {{forloop.counter}}</p>
                         <textarea readonly>Location of: {{address.location_of}} | Province: {{address.province}} District: {{address.district}} | Location: {{address.city}},{{address.location}},{{address.landmark}} | Description: {{address.location_description}}
                         </textarea>
                         <form action="{% url 'shippingaddress_order'%}" method="POST">
@@ -311,7 +777,7 @@
                             <input type="hidden" name="shippingaddress_id" value="{{ address.id }}">
                             <input type="hidden" name="variant_id" value="{{ variant.id }}">
                             <input type="hidden" name="quantity" value="{{ quantity }}">
-                            <input type="hidden" name="next_page" value="order">   <!-- IMPORTANT -->
+                            <input type="hidden" name="next_page" value="order">
                             <button class="btn-edit" type="submit" name="btn-edit">Edit</button>
                         </form>
                     </div>
@@ -374,7 +840,6 @@
                 </tr>
             </table>
         </div>
-        {% comment %} sadas {% endcomment %}
         <form action="{% url 'create_buy_order' %}" method="POST">
             {% csrf_token %}
             <input type="hidden" name="variant_id" value="{{ variant.id }}">

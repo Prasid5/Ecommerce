@@ -243,34 +243,6 @@
     });
   });
 
-  // Form submission - minimal client-side validation
-  productForm.addEventListener('submit', function(e) {
-    const variantId = variantIdInput.value;
-    const quantity = parseInt(qtyDisplay.value);
-    
-    // Always sync quantity before submission
-    quantityInput.value = quantity;
-    
-    // Only check if variant is selected (let backend handle stock validation)
-    if (!variantId || !currentSelectedVariant) {
-      e.preventDefault();
-      // Show message inline instead of alert
-      showInlineMessage('Please select a variant and size before proceeding.', 'error');
-      return false;
-    }
-    
-    // Update the action URL based on which button was clicked
-    const submitter = e.submitter;
-    if (submitter) {
-      const action = submitter.value;
-      if (action === 'add_to_cart') {
-        this.action = "{% url 'add_to_cart' %}";
-      } else if (action === 'buy_now') {
-        this.action = "{% url 'buy_now_view' %}";
-      }
-    }
-  });
-
   // Function to show inline messages
   function showInlineMessage(message, type) {
     const messageContainer = document.querySelector('.message-container');
@@ -305,5 +277,67 @@
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
+
+  // ═══════════════════════════════════════════════════════
+  // FORM SUBMISSION - VALIDATION + GA4 TRACKING (COMBINED)
+  // ═══════════════════════════════════════════════════════
+  productForm.addEventListener('submit', function(e) {
+    const variantId = variantIdInput.value;
+    const quantity = parseInt(qtyDisplay.value);
+    
+    // Always sync quantity before submission
+    quantityInput.value = quantity;
+    
+    // Only check if variant is selected (let backend handle stock validation)
+    if (!variantId || !currentSelectedVariant) {
+      e.preventDefault();
+      // Show message inline instead of alert
+      showInlineMessage('Please select a variant and size before proceeding.', 'error');
+      return false;
+    }
+    
+    // Get which button was clicked
+    const submitter = e.submitter;
+    
+    // ─────────────────────────────────────────────────────
+    // GA4 TRACKING - Track "add_to_cart" event
+    // ─────────────────────────────────────────────────────
+    if (submitter && submitter.value === 'add_to_cart' && currentSelectedVariant) {
+      const basePrice = {{ product.base_price }};
+      
+      // Track add_to_cart event
+      gtag('event', 'add_to_cart', {
+        currency: 'NPR',
+        value: basePrice * quantity,
+        items: [{
+          item_id: currentSelectedVariant.id.toString(),
+          item_name: '{{ product.product_name }}',
+          item_variant: currentSelectedVariant.variant_name,
+          item_category: '{{ product.category.category_name }}',
+          price: basePrice,
+          quantity: quantity
+        }]
+      });
+      
+      console.log('✅ GA4 Add to Cart Event Tracked:', {
+        product: '{{ product.product_name }}',
+        variant: currentSelectedVariant.variant_name,
+        size: currentSelectedVariant.size,
+        quantity: quantity,
+        total_value: basePrice * quantity
+      });
+    }
+    
+    // Update the action URL based on which button was clicked
+    if (submitter) {
+      const action = submitter.value;
+      if (action === 'add_to_cart') {
+        this.action = "{% url 'add_to_cart' %}";
+      } else if (action === 'buy_now') {
+        this.action = "{% url 'buy_now_view' %}";
+      }
+    }
+  });
+
 </script>
 {% endblock %}

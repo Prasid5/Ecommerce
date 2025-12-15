@@ -8,8 +8,63 @@
         <link rel="stylesheet" href="{% static 'css/header.css' %}">
     </head>
 <body>
+    <!-- Mobile Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="sidebar-header">
+            <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo" />
+            <button class="close-sidebar" id="closeSidebar">&times;</button>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{% url 'home' %}" class="sidebar-menu-item">Home</a>
+            
+            <!-- Categories in Sidebar -->
+            <div class="sidebar-submenu-title" id="categoriesToggle">
+                Categories
+                <span>▾</span>
+            </div>
+            <div class="sidebar-submenu" id="categoriesSubmenu">
+                {% for category in home_categories %}
+                    <a href="{% url 'category_by_name' category.category_name %}">{{ category.category_name }}</a>
+                {% empty %}
+                    <span style="padding: 12px 35px; color: #999; display: block;">No categories</span>
+                {% endfor %}
+            </div>
+            
+            <!-- Brands in Sidebar -->
+            <div class="sidebar-submenu-title" id="brandsToggle">
+                Brands
+                <span>▾</span>
+            </div>
+            <div class="sidebar-submenu" id="brandsSubmenu">
+                {% for brand in home_brands %}
+                    <a href="{% url 'brand' brand.slug %}">{{ brand.brand_name }}</a>
+                {% empty %}
+                    <span style="padding: 12px 35px; color: #999; display: block;">No brands</span>
+                {% endfor %}
+            </div>
+            
+            <a href="{% url 'trending_products' %}" class="sidebar-menu-item">Trendings</a>
+            
+            <!-- Auth Links in Sidebar - Only for authenticated users -->
+            {% comment %} {% if user.is_authenticated %}
+                <a href="{% url 'editprofile' %}" class="sidebar-menu-item">Profile</a>
+                <a href="{% url 'order_list' %}" class="sidebar-menu-item">Order Details</a>
+                <a href="{% url 'signout' %}" class="sidebar-menu-item">Logout</a>
+            {% endif %} {% endcomment %}
+        </div>
+    </div>
+
     <nav class="navbar">
-        <!-- Left: Logo and Links -->
+        <!-- Hamburger Menu (Mobile Only) -->
+        <div class="hamburger-menu" id="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <!-- Left: Logo and Links (Desktop) -->
         <div class="nav-left">
             <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo" />
             <a href="{% url 'home' %}" class="nav-left-option">Home</a>
@@ -21,7 +76,7 @@
                 </div>
                 <div class="dropdown-menu">
                     {% for category in home_categories %}
-                        <a href="{% url 'category' category.slug %}">{{ category.category_name }}</a>
+                        <a href="{% url 'category_by_name' category.category_name %}">{{ category.category_name }}</a>
                     {% empty %}
                         <span style="padding: 10px;">No categories</span>
                     {% endfor %}
@@ -44,8 +99,9 @@
             <a href="{% url 'trending_products' %}" class="nav-left-option">Trendings</a>
         </div>
         
-        <!-- Center: Search -->
+        <!-- Center: Search and Logo (Desktop Search, Mobile Logo) -->
         <div class="nav-center">
+            <img src="{% static 'images/Sneakee_logo.png' %}" alt="Sneakee Logo" class="mobile-logo" style="display: none;" />
             <div class="dropdown" id="searchDropdown">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Search products..." autocomplete="off" />
@@ -63,17 +119,16 @@
         
         <!-- Right: Cart and Account Links -->
         <div class="nav-right">
-            
-            <a href="{% url 'cart_view' %}" class="nav-right-option">🛒 Add to Cart</a>
+            <a href="{% url 'cart_view' %}" class="nav-right-option">
+                🛒 <span>Add to Cart</span>
+            </a>
             
             {% if user.is_authenticated %}
                 <div class="dropdown" id="profileDropdown">
                     <div class="dropdown-btn" id="profileDropdownButton">
-                        <!-- Person Icon -->
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/>
                         </svg>
-                        <!-- Down Arrow -->
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                             <path d="M7 10l5 5 5-5z"/>
                         </svg>
@@ -90,37 +145,71 @@
                 <a href="{% url 'signup' %}" class="nav-right-option">Sign Up</a>
             {% endif %}
         </div>
-    </div>
-</nav>
+    </nav>
 </body>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // ============ MOBILE SIDEBAR ============
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const mobileSidebar = document.getElementById('mobileSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const closeSidebar = document.getElementById('closeSidebar');
+    
+    // Open sidebar
+    hamburgerMenu.addEventListener('click', () => {
+        mobileSidebar.classList.add('active');
+        sidebarOverlay.classList.add('active');
+        hamburgerMenu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close sidebar
+    const closeSidebarFunc = () => {
+        mobileSidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        hamburgerMenu.classList.remove('active');
+        document.body.style.overflow = '';
+    };
+    
+    closeSidebar.addEventListener('click', closeSidebarFunc);
+    sidebarOverlay.addEventListener('click', closeSidebarFunc);
+    
+    // Sidebar submenu toggles
+    const categoriesToggle = document.getElementById('categoriesToggle');
+    const categoriesSubmenu = document.getElementById('categoriesSubmenu');
+    const brandsToggle = document.getElementById('brandsToggle');
+    const brandsSubmenu = document.getElementById('brandsSubmenu');
+    
+    categoriesToggle.addEventListener('click', () => {
+        categoriesSubmenu.classList.toggle('active');
+    });
+    
+    brandsToggle.addEventListener('click', () => {
+        brandsSubmenu.classList.toggle('active');
+    });
+
+    // ============ DESKTOP DROPDOWNS ============
     const dropdowns = document.querySelectorAll(".dropdown");
 
     dropdowns.forEach(dropdown => {
         const btn = dropdown.querySelector(".dropdown-btn");
         const menu = dropdown.querySelector(".dropdown-menu");
 
-        // Skip search dropdown for regular click handling
         if (dropdown.id === 'searchDropdown') return;
 
         btn.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            // Close any other open dropdown menus
             document.querySelectorAll(".dropdown-menu.show").forEach(openMenu => {
                 if (openMenu !== menu) openMenu.classList.remove("show");
             });
 
-            // Toggle this dropdown menu
             menu.classList.toggle("show");
         });
     });
 
-    // Close all dropdowns when clicking anywhere outside
     document.addEventListener("click", (e) => {
-        // Don't close if clicking inside search input or results
         if (e.target.closest('#searchDropdown')) return;
         
         document.querySelectorAll(".dropdown-menu").forEach(menu => {
@@ -137,7 +226,6 @@ document.addEventListener("DOMContentLoaded", () => {
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim();
 
-        // Clear previous timeout
         clearTimeout(searchTimeout);
 
         if (query.length < 2) {
@@ -146,11 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Show loading state
         searchResults.innerHTML = '<span style="padding: 10px; color: #999;">Searching...</span>';
         searchResults.classList.add('show');
 
-        // Debounce search requests (wait 300ms after user stops typing)
         searchTimeout = setTimeout(() => {
             fetch(`{% url 'search_products' %}?q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
@@ -178,14 +264,12 @@ document.addEventListener("DOMContentLoaded", () => {
         searchResults.classList.add('show');
     }
 
-    // Close search results when clicking outside
     document.addEventListener('click', (e) => {
         if (!searchDropdown.contains(e.target)) {
             searchResults.classList.remove('show');
         }
     });
 
-    // Focus input shows results if they exist
     searchInput.addEventListener('focus', () => {
         if (searchInput.value.trim().length >= 2) {
             searchResults.classList.add('show');

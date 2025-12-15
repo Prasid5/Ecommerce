@@ -2,26 +2,33 @@
 {% load static %}
 {% block title%}Sneakee | Payment{%endblock%}
 {% block content%}
-{% comment %} <link rel="stylesheet" href="{% static 'css/cart.css' %}"> {% endcomment %}
 <style>
-.message-container {
-    margin-bottom: 1rem;
-    position:relative;
-    z-index:999;
+/* Base Styles */
+* {
+    box-sizing: border-box;
 }
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+/* Message Container */
 .message-container {
     position: fixed;
-    top: 80px; /* Adjust based on your header height */
+    top: 80px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 50;
+    z-index: 999;
     width: 90%;
     max-width: 600px;
-    pointer-events: none; /* Allows clicking through empty space */
+    pointer-events: none;
 }
 
 .alert {
-    pointer-events: auto; /* Re-enables clicking on actual alerts */
+    pointer-events: auto;
     padding: 10px 15px;
     border-radius: 5px;
     margin-bottom: 5px;
@@ -51,170 +58,456 @@
     color: #b91c1c;
     border-left: 4px solid #ef4444;
 }
+
+/* Payment Container */
 .payment-container {
     display: flex;
     gap: 30px;
     padding: 40px;
-    font-family: 'Segoe UI', sans-serif;
-    height: 90vh;
+    min-height: 80vh;
+    flex-wrap: wrap;
+    max-width: 1400px;
+    margin: 0 auto;
 }   
 
 .payment-method {
     flex: 3;
+    min-width: 0;
 }
 
-.payment-heading{
+.payment-heading {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    margin-bottom: 20px;
 }
 
 .payment-heading h2 {
-    margin: 10px 0;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
 }
 
-.payment{
-    margin-top:20px;
-    margin-bottom:70px;
-
-    display:flex;
-    align-items:center;
-    justify-items:flex-start;
-    gap:20px;
+/* Payment Options */
+.payment {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 20px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
 }
 
 .payment > .pay-option {
-    border: 2px solid transparent;
-    height: 100px;
-    width: 100px;
+    border: 3px solid #ddd;
+    height: 120px;
+    width: 120px;
     cursor: pointer;
-    object-fit: cover;
+    object-fit: contain;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.payment > .pay-option:hover {
+    border-color: #999;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .payment > .pay-option.selected {
-    border: 2px dotted black;
+    border: 3px solid #000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Order Item Heading*/
-.payment-method > .order-heading{
-    display:flex;
-    padding-bottom:10px;
-    border-bottom: 1px solid #ddd;
+/* Payment Description */
+.payment-description {
+    margin-top: 30px;
 }
 
-.payment-method > .order-heading span{
-    font: 16px;
-    font-weight: 500;
-}
-
-/* Order Item Class */
-.order-item {
-    
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #edd;
-    padding: 20px 0;
-}
-
-/* Item Details Class */
-.item-details {
-    flex: 7;
-    display:flex;
-    align-items:center;
-    gap:80px;
-    justify-content:flex-start;
-}
-
-.item-img {
-    width: 125px;
-    height: 125px;
-    object-fit: cover;
-}
-
-.item-name {
-    font-weight: 600;
-    color: #c64c1c;
-}
-
-.item-price {
-    margin-top: 5px;
-}
-
-.remove-btn {
-    margin-top: 10px;
-    background: none;
-    border: 1px solid #999;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-/* Item Quantity Class */
-.item-quantity {
-    flex:1;
-    display: flex;
-    align-items: center;
-    justify-content:center;
-    gap: 10px;
-    margin: 0 30px;
-    
-}
-
-.qty-input {   
-    width: 40px;
-    text-align: center;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    padding: 4px 6px;
-}
-
-/* Item Amount Class */
-.item-amount {
-    flex:1;
-    width: 100px;
+.payment-description h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
     font-weight: 600;
 }
 
+.payment-description h3 {
+    font-size: 18px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.payment-description p {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: #555;
+}
+
+.payment-description ul {
+    margin: 10px 0;
+    padding-left: 25px;
+}
+
+.payment-description ul li {
+    margin: 8px 0;
+    line-height: 1.6;
+    color: #555;
+}
+
+/* Order Summary */
 .order-summary {
     flex: 1;
+    min-width: 300px;
     border-left: 1px solid #edd;
     padding-left: 30px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.order-summary h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .order-amount {
     margin: 10px 0;
-    font-size: 14px;
+    font-size: 16px;
 }
 
-.order-amount table{
+.order-amount table {
     width: 100%;
-}
-.order-amount table tr{
-    margin-top:10px;
+    border-collapse: collapse;
 }
 
-.note {
-    font-size: 13px;
-    color: #777;
+.order-amount table tr {
+    border-top: 2px solid #ddd;
+}
+
+.order-amount table td {
+    padding: 15px 0;
+    font-weight: bold;
+}
+
+.order-amount table td:last-child {
+    text-align: right;
+    font-size: 18px;
 }
 
 .checkout-btn {
     width: 100%;
     background-color: #000;
     color: #fff;
-    padding: 12px;
+    padding: 14px;
     border: none;
-    margin-top: 10px;
+    margin-top: 20px;
     font-weight: bold;
     cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.continue-link {
-    display: block;
-    margin-top: 15px;
-    cursor:pointer;
-    color: #000;
-    text-decoration: none;
-    text-align: center;
+.checkout-btn:hover {
+    background-color: #333;
+    transform: translateY(-2px);
+}
+
+.checkout-btn:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ============================================
+   TABLET RESPONSIVE (768px - 1024px)
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .payment-container {
+        padding: 30px;
+        gap: 25px;
+    }
+    
+    .payment-heading h2 {
+        font-size: 22px;
+    }
+    
+    .payment > .pay-option {
+        height: 100px;
+        width: 100px;
+    }
+    
+    .order-summary {
+        padding-left: 25px;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    .message-container {
+        top: 70px;
+        width: 95%;
+    }
+    
+    .payment-container {
+        padding: 20px;
+        gap: 20px;
+        flex-direction: column;
+    }
+    
+    .payment-method {
+        flex: 1;
+        width: 100%;
+    }
+    
+    .payment-heading {
+        margin-bottom: 15px;
+    }
+    
+    .payment-heading h2 {
+        font-size: 20px;
+    }
+    
+    .payment {
+        gap: 15px;
+        margin-bottom: 30px;
+        justify-content: center;
+    }
+    
+    .payment > .pay-option {
+        height: 100px;
+        width: 100px;
+    }
+    
+    .payment-description h2 {
+        font-size: 18px;
+    }
+    
+    .payment-description h3 {
+        font-size: 16px;
+    }
+    
+    .payment-description p {
+        font-size: 14px;
+    }
+    
+    .payment-description ul li {
+        font-size: 14px;
+    }
+    
+    /* Order Summary */
+    .order-summary {
+        width: 100%;
+        border-left: none;
+        border-top: 2px solid #ddd;
+        padding-left: 0;
+        padding-top: 20px;
+        position: static;
+    }
+    
+    .order-summary h3 {
+        font-size: 18px;
+    }
+    
+    .order-amount {
+        font-size: 15px;
+    }
+    
+    .order-amount table td {
+        padding: 12px 0;
+    }
+    
+    .order-amount table td:last-child {
+        font-size: 17px;
+    }
+    
+    .checkout-btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    .payment-container {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .payment-heading h2 {
+        font-size: 18px;
+    }
+    
+    .payment {
+        gap: 12px;
+        margin-bottom: 25px;
+    }
+    
+    .payment > .pay-option {
+        height: 90px;
+        width: 90px;
+        padding: 8px;
+    }
+    
+    .payment-description h2 {
+        font-size: 17px;
+    }
+    
+    .payment-description h3 {
+        font-size: 15px;
+    }
+    
+    .payment-description p {
+        font-size: 13px;
+    }
+    
+    .payment-description ul {
+        padding-left: 20px;
+    }
+    
+    .payment-description ul li {
+        font-size: 13px;
+        margin: 6px 0;
+    }
+    
+    .order-summary h3 {
+        font-size: 17px;
+    }
+    
+    .order-amount {
+        font-size: 14px;
+    }
+    
+    .order-amount table td {
+        padding: 10px 0;
+    }
+    
+    .order-amount table td:last-child {
+        font-size: 16px;
+    }
+    
+    .checkout-btn {
+        padding: 11px;
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL DEVICES (max-width: 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    .payment-container {
+        padding: 12px;
+    }
+    
+    .payment-heading h2 {
+        font-size: 17px;
+    }
+    
+    .payment {
+        gap: 10px;
+    }
+    
+    .payment > .pay-option {
+        height: 80px;
+        width: 80px;
+        padding: 6px;
+    }
+    
+    .payment-description h2 {
+        font-size: 16px;
+    }
+    
+    .payment-description h3 {
+        font-size: 14px;
+    }
+    
+    .payment-description p {
+        font-size: 12px;
+    }
+    
+    .payment-description ul li {
+        font-size: 12px;
+    }
+    
+    .order-summary h3 {
+        font-size: 16px;
+    }
+    
+    .order-amount {
+        font-size: 13px;
+    }
+    
+    .order-amount table td:last-child {
+        font-size: 15px;
+    }
+    
+    .checkout-btn {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   LARGE SCREENS (min-width: 1440px)
+   ============================================ */
+
+@media (min-width: 1440px) {
+    .payment-container {
+        padding: 50px;
+        gap: 40px;
+        max-width: 1600px;
+    }
+    
+    .payment-heading h2 {
+        font-size: 26px;
+    }
+    
+    .payment > .pay-option {
+        height: 140px;
+        width: 140px;
+    }
+    
+    .payment-description h2 {
+        font-size: 24px;
+    }
+    
+    .payment-description h3 {
+        font-size: 20px;
+    }
+    
+    .order-summary {
+        padding-left: 40px;
+        min-width: 350px;
+    }
+    
+    .order-summary h3 {
+        font-size: 22px;
+    }
+    
+    .order-amount {
+        font-size: 17px;
+    }
+    
+    .order-amount table td:last-child {
+        font-size: 20px;
+    }
+    
+    .checkout-btn {
+        padding: 16px;
+        font-size: 17px;
+    }
 }
 
 </style>
@@ -234,36 +527,44 @@
         </div>
 
         <div class="payment">
-            <img src="{% static 'images/esewa.png' %}" class="pay-option"  data-value="esewa" alt="eSewa">
+            <img src="{% static 'images/esewa.png' %}" class="pay-option" data-value="esewa" alt="eSewa">
             <img src="{% static 'images/cashondelivery.png' %}" class="pay-option" data-value="cod" alt="Cash on Delivery">
         </div>
 
         <div class="payment-description">
-            <h2>Payment Description</h2>
-            <p>Cash Payment<br>-You have to pay in cash to our courier:</p>
-                <ul>
-                    <li type="square">You have to pay in cash to our courier upon receiving your parcel at the doorstep.</li>
-                    <li type="square">Before you make payment to the courier, confirm your order number, sender information, and tracking number on the parcel.</li>
-                </ul>
+            <h2>Payment Methods</h2>
             
-            <br>
-
-            <p>eSewa<br>- You will be redirected to your eSewa account to complete your payment:</p>
-                 <ul>   
-                    <li type="square">Login to your eSewa account using your eSewa ID and your Password</li>
-                    <li type="square">Ensure your eSewa account is active and has sufficient balance</li>
-                    <li type="square">Payment Successful</li>
-                </ul>
+            <h3>Cash on Delivery (COD)</h3>
+            <p>Pay in cash when you receive your order at your doorstep:</p>
+            <ul>
+                <li>Our courier will deliver your parcel directly to your address</li>
+                <li>Before making payment, verify your order number, sender information, and tracking number on the parcel</li>
+                <li>Pay the exact amount in cash to our courier upon delivery</li>
+                <li>Get your receipt and enjoy your purchase!</li>
+            </ul>
+            
+            <h3>eSewa Payment</h3>
+            <p>Complete your payment securely through eSewa:</p>
+            <ul>   
+                <li>Click "Pay Now" and you'll be redirected to the eSewa payment gateway</li>
+                <li>Login to your eSewa account using your eSewa ID and Password</li>
+                <li>Ensure your eSewa account has sufficient balance for the transaction</li>
+                <li>Review the payment details and confirm the transaction</li>
+                <li>Once payment is successful, you'll receive a confirmation message</li>
+                <li>Your order will be processed immediately after payment verification</li>
+            </ul>
         </div>
     </div>
 
     <div class="order-summary">
-        <h3>Order Summary </h3>
+        <h3>Order Summary</h3>
         <div class="order-amount">
-                <tr style="font-weight:bold;">
+            <table>
+                <tr>
                     <td>Total Amount</td>
-                    <td>{{ order.total_amount|floatformat:2 }}</td>
+                    <td>Rs. {{ order.total_amount|floatformat:2 }}</td>
                 </tr>
+            </table>
         </div>
         <form action="{% url 'make_payment' %}" method="POST">
             {% csrf_token %}
@@ -294,9 +595,8 @@
         // Set hidden input value
         document.getElementById('payment_method').value = this.dataset.value;
     });
-
-    
 });
+
   // ───────── Auto-cancel order if no payment method selected ─────────
   const AUTO_CANCEL_TIME = 5 * 60 * 1000; // 5 minutes
   setTimeout(() => {

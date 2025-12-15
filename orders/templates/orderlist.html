@@ -9,95 +9,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
         .content-area {
             width: 90%;
-            min-height:85vh;
+            max-width: 1400px;
+            min-height: 85vh;
             margin: 20px auto;
         }
 
+        /* Message Container */
         .message-container {
-    position: fixed;
-    top: 80px; /* Adjust based on your header height */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    width: 90%;
-    max-width: 600px;
-    pointer-events: none; /* Allows clicking through empty space */
-}
-
-.alert {
-    pointer-events: auto; /* Re-enables clicking on actual alerts */
-    padding: 10px 15px;
-    border-radius: 5px;
-    margin-bottom: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.alert.success { 
-    background-color: #d1fae5;
-    color: #065f46;
-    border-left: 4px solid #10b981;
-}
-
-.alert.error {
-    background-color: #fee2e2;
-    color: #b91c1c;
-    border-left: 4px solid #ef4444;
-}
-
-        .content-area h1 { 
-            margin-bottom: 20px; 
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            width: 90%;
+            max-width: 600px;
+            pointer-events: none;
         }
 
-        /* ---------- Top Bar ---------- */
+        .alert {
+            pointer-events: auto;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert.success { 
+            background-color: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert.error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-left: 4px solid #ef4444;
+        }
+
+        .content-area h1 { 
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        /* Top Bar */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
         }
 
         .topbar form {
             display: flex;
             gap: 8px;
+            flex: 1;
+            max-width: 500px;
         }
 
         .topbar input[type=text] {
-            padding: 8px 10px;
+            flex: 1;
+            padding: 10px 15px;
             border-radius: 5px;
             border: 1px solid #cbd5e1;
+            font-size: 14px;
         }
 
         .search-btn {
             background-color: #080033;
             color: #fff;
             text-decoration: none;
-            padding: 8px 10px;
+            padding: 10px 20px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
             font-weight: 500;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
         }
 
         .search-btn:hover {
             background-color: #1a0052;
         }
 
-        /* ---------- TABLE CONTAINER ---------- */
+        /* Table Container - Desktop */
         .table-wrapper {
             background: #ffffff;
             border-radius: 12px;
@@ -113,8 +134,8 @@
         }
 
         thead tr {
-            background: #ffffffff;
-            color: #000000ff;
+            background: #ffffff;
+            color: #000000;
             font-weight: 600;
         }
 
@@ -122,7 +143,7 @@
             padding: 14px 16px;
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         td {
@@ -137,11 +158,12 @@
             cursor: pointer;
         }
 
+        /* Status Badges */
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 12px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -176,12 +198,11 @@
             color: #991b1b;
         }
 
-
         .payment-status-badge {
             display: inline-block;
             padding: 4px 8px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
         }
 
@@ -200,7 +221,7 @@
             color: #b91c1c; 
         }
 
-        /* Action buttons */
+        /* Action Buttons */
         .actions {
             display: flex;
             gap: 8px;
@@ -217,7 +238,7 @@
             cursor: pointer;
             border: none;
             border-radius: 5px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             transition: 0.2s;
         }
@@ -240,24 +261,25 @@
             opacity: 0.6;
         }
 
-        /* ---------- Pagination ---------- */
+        /* Pagination */
         .pagination {
-            margin-top: 12px;
+            margin-top: 20px;
             display: flex;
-            gap: 6px;
+            gap: 10px;
             align-items: center;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .page-btn {
-            padding: 6px 10px;
+            padding: 8px 16px;
             text-decoration: none;
             color: black;
             background: white;
             border: 1px solid #cbd5e1;
             border-radius: 5px;
-            cursor: default;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         .page-btn:hover:not(:disabled) {
@@ -277,40 +299,203 @@
             font-size: 16px;
         }
 
-        @media (max-width: 768px) {
+        /* Mobile Card View - Hidden by default */
+        .mobile-orders {
+            display: none;
+        }
+
+        .order-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .order-card-id {
+            font-weight: 600;
+            font-size: 16px;
+            color: #1f2937;
+        }
+
+        .order-card-amount {
+            font-weight: 600;
+            font-size: 16px;
+            color: #080033;
+        }
+
+        .order-card-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .order-card-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .order-card-value {
+            color: #1f2937;
+            text-align: right;
+        }
+
+        .order-card-actions {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .order-card-actions .action-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* ============================================
+           TABLET RESPONSIVE (768px - 1024px)
+           ============================================ */
+        @media (max-width: 1024px) {
             .content-area {
                 width: 95%;
             }
 
-            .topbar {
-                flex-direction: column;
-            }
-
-            .topbar form {
-                width: 100%;
-            }
-
-            .topbar input[type=text] {
-                width: 100%;
-                flex: 1;
-            }
-
             table {
-                font-size: 12px;
+                font-size: 13px;
             }
 
             th, td {
-                padding: 8px 6px;
+                padding: 10px 8px;
+            }
+        }
+
+        /* ============================================
+           MOBILE RESPONSIVE (max-width: 768px)
+           ============================================ */
+        @media (max-width: 768px) {
+            .message-container {
+                top: 70px;
+                width: 95%;
             }
 
-            .actions {
+            .content-area {
+                width: 95%;
+                margin: 15px auto;
+            }
+
+            .content-area h1 {
+                font-size: 24px;
+                margin-bottom: 15px;
+            }
+
+            .topbar {
                 flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .topbar form {
+                max-width: 100%;
                 width: 100%;
+            }
+
+            /* Hide table, show cards */
+            .table-wrapper {
+                display: none;
+            }
+
+            .mobile-orders {
+                display: block;
+            }
+
+            .pagination {
+                margin-top: 15px;
+                font-size: 14px;
+            }
+
+            .page-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* ============================================
+           SMALL MOBILE (max-width: 480px)
+           ============================================ */
+        @media (max-width: 480px) {
+            .content-area {
+                margin: 12px auto;
+            }
+
+            .content-area h1 {
+                font-size: 22px;
+            }
+
+            .topbar input[type=text] {
+                font-size: 13px;
+                padding: 9px 12px;
+            }
+
+            .search-btn {
+                padding: 9px 15px;
+                font-size: 13px;
+            }
+
+            .order-card {
+                padding: 14px;
+            }
+
+            .order-card-id,
+            .order-card-amount {
+                font-size: 15px;
+            }
+
+            .order-card-row {
+                font-size: 13px;
+            }
+
+            .status-badge,
+            .payment-status-badge {
+                font-size: 10px;
+                padding: 3px 8px;
             }
 
             .action-btn {
-                width: 100%;
+                font-size: 13px;
                 padding: 8px 12px;
+            }
+        }
+
+        /* ============================================
+           LARGE SCREENS (min-width: 1440px)
+           ============================================ */
+        @media (min-width: 1440px) {
+            .content-area {
+                max-width: 1600px;
+            }
+
+            .content-area h1 {
+                font-size: 32px;
+            }
+
+            table {
+                font-size: 15px;
+            }
+
+            th, td {
+                padding: 16px 18px;
             }
         }
     </style>
@@ -339,7 +524,7 @@
         </form>
     </div>
 
-    <!-- Orders Table -->
+    <!-- Desktop Table View -->
     <div class="table-wrapper">
         <table>
             <thead>
@@ -410,12 +595,10 @@
                     </td>
                     <td> 
                         <div class="actions">
-                            <!-- View Details Button -->
                             <a href="{% url 'order_detail' order.id %}" class="action-btn">
                                 View Details
                             </a>
 
-                            <!-- Cancel Order Button - Only for COD orders in pending/confirmed status -->
                             {% with order.payments.first as payment %}
                                 {% if payment and payment.payment_method == "cod" and payment.payment_status == "pending" and order.status in "pending,confirmed" %}
                                 <form action="{% url 'cancel_order' order.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this order?');">
@@ -427,7 +610,6 @@
                                 {% endif %}
                             {% endwith %}
 
-                            <!-- Received Button - Only for shipped orders -->
                             {% if order.status == "shipped" %}
                             <form action="{% url 'mark_order_received' order.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Have you received this order?');">
                                 {% csrf_token %}
@@ -444,6 +626,106 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div class="mobile-orders">
+        {% for order in page_obj %}
+        <div class="order-card">
+            <div class="order-card-header">
+                <span class="order-card-id">#{{ order.id }}</span>
+                <span class="order-card-amount">NPR {{ order.total_amount|floatformat:2 }}</span>
+            </div>
+
+            <div class="order-card-row">
+                <span class="order-card-label">Status:</span>
+                <span class="order-card-value">
+                    {% if order.status == "pending" %}
+                        <span class="status-badge status-pending">Pending</span>
+                    {% elif order.status == "confirmed" %}
+                        <span class="status-badge status-confirmed">Confirmed</span>
+                    {% elif order.status == "processing" %}
+                        <span class="status-badge status-processing">Processing</span>
+                    {% elif order.status == "shipped" %}
+                        <span class="status-badge status-shipped">Shipped</span>
+                    {% elif order.status == "delivered" %}
+                        <span class="status-badge status-delivered">Received</span>
+                    {% elif order.status == "cancelled" %}
+                        <span class="status-badge status-cancelled">Cancelled</span>
+                    {% else %}
+                        <span class="status-badge">{{ order.status|title }}</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="order-card-row">
+                <span class="order-card-label">Payment:</span>
+                <span class="order-card-value">
+                    {% with order.payments.first as payment %}
+                        {% if payment %}
+                            {{ payment.payment_method|upper }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    {% endwith %}
+                </span>
+            </div>
+
+            <div class="order-card-row">
+                <span class="order-card-label">Payment Status:</span>
+                <span class="order-card-value">
+                    {% with order.payments.first as payment %}
+                        {% if payment %}
+                            <span class="payment-status-badge payment-{{ payment.payment_status|lower }}">
+                                {{ payment.payment_status|title }}
+                            </span>
+                        {% else %}
+                            <span class="payment-status-badge payment-pending">Pending</span>
+                        {% endif %}
+                    {% endwith %}
+                </span>
+            </div>
+
+            <div class="order-card-row">
+                <span class="order-card-label">Order Date:</span>
+                <span class="order-card-value">{{ order.order_date|date:"M d, Y" }}</span>
+            </div>
+
+            <div class="order-card-actions">
+                <a href="{% url 'order_detail' order.id %}" class="action-btn">
+                    View Details
+                </a>
+
+                {% if order.status in "confirmed,processing,shipped,delivered" %}
+                <a href="{% url 'view_invoice' order.id %}" class="action-btn" target="_blank">
+                    View Invoice
+                </a>
+                {% endif %}
+
+                {% with order.payments.first as payment %}
+                    {% if payment and payment.payment_method == "cod" and payment.payment_status == "pending" and order.status in "pending,confirmed" %}
+                    <form action="{% url 'cancel_order' order.id %}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn danger">
+                            Cancel Order
+                        </button>
+                    </form>
+                    {% endif %}
+                {% endwith %}
+
+                {% if order.status == "shipped" %}
+                <form action="{% url 'mark_order_received' order.id %}" method="POST" onsubmit="return confirm('Have you received this order?');">
+                    {% csrf_token %}
+                    <button type="submit" class="action-btn" style="background-color: #10b981;">
+                        Mark as Received
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-orders">No orders found.</div>
+        {% endfor %}
     </div>
 
     <!-- Pagination -->
@@ -467,6 +749,40 @@
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
 </script>
+
 </body>
 </html>
+{% endblock %}
+
+{# GA4 Purchase Tracking - AFTER content block closes, at template root level #}
+{% block extra_js %}
+{% if new_order %}
+<script>
+gtag('event', 'purchase', {
+    transaction_id: '{{ new_order.id }}',
+    value: {{ new_order.total_amount }},
+    currency: 'NPR',
+    tax: 0,
+    shipping: {{ new_order.shipping_fee }},
+    items: [
+        {% for item in new_order.items.all %}
+        {
+            item_id: '{{ item.variant.id }}',
+            item_name: '{{ item.variant.product.product_name }}',
+            item_variant: '{{ item.variant.variant_name }}',
+            item_category: '{{ item.variant.product.category.category_name|default:"Uncategorized" }}',
+            price: {{ item.price }},
+            quantity: {{ item.quantity }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ]
+});
+
+console.log('✅ GA4 Purchase Event Tracked:', {
+    order_id: '{{ new_order.id }}',
+    total: {{ new_order.total_amount }},
+    items_count: {{ new_order.items.count }}
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -7,43 +7,42 @@ body {
 }
 
 main {
-      height: 100vh;
-      width: 90%;
-      margin: 0px auto;
+    min-height: 100vh;
+    width: 90%;
+    margin: 0px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+}
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .form-box{
-        width:75%;
-        padding: 30px 40px;
+.form-box {
+    width: 75%;
+    padding: 30px 40px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      font-size: 22px;
-      font-weight: 600;
-    }
+h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 600;
+}
 
 .message-container {
     position: fixed;
-    top: 80px; /* Adjust based on your header height */
+    top: 80px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 50;
     width: 90%;
     max-width: 600px;
-    pointer-events: none; /* Allows clicking through empty space */
+    pointer-events: none;
 }
 
 .alert {
-    pointer-events: auto; /* Re-enables clicking on actual alerts */
+    pointer-events: auto;
     padding: 10px 15px;
     border-radius: 5px;
     margin-bottom: 5px;
@@ -74,102 +73,417 @@ main {
     border-left: 4px solid #ef4444;
 }
 
-    form {  
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px 25px;
-    }
+form {  
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 25px;
+}
 
-    label {
-      font-size: 14px;
-      margin-bottom: 5px;
-      display: block;
-      font-weight: 500;
-    }
+label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    display: block;
+    font-weight: 500;
+}
 
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
 
-    textarea {
-        width: 100%;
-        resize: vertical;
-        min-height: 80px;
-    }
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #080033;
+}
 
-    /* Full-width fields */
-    .full {
-      grid-column: span 2;
-    }
-    
-    /* Label buttons */
-    .address-labels {
-      display: flex;
-      gap: 15px;
-      grid-column: span 2;
-      margin-top: 10px;
-    }
-    
-    .label-btn {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid #ccc;
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.3s ease;
-    }
+textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 80px;
+}
 
-    .label-btn.office {
-      border-color: #00aaff;
-      color: #00aaff;
-    }
+/* Full-width fields */
+.full {
+    grid-column: span 2;
+}
 
-    .label-btn.home {
-      border-color: #ff5c5c;
-      color: #ff5c5c;
-    }
-    
-    .label-btn:hover {
-        background: #f2f2f2;
-    }
-    
-    /* Footer buttons */
-    .form-actions {
-      grid-column: span 2;
-      display: flex;
-      justify-content: flex-end;
-      gap: 15px;
-      margin-top: 20px;
-    }
+/* Label buttons */
+.address-labels {
+    display: flex;
+    gap: 15px;
+    grid-column: span 2;
+    margin-top: 10px;
+}
 
-    .btn-save, .btn-cancel {
-      padding: 12px 30px;
-      border: none;
-      border-radius: 6px;
-      font-size: 15px;
-      cursor: pointer;
-      transition: 0.3s ease;
-    }
+.label-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
 
-    .btn-cancel {
-      background: #eaeaea;
-      color: #333;
-    }
+.label-btn.office {
+    border-color: #00aaff;
+    color: #00aaff;
+}
 
-    .btn-save {
-      background: #080033;
-      color: #fff;
-    }
+.label-btn.home {
+    border-color: #ff5c5c;
+    color: #ff5c5c;
+}
+
+.label-btn:hover {
+    background: #f2f2f2;
+}
+
+/* Footer buttons */
+.form-actions {
+    grid-column: span 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-save, .btn-cancel {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-cancel {
+    background: #eaeaea;
+    color: #333;
+}
+
+.btn-save {
+    background: #080033;
+    color: #fff;
+}
 
 .btn-save:hover, .btn-cancel:hover {
     color: #100d22;
     border: 1px solid #cecece;
     background-color: #fff;
+}
+
+/* ============================================
+   TABLET RESPONSIVE (768px - 1024px)
+   ============================================ */
+
+@media (max-width: 1024px) {
+    main {
+        width: 95%;
+        padding: 30px 0;
+    }
+    
+    .form-box {
+        width: 85%;
+        padding: 25px 35px;
+    }
+    
+    h2 {
+        font-size: 20px;
+    }
+    
+    form {
+        gap: 18px 20px;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    main {
+        width: 100%;
+        padding: 20px 15px;
+        min-height: auto;
+    }
+    
+    .form-box {
+        width: 100%;
+        padding: 25px 20px;
+        border-radius: 8px;
+    }
+    
+    h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .message-container {
+        top: 70px;
+        width: 95%;
+    }
+    
+    /* Single column layout on mobile */
+    form {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    
+    label {
+        font-size: 13px;
+    }
+    
+    input, select, textarea {
+        padding: 12px;
+        font-size: 14px;
+    }
+    
+    textarea {
+        min-height: 100px;
+    }
+    
+    /* All fields full width on mobile */
+    .full {
+        grid-column: span 1;
+    }
+    
+    .address-labels {
+        grid-column: span 1;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 5px;
+    }
+    
+    .label-btn {
+        padding: 14px;
+        font-size: 14px;
+    }
+    
+    /* Stack buttons on mobile */
+    .form-actions {
+        grid-column: span 1;
+        flex-direction: column-reverse;
+        gap: 12px;
+        margin-top: 15px;
+    }
+    
+    .btn-save, .btn-cancel {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    main {
+        padding: 15px 10px;
+    }
+    
+    .form-box {
+        padding: 20px 15px;
+        border-radius: 6px;
+    }
+    
+    h2 {
+        font-size: 18px;
+        margin-bottom: 18px;
+    }
+    
+    form {
+        gap: 15px;
+    }
+    
+    label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    
+    input, select, textarea {
+        padding: 10px;
+        font-size: 13px;
+        border-radius: 5px;
+    }
+    
+    textarea {
+        min-height: 90px;
+    }
+    
+    .label-btn {
+        padding: 12px;
+        font-size: 13px;
+    }
+    
+    .btn-save, .btn-cancel {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL DEVICES (max-width: 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    main {
+        padding: 12px 8px;
+    }
+    
+    .form-box {
+        padding: 18px 12px;
+    }
+    
+    h2 {
+        font-size: 17px;
+        margin-bottom: 15px;
+    }
+    
+    form {
+        gap: 14px;
+    }
+    
+    label {
+        font-size: 12px;
+    }
+    
+    input, select, textarea {
+        padding: 9px;
+        font-size: 12px;
+    }
+    
+    textarea {
+        min-height: 80px;
+    }
+    
+    .label-btn {
+        padding: 11px;
+        font-size: 12px;
+    }
+    
+    .btn-save, .btn-cancel {
+        padding: 11px;
+        font-size: 13px;
+    }
+}
+
+/* ============================================
+   LARGE SCREENS (min-width: 1440px)
+   ============================================ */
+
+@media (min-width: 1440px) {
+    main {
+        width: 85%;
+    }
+    
+    .form-box {
+        width: 70%;
+        max-width: 1200px;
+        padding: 40px 50px;
+    }
+    
+    h2 {
+        font-size: 24px;
+        margin-bottom: 25px;
+    }
+    
+    form {
+        gap: 25px 30px;
+    }
+    
+    label {
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+    
+    input, select, textarea {
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    
+    textarea {
+        min-height: 100px;
+    }
+    
+    .label-btn {
+        padding: 14px;
+        font-size: 15px;
+    }
+    
+    .btn-save, .btn-cancel {
+        padding: 14px 35px;
+        font-size: 16px;
+    }
+}
+
+/* ============================================
+   EXTRA LARGE SCREENS (min-width: 1920px)
+   ============================================ */
+
+@media (min-width: 1920px) {
+    .form-box {
+        width: 60%;
+        max-width: 1400px;
+        padding: 50px 60px;
+    }
+    
+    h2 {
+        font-size: 26px;
+    }
+    
+    form {
+        gap: 28px 35px;
+    }
+    
+    label {
+        font-size: 16px;
+    }
+    
+    input, select, textarea {
+        padding: 14px 16px;
+        font-size: 16px;
+    }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    main {
+        padding: 15px;
+    }
+    
+    .form-box {
+        padding: 20px;
+    }
+    
+    h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    form {
+        gap: 12px;
+    }
+    
+    input, select, textarea {
+        padding: 8px 10px;
+    }
+    
+    textarea {
+        min-height: 70px;
+    }
+    
+    .btn-save, .btn-cancel {
+        padding: 10px;
+    }
 }

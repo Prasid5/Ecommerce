@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.sessions.models import Session
 
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
@@ -13,6 +14,7 @@ from users.models import User, ShippingAddress
 from carts.models import Cart
 from products.models import ProductVariant
 
+from carts.views import add_to_cart
 
 def is_admin(user):
     return user.is_staff or user.is_superuser
@@ -81,6 +83,9 @@ def signup(request):
     return render(request, 'signup.html')
 
 
+from django.urls import reverse
+from django.contrib.sessions.models import Session
+
 @never_cache
 def signin(request):
     if request.method == 'POST':
@@ -100,30 +105,53 @@ def signin(request):
 
         if user_obj:
             if not user_obj.is_active:
-                messages.error(request, "Your account has been deactivated. Please contact support.")
+                messages.error(request, "Your account has been deactivated.")
                 return render(request, 'signin.html', context)
-            
-            # username= maps to USERNAME_FIELD which is email in your model
+
             user = authenticate(request, username=user_obj.email, password=password)
-            if user is not None:
+
+            if user:
+                # 🔴 Kill previous session
+                if user.active_session_key:
+                    Session.objects.filter(session_key=user.active_session_key).delete()
+
                 login(request, user)
+                request.session.save()
+
+                user.active_session_key = request.session.session_key
+                user.save(update_fields=['active_session_key'])
+
+                action = request.session.pop('post_login_action', None)
+                data = request.session.pop('post_login_data', None)
+
+                if action == 'buy_now' and data:
+                    return redirect(
+                        f"{reverse('buy_now_view')}?variant_id={data['variant_id']}&quantity={data['quantity']}"
+                    )
+
+                if action == 'add_to_cart' and data:
+                    request.POST = request.POST.copy()
+                    request.POST.update(data)
+                    return add_to_cart(request)
+
                 if user.is_staff:
                     return redirect('admindashboard')
-                else:
-                    return redirect('home')
+                return redirect('home')
 
-        messages.error(request, "Invalid email/username or password")
+        messages.error(request, "Invalid credentials")
         return render(request, 'signin.html', context)
 
     return render(request, 'signin.html')
 
 
+
 @login_required
 def signout(request):
-    cart = Cart.objects.filter(user=request.user).first()
-    if cart:
-        cart.items.all().delete()
-        cart.delete()
+    user = request.user
+
+    user.active_session_key = None
+    user.save(update_fields=["active_session_key"])
+
     logout(request)
     return redirect('signin')
 

@@ -21,13 +21,18 @@ def is_admin(user):
     return user.is_staff or user.is_superuser
 
 
-@login_required
 def buy_now_view(request):
+    if request.method == "POST" and not request.user.is_authenticated:
+        request.session['post_login_action'] = 'buy_now'
+        request.session['post_login_data'] = {
+            'variant_id': request.POST.get('variant_id'),
+            'quantity': request.POST.get('quantity', 1),
+        }
+        return redirect('signin')
     if request.method == "POST":
         variant_id = request.POST.get("variant_id")
         quantity = int(request.POST.get("quantity", 1))
     elif request.method == "GET":
-        # Handle redirects from create_buy_order
         variant_id = request.GET.get("variant_id")
         quantity = int(request.GET.get("quantity", 1))
     else:
@@ -344,26 +349,29 @@ def order_list(request):
     
     if query:
         if query.isdigit():
-            # Search by order ID
             orders = orders.filter(id=int(query))
         else:
-            # Search by customer name
             orders = orders.filter(
                 user__first_name__icontains=query
             ) | orders.filter(
                 user__last_name__icontains=query
             )
     
-    # Pagination
-    paginator = Paginator(orders, 10)  # 10 orders per page
+    paginator = Paginator(orders, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
+    new_order_id = request.session.pop('new_order_id', None)
+    new_order = None
+    
+    if new_order_id:
+        new_order = Order.objects.filter(id=new_order_id, user=request.user).first()
+
     return render(request, "orderlist.html", {
         "page_obj": page_obj, 
-        "query": query
+        "query": query,
+        "new_order": new_order
     })
-
 
 
 @login_required
@@ -373,7 +381,6 @@ def order_detail(request, order_id):
         return render(request, "orderdetail.html", {"order": order})
     else:
         return render(request, "orderlist.html")
-
 
 
 

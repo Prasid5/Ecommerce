@@ -12,44 +12,15 @@
     </head>
     
     <body>
-    <!-- Hero Slider -->
-    <section class="hero-slider">
-            <div class="slides">
-                <div class="slide active">
-                    <img src="{% static 'images/slider1.png' %}" alt="Slide 1" />
-                    <div class="caption">
-                        <h2 style="color:white;">Step into Style</h2>
-                        <p>Discover the latest trends in footwear.</p>
-                    </div>
-                </div>
-                <div class="slide">
-                    <img src="{% static 'images/slider2.png' %}" alt="Slide 2" />
-                    <div class="caption">
-                        <h2>Comfort Meets Fashion</h2>
-                        <p>Experience unmatched comfort with our new collection.</p>
-                    </div>
-                </div>
-                <div class="slide">
-                    <img src="{% static 'images/slider3.png' %}" alt="Slide 2" />
-                    <div class="caption">
-                        <h2 style="color:white;">Sports Meets Fashion</h2>
-                        <p>Experience unmatched comfort with our new collection.</p>
-                    </div>
-                </div>
-                <div class="slide">
-                    <img src="{% static 'images/slider4.png' %}" alt="Slide 2" />
-                    <div class="caption">
-                        <h2>Comfort Meets Fashion</h2>
-                        <p>Experience unmatched comfort with our new collection.</p>
-                    </div>
-                </div>
-            </div>
-            <!-- Add more slides as needed -->
-            <div class="navigation">
-                <span class="prev">&#10094;</span>
-                <span class="next">&#10095;</span>
+        <!-- Hero Section -->
+        <section class="hero-single">
+            <img src="{% static 'images/slider1.png' %}" alt="Hero Image" />
+            <div class="caption">
+                <h2 style="color:white;">Step into Style</h2>
+                <p>Discover the latest trends in footwear.</p>
             </div>
         </section>
+
         
         <!-- Brand Showcase -->
         <section class="brand-showcase">
@@ -70,20 +41,24 @@
             <div class="products">
                 <div class="product-grid">
                     {% for product in products|slice:":4"%}
-                        <div class="product-card">
-                            <div class="product-image">
-                            {% if product.main_image %}
-                                <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
-                            {% else %}
-                                <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
-                            {% endif %}
-                            </div>
-                            <div class="product-info">
-                            <h3>{{ product.product_name }}</h3>
-                            <p>{{ product.category.category_name }}</p>
-                            <p class="price">Rs {{ product.base_price }}</p>
-                            <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
-                            </div>
+                        <div class="product-cart-container">
+                            <a href="{% url 'productdetails' product.slug %}" class="product-card-link">
+                                <div class="product-card">
+                                    <div class="product-image">
+                                    {% if product.main_image %}
+                                        <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
+                                    {% else %}
+                                        <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
+                                    {% endif %}
+                                    </div>
+                                    <div class="product-info">
+                                    <h3>{{ product.product_name }}</h3>
+                                    <p>{{ product.category.category_name }}</p>
+                                    <p class="price">Rs {{ product.base_price }}</p>
+                                    <span class="btn">Quick View</span>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     {% endfor %}
                 </div>

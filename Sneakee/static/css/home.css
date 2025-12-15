@@ -6,78 +6,46 @@ body {
     background-color: #f9f9f9;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 h2 {
     text-align: center;
     margin: 2rem 0 1rem;
     color: #333;
 }
 
-.btn {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background-color: #ff6f61;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: 0.3s ease;
-}
-
-/* Hero Slider */
-.hero-slider {
+/* Single Hero Section */
+.hero-single {
     position: relative;
-    overflow: hidden;
-    height: 100vh;
-}
-
-.slides {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-
-.slide {
-    min-width: 100%;
-    position: relative;
-    box-sizing: border-box;
-}
-
-.slide img {
     width: 100%;
-    display: block;
-    box-sizing: border-box;
+    height: 100vh;
+    overflow: hidden;
 }
 
-.caption {
+.hero-single img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-single .caption {
     position: absolute;
     bottom: 50%;
     left: 10%;
+    transform: translateY(50%);
     color: #fff;
 }
 
-.caption h2 {
-    font-size: 2.5rem;
+.hero-single .caption h2 {
+    font-size: 2.8rem;
+    margin: 0;
 }
 
-.caption p {
+.hero-single .caption p {
     font-size: 1.2rem;
-    margin: 0.5rem 0;
-}
-
-.navigation {
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    transform: translateY(-50%);
-    z-index: 10;
-    pointer-events: auto;
-}
-
-.navigation span {
-    cursor: pointer;
-    font-size: 2rem;
-    color: #fff;
-    padding: 0 1rem;
+    margin-top: 10px;
 }
 
 /* Brand Showcase */
@@ -98,6 +66,7 @@ h2 {
     justify-content: space-evenly;
     padding: 10px;
     scrollbar-width: none;
+    gap: 20px;
 }
 
 .brands::-webkit-scrollbar {
@@ -116,9 +85,11 @@ h2 {
 
 .brands img {
     height: 175px;
+    width: 175px;
     object-fit: contain;
     transition: transform 0.3s;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
 /* Sneakee Vibe Section */
@@ -190,34 +161,54 @@ h2 {
 
 .products {
     position: relative;
-    height: 500px;
+    min-height: 500px;
 }
 
 .product-grid {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-evenly;
+    justify-content: center;
     gap: 2rem;
     scroll-behavior: smooth;
     padding: 20px 0;
 }
 
-.product-card {
+/* Product Container - Prevents Shifting */
+.product-cart-container {
     flex: 0 0 300px;
+    height: 475px;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Product Card Link Wrapper */
+.product-cart-container a.product-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.product-card {
+    width: 100%;
     height: 400px;
     background-color: #fff;
     border-radius: 20px;
     overflow: hidden;
     text-align: center;
-    transition: transform 0.3s, height 0.3s ease;
+    transition: transform 0.3s, height 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.08);
     display: flex;
     flex-direction: column;
     position: relative;
+    cursor: pointer;
 }
 
 .product-card:hover {
     height: 450px;
+    transform: translateY(-5px);
+    box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 .product-image {
@@ -231,7 +222,7 @@ h2 {
 .product-image img {
     width: 95%;
     height: 100%;
-    object-fit: fill;
+    object-fit: contain;
     border-radius: 15px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.08);
 }
@@ -263,7 +254,7 @@ h2 {
     margin: 10px 0 10px;
 }
 
-/* Product Card Button - Specific styling to override general .btn */
+/* Product Card Button */
 .product-card .btn {
     display: inline-block;
     padding: 8px 12px;
@@ -279,6 +270,7 @@ h2 {
     left: 50%;
     transform: translateX(-50%);
     opacity: 0;
+    font-size: 0.9rem;
 }
 
 .product-card:hover .btn {
@@ -300,6 +292,7 @@ h2 {
     margin: 80px auto;
     justify-content: center;
     padding: 0 20px;
+    max-width: 1400px;
 }
 
 .pick-card {
@@ -313,15 +306,18 @@ h2 {
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    min-height: 280px;
 }
 
 .pick-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .pick-content {
     flex: 1;
+    z-index: 2;
 }
 
 .pick-card h3 {
@@ -332,10 +328,12 @@ h2 {
 .pick-card p {
     font-size: 1rem;
     margin-bottom: 20px;
+    line-height: 1.5;
 }
 
 .pick-img {
     flex: 0 0 auto;
+    z-index: 1;
 }
 
 .pick-img img {
@@ -353,7 +351,7 @@ h2 {
     background: linear-gradient(135deg, #f12711, #f5af19);
 }
 
-/* Lifestyle Pick Buttons - Override general .btn */
+/* Lifestyle Pick Buttons */
 .urban-btn,
 .outdoor-btn {
     display: inline-block;
@@ -368,6 +366,7 @@ h2 {
     transform: none;
     opacity: 1;
     cursor: pointer;
+    font-size: 0.95rem;
 }
 
 .urban-btn {
@@ -384,4 +383,445 @@ h2 {
 .outdoor-btn:hover {
     opacity: 0.85;
     transform: scale(1.05);
+}
+
+/* ============================================
+   TABLET RESPONSIVE (768px - 1024px)
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .hero-single .caption h2 {
+        font-size: 2.2rem;
+    }
+    
+    .hero-single .caption p {
+        font-size: 1rem;
+    }
+    
+    .brand-showcase h2 {
+        font-size: 1.8rem;
+    }
+    
+    .brands img {
+        height: 150px;
+        width: 150px;
+    }
+    
+    .new-arrivals h2 {
+        font-size: 1.8rem;
+    }
+    
+    .product-cart-container {
+        flex: 0 0 280px;
+        height: 455px;
+    }
+    
+    .product-card {
+        height: 380px;
+    }
+    
+    .product-card:hover {
+        height: 430px;
+    }
+    
+    .lifestyle-picks {
+        margin: 60px auto;
+    }
+    
+    .pick-card {
+        flex: 1 1 100%;
+        min-height: 260px;
+    }
+    
+    .pick-card h3 {
+        font-size: 1.6rem;
+    }
+    
+    .pick-img img {
+        height: 200px;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE (max-width: 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+    /* Hero Section */
+    .hero-single {
+        height: 60vh;
+    }
+    
+    .hero-single .caption {
+        left: 5%;
+        right: 5%;
+    }
+    
+    .hero-single .caption h2 {
+        font-size: 1.8rem;
+    }
+    
+    .hero-single .caption p {
+        font-size: 0.9rem;
+    }
+    
+    /* Brand Showcase */
+    .brand-showcase {
+        padding: 30px 15px;
+    }
+    
+    .brand-showcase h2 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+    
+    .brands {
+        justify-content: flex-start;
+        gap: 15px;
+        padding: 10px 5px;
+    }
+    
+    .brands img {
+        height: 120px;
+        width: 120px;
+    }
+    
+    /* New Arrivals */
+    .new-arrivals {
+        padding: 30px 15px;
+    }
+    
+    .new-arrivals h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+    }
+    
+    .products {
+        min-height: auto;
+    }
+    
+    .product-grid {
+        gap: 1.5rem;
+        padding: 10px 0;
+    }
+    
+    .product-cart-container {
+        flex: 0 0 calc(50% - 0.75rem);
+        min-width: 160px;
+        max-width: 250px;
+        height: 320px;
+    }
+    
+    .product-card {
+        height: 320px;
+    }
+    
+    .product-card:hover {
+        height: 320px;
+        transform: translateY(-2px);
+    }
+    
+    .product-image {
+        height: 180px;
+        padding: 10px;
+    }
+    
+    .product-info {
+        height: auto;
+        padding: 8px 10px;
+    }
+    
+    .product-info h3 {
+        font-size: 0.9rem;
+        margin: 6px 0 3px;
+    }
+    
+    .product-info p {
+        font-size: 0.8rem;
+        margin: 3px 0;
+    }
+    
+    .price {
+        font-size: 1rem;
+        margin: 8px 0;
+    }
+    
+    /* Hide button on mobile */
+    .product-card .btn {
+        display: none;
+    }
+    
+    /* Lifestyle Picks */
+    .lifestyle-picks {
+        margin: 40px auto;
+        padding: 0 15px;
+        gap: 20px;
+    }
+    
+    .pick-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 20px;
+        min-height: auto;
+    }
+    
+    .pick-content {
+        order: 2;
+        margin-top: 15px;
+    }
+    
+    .pick-card h3 {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+    }
+    
+    .pick-card p {
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .pick-img {
+        order: 1;
+    }
+    
+    .pick-img img {
+        height: 180px;
+    }
+    
+    .urban-btn,
+    .outdoor-btn {
+        padding: 8px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (max-width: 480px)
+   ============================================ */
+
+@media (max-width: 480px) {
+    /* Hero Section */
+    .hero-single {
+        height: 50vh;
+    }
+    
+    .hero-single .caption h2 {
+        font-size: 1.5rem;
+    }
+    
+    .hero-single .caption p {
+        font-size: 0.85rem;
+    }
+    
+    /* Brand Showcase */
+    .brand-showcase {
+        padding: 25px 10px;
+    }
+    
+    .brand-showcase h2 {
+        font-size: 1.3rem;
+    }
+    
+    .brands img {
+        height: 100px;
+        width: 100px;
+    }
+    
+    /* New Arrivals */
+    .new-arrivals {
+        padding: 25px 10px;
+    }
+    
+    .new-arrivals h2 {
+        font-size: 1.3rem;
+    }
+    
+    .product-grid {
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .product-cart-container {
+        flex: 0 0 calc(50% - 0.5rem);
+        min-width: 140px;
+        max-width: 180px;
+        height: 280px;
+    }
+    
+    .product-card {
+        height: 280px;
+    }
+    
+    .product-card:hover {
+        height: 280px;
+    }
+    
+    .product-image {
+        height: 150px;
+        padding: 8px;
+    }
+    
+    .product-info h3 {
+        font-size: 0.85rem;
+    }
+    
+    .product-info p {
+        font-size: 0.75rem;
+    }
+    
+    .price {
+        font-size: 0.95rem;
+    }
+    
+    /* Hide button on mobile */
+    .product-card .btn {
+        display: none;
+    }
+    
+    /* Lifestyle Picks */
+    .lifestyle-picks {
+        margin: 30px auto;
+        padding: 0 10px;
+    }
+    
+    .pick-card {
+        padding: 20px 15px;
+    }
+    
+    .pick-card h3 {
+        font-size: 1.2rem;
+    }
+    
+    .pick-card p {
+        font-size: 0.85rem;
+    }
+    
+    .pick-img img {
+        height: 150px;
+    }
+    
+    .urban-btn,
+    .outdoor-btn {
+        padding: 7px 15px;
+        font-size: 0.85rem;
+    }
+}
+
+/* ============================================
+   EXTRA SMALL DEVICES (max-width: 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    .hero-single {
+        height: 40vh;
+    }
+    
+    .hero-single .caption h2 {
+        font-size: 1.3rem;
+    }
+    
+    .hero-single .caption p {
+        font-size: 0.8rem;
+    }
+    
+    .brand-showcase h2,
+    .new-arrivals h2 {
+        font-size: 1.2rem;
+    }
+    
+    .brands img {
+        height: 90px;
+        width: 90px;
+    }
+    
+    .product-cart-container {
+        flex: 0 0 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        height: 300px;
+    }
+    
+    .product-card {
+        height: 300px;
+    }
+    
+    .product-card:hover {
+        height: 300px;
+    }
+    
+    /* Hide button on mobile */
+    .product-card .btn {
+        display: none;
+    }
+    
+    .pick-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .pick-img img {
+        height: 130px;
+    }
+}
+
+/* ============================================
+   LARGE SCREENS (min-width: 1440px)
+   ============================================ */
+
+@media (min-width: 1440px) {
+    .hero-single .caption h2 {
+        font-size: 3.5rem;
+    }
+    
+    .hero-single .caption p {
+        font-size: 1.4rem;
+    }
+    
+    .brand-showcase,
+    .new-arrivals {
+        padding: 60px 40px;
+    }
+    
+    .brands img {
+        height: 200px;
+        width: 200px;
+    }
+    
+    .product-grid {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .product-cart-container {
+        flex: 0 0 320px;
+        height: 495px;
+    }
+    
+    .product-card {
+        height: 420px;
+    }
+    
+    .product-card:hover {
+        height: 470px;
+    }
+    
+    .lifestyle-picks {
+        max-width: 1600px;
+        gap: 40px;
+    }
+    
+    .pick-card {
+        padding: 40px;
+    }
+    
+    .pick-card h3 {
+        font-size: 2rem;
+    }
+    
+    .pick-card p {
+        font-size: 1.1rem;
+    }
+    
+    .pick-img img {
+        height: 250px;
+    }
 }

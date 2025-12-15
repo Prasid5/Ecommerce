@@ -1,15 +1,13 @@
 from django.db import models
 from django.utils.text import slugify
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 
 # -------------------------
 # Brand MODEL
 # -------------------------
 class Brand(models.Model):
-    brand_name=models.CharField(max_length=100, unique=True)
-    brand_logo=models.ImageField(upload_to="images/brands/brand_logo", blank=False, null=False)
-    brand_picture=models.ImageField(upload_to="images/brands/brand_picture", blank=False, null=False)
+    brand_name = models.CharField(max_length=100, unique=True)
+    brand_logo = models.ImageField(upload_to="images/brands/brand_logo")
+    brand_picture = models.ImageField(upload_to="images/brands/brand_picture")
     slug = models.SlugField(unique=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -20,11 +18,12 @@ class Brand(models.Model):
     def __str__(self):
         return self.brand_name
 
+
 # -------------------------
 # CATEGORY MODEL
 # -------------------------
 class Category(models.Model):
-    category_name = models.CharField(max_length=100, unique=True)
+    category_name = models.CharField(max_length=100)  # Removed unique=True
     description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True, blank=True)
 
@@ -34,11 +33,7 @@ class Category(models.Model):
     def total_products(self):
         return self.products.count()
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.category_name)
-        super().save(*args, **kwargs)
-
+    
     def __str__(self):
         return self.category_name
 
@@ -51,19 +46,15 @@ class Product(models.Model):
     product_name = models.CharField(max_length=150)
     description = models.TextField(blank=True)
     material = models.CharField(max_length=100, blank=True, help_text="e.g., Mesh, Leather, Synthetic")
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     main_image = models.ImageField(upload_to='images/products/', blank=True, null=True)
     is_active = models.BooleanField(default=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
 
     @property
     def total_productvariants(self):
         return self.productvariants.count()
-    # @property
-    # def total_stocks(self):
-    #     return sum(productvariant.stock for productvariant in self.productvariants.all())
 
     @property
     def total_stocks(self):
@@ -92,7 +83,6 @@ class ProductVariant(models.Model):
     size = models.CharField(max_length=10)
     low_stock_threshold = models.PositiveIntegerField(default=5)
     is_active = models.BooleanField(default=True)
-
     sku = models.CharField(max_length=100, unique=True, blank=True, default="sku")
 
     # Images (5 angles)
@@ -104,5 +94,3 @@ class ProductVariant(models.Model):
 
     def __str__(self):
         return f"{self.product.product_name} - {self.color}"
-
-

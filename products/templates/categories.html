@@ -15,15 +15,9 @@
     <!-- Category Section -->
     <section class="category-section">
       <div class="topbar">
-        <p>
-          {% if category %}
-            {{ category.category_name }}
-          {% else %}
-            All Products
-          {% endif %}
-        </p>
+        <p>{{ category_name|default:"All Products" }}</p>
 
-        <form action="{% url 'category' category.slug %}" method="get">
+        <form action="" method="get">
           <input type="text" name="query" value="{{ query }}" placeholder="Search products...">
           {% if page_obj.number %}
             <input type="hidden" name="page" value="{{ page_obj.number }}">
@@ -36,21 +30,23 @@
         <div class="product-grid">
           {% for product in page_obj %}
             <div class="product-cart-container">
-              <div class="product-card">
-                <div class="product-image">
-                  {% if product.main_image %}
-                    <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
-                  {% else %}
-                    <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
-                  {% endif %}
-                </div>
-                <div class="product-info">
-                  <h3>{{ product.product_name }}</h3>
-                  <p>{{ product.category.category_name }}</p>
-                  <p class="price">Rs {{ product.base_price }}</p>
-                  <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
-                </div>
-              </div>
+                <a href="{% url 'productdetails' product.slug %}" class="product-card-link">
+                    <div class="product-card">
+                        <div class="product-image">
+                            {% if product.main_image %}
+                                <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
+                            {% else %}
+                                <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
+                            {% endif %}
+                        </div>
+                        <div class="product-info">
+                            <h3>{{ product.product_name }}</h3>
+                            <p>{{ product.category.category_name }}</p>
+                            <p class="price">Rs {{ product.base_price }}</p>
+                            <span class="btn">Quick View</span>
+                        </div>
+                    </div>
+                </a>
             </div>
           {% empty %}
             <p style="grid-column: 1/-1; text-align: center; padding: 40px;">No products found.</p>
@@ -59,20 +55,19 @@
       </section>
     </section>
 
-<!-- Pagination -->
-<div class="pagination">
-  {% if page_obj.has_previous %}
-    <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
-  {% endif %}
+    <!-- Pagination -->
+    <div class="pagination">
+      {% if page_obj.has_previous %}
+        <a class="page-btn" href="?query={{ query }}&page={{ page_obj.previous_page_number }}">Prev</a>
+      {% endif %}
 
-  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
 
-  {% if page_obj.has_next %}
-    <a class="page-btn" href="?query={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
-  {% endif %}
-</div>
+      {% if page_obj.has_next %}
+        <a class="page-btn" href="?query={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
   </main>
-
 </body>
 </html>
 {% endblock %}

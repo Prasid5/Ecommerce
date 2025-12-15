@@ -18,7 +18,7 @@
             <!-- Heading with Back Link -->
             <div class="form-header">
                 <h2>Add New Product</h2>
-                <a href="#" class="back-link">&larr; Back</a>
+                <a href="#" onclick="history.back();" class="back-link">&larr; Back</a>
             </div>
 
             {% if messages %}
@@ -40,15 +40,15 @@
                 <!-- Row 1: Category + Slug -->
                 <div class="form-row">
                     <div class="form-group half-width">
-                        <select name="category" required>
-                            <option disabled {% if not product %}selected{% endif %}>Select Category</option>
-                            {% for category in categories %}
-                                <option value="{{ category.id }}"
-                                {% if edit_mode and product.category.id == category.id %}selected{% endif %}>
-                                    {{ category.category_name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+<select name="category" required>
+    <option disabled {% if not product %}selected{% endif %}>Select Category</option>
+    {% for category in categories %}
+        <option value="{{ category.id }}"
+        {% if edit_mode and product.category.id == category.id %}selected{% endif %}>
+            {{ category.brands.first.brand_name }} - {{ category.category_name }}
+        </option>
+    {% endfor %}
+</select>
                         <span class="error-message" id="category_error"></span>
                     </div>
 

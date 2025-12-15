@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}{% endblock %}</title>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-M5RXPGC6CW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-M5RXPGC6CW');
+  </script>
 </head>
 <body>
     {% include "customer/header.html" %}
@@ -13,5 +22,6 @@
     {% endblock %}
 
     {% include "customer/footer.html" %}
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

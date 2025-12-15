@@ -28,21 +28,23 @@
       <div class="product-grid">
         {% for product in page_obj %}
           <div class="product-cart-container">
-            <div class="product-card">
-              <div class="product-image">
-                {% if product.main_image %}
-                  <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
-                {% else %}
-                  <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
-                {% endif %}
-              </div>
-              <div class="product-info">
-                <h3>{{ product.product_name }}</h3>
-                <p>{{ product.category.category_name }}</p>
-                <p class="price">Rs {{ product.base_price }}</p>
-                <a href="{% url 'productdetails' product.slug %}" class="btn">Quick View</a>
-              </div>
-            </div>
+              <a href="{% url 'productdetails' product.slug %}" class="product-card-link">
+                  <div class="product-card">
+                      <div class="product-image">
+                          {% if product.main_image %}
+                              <img src="{{ product.main_image.url }}" alt="{{ product.product_name }}" />
+                          {% else %}
+                              <img src="{% static 'images/Sneakeelogo.png' %}" alt="{{ product.product_name }}" />
+                          {% endif %}
+                      </div>
+                      <div class="product-info">
+                          <h3>{{ product.product_name }}</h3>
+                          <p>{{ product.category.category_name }}</p>
+                          <p class="price">Rs {{ product.base_price }}</p>
+                          <span class="btn">Quick View</span>
+                      </div>
+                  </div>
+              </a>
           </div>
         {% empty %}
           <p style="grid-column: 1/-1; text-align: center; padding: 40px;">No products found.</p>

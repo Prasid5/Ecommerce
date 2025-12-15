@@ -18,7 +18,7 @@
 
             <div class="form-header">
                 <h2>{% if edit_mode %}Edit Category{% else %}Add New Category{% endif %}</h2>
-                <a href="#" class="back-link">&larr; Back</a>
+                <a href="#" onclick="history.back();" class="back-link">&larr; Back</a>
             </div>
 
             {% if messages %}
