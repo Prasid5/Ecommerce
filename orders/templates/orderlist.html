@@ -754,35 +754,40 @@
 </html>
 {% endblock %}
 
-{# GA4 Purchase Tracking - AFTER content block closes, at template root level #}
 {% block extra_js %}
 {% if new_order %}
 <script>
-gtag('event', 'purchase', {
-    transaction_id: '{{ new_order.id }}',
-    value: {{ new_order.total_amount }},
-    currency: 'NPR',
-    tax: 0,
-    shipping: {{ new_order.shipping_fee }},
-    items: [
-        {% for item in new_order.items.all %}
+(function() {
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'purchase', {
+      transaction_id: '{{ new_order.id }}',
+      value: {{ new_order.total_amount }},
+      currency: 'NPR',
+      tax: 0,
+      shipping: {{ new_order.shipping_fee|default:0 }},
+      items: [
+        {% for item in new_order.orderitem_set.all %}
         {
-            item_id: '{{ item.variant.id }}',
-            item_name: '{{ item.variant.product.product_name }}',
-            item_variant: '{{ item.variant.variant_name }}',
-            item_category: '{{ item.variant.product.category.category_name|default:"Uncategorized" }}',
-            price: {{ item.price }},
-            quantity: {{ item.quantity }}
+          item_id: '{{ item.variant.id }}',
+          item_name: '{{ item.variant.product.product_name }}',
+          item_variant: '{{ item.variant.variant_name }}',
+          item_category: '{{ item.variant.product.category.category_name|default:"Uncategorized" }}',
+          price: {{ item.price }},
+          quantity: {{ item.quantity }}
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
-    ]
-});
+      ]
+    });
 
-console.log('✅ GA4 Purchase Event Tracked:', {
-    order_id: '{{ new_order.id }}',
-    total: {{ new_order.total_amount }},
-    items_count: {{ new_order.items.count }}
-});
+    console.log('✅ GA4 purchase event tracked:', {
+      order_id: '{{ new_order.id }}',
+      total: {{ new_order.total_amount }},
+      items_count: {{ new_order.orderitem_set.count }}
+    });
+  } else {
+    console.error('❌ gtag not loaded - purchase event NOT tracked');
+  }
+})();
 </script>
 {% endif %}
 {% endblock %}

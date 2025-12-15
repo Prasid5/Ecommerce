@@ -94,6 +94,26 @@
 </main>
 
 <script>
+<script>
+  // ═══════════════════════════════════════════════════════
+  // GA4 VIEW_ITEM EVENT - Track when product page loads
+  // ═══════════════════════════════════════════════════════
+  window.addEventListener('load', function() {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'view_item', {
+        currency: 'NPR',
+        value: {{ product.base_price }},
+        items: [{
+          item_id: '{{ product.id }}',
+          item_name: '{{ product.product_name }}',
+          item_category: '{{ product.category.category_name }}',
+          price: {{ product.base_price }}
+        }]
+      });
+      console.log('✅ GA4 view_item event tracked');
+    }
+  });
+
   // Quantity change function
   function changeQty(change) {
     let qty = document.getElementById('qty');
@@ -150,19 +170,15 @@
   let currentSelectedVariant = null;
 
   if (variantSelect) {
-    // When variant name is selected
     variantSelect.addEventListener('change', function() {
       const selectedVariantName = this.value;
       
       if (selectedVariantName) {
-        // Filter variants with this variant_name
         const matchingVariants = allVariantsData.filter(v => v.variant_name === selectedVariantName);
         
         if (matchingVariants.length > 0) {
-          // Show size options
           sizeOptionsContainer.style.display = 'block';
           
-          // Populate size buttons
           sizeButtonsContainer.innerHTML = '';
           matchingVariants.forEach(variant => {
             const sizeSpan = document.createElement('span');
@@ -170,19 +186,15 @@
             sizeSpan.dataset.variantId = variant.id;
             sizeSpan.style.cursor = 'pointer';
             
-            // Click handler for size
             sizeSpan.addEventListener('click', function() {
-              // Remove active class from all sizes
               sizeButtonsContainer.querySelectorAll('span').forEach(s => {
                 s.style.borderColor = '#ccc';
                 s.style.backgroundColor = 'transparent';
               });
               
-              // Add active style to clicked size
               this.style.borderColor = '#000';
               this.style.backgroundColor = '#f0f0f0';
               
-              // Find and update with this variant's data
               const variantId = parseInt(this.dataset.variantId);
               const selectedVariant = allVariantsData.find(v => v.id === variantId);
               
@@ -190,7 +202,6 @@
                 updateVariantDisplay(selectedVariant);
                 currentSelectedVariant = selectedVariant;
                 variantIdInput.value = selectedVariant.id;
-                // Sync quantity with current displayed value
                 quantityInput.value = qtyDisplay.value;
               }
             });
@@ -198,7 +209,6 @@
             sizeButtonsContainer.appendChild(sizeSpan);
           });
           
-          // Auto-select first size
           const firstSizeButton = sizeButtonsContainer.querySelector('span');
           if (firstSizeButton) {
             firstSizeButton.click();
@@ -208,19 +218,15 @@
     });
   }
 
-  // Function to update all display elements
   function updateVariantDisplay(variant) {
-    // Update text information
     displaySku.textContent = variant.sku || '-';
     displayColor.textContent = variant.color || '-';
     displayStock.textContent = variant.stock || '0';
     
-    // Update main image
     if (variant.main_image && variant.main_image.trim() !== '') {
       mainDisplayImage.src = variant.main_image;
     }
     
-    // Update thumbnail images
     updateThumbnail(displayTopImage, variant.top_image);
     updateThumbnail(displayRightImage, variant.right_image);
     updateThumbnail(displayLeftImage, variant.left_image);
@@ -236,14 +242,12 @@
     }
   }
 
-  // Click thumbnail to show in main image
   [displayTopImage, displayRightImage, displayLeftImage, displayBackImage].forEach(thumb => {
     thumb.addEventListener('click', function() {
       if (this.src) mainDisplayImage.src = this.src;
     });
   });
 
-  // Function to show inline messages
   function showInlineMessage(message, type) {
     const messageContainer = document.querySelector('.message-container');
     if (!messageContainer) {
@@ -258,77 +262,90 @@
     
     document.querySelector('.message-container').appendChild(alertDiv);
     
-    // Auto-hide after 4 seconds
     setTimeout(() => {
       alertDiv.style.display = 'none';
     }, 4000);
   }
 
-  // Initialize quantity input with default value
   quantityInput.value = qtyDisplay.value;
 
-  // Initialize with first variant on page load
   if (variantSelect && variantSelect.options.length > 1) {
     variantSelect.selectedIndex = 1;
     variantSelect.dispatchEvent(new Event('change'));
   }
 
-  // Auto-hide Django messages after 4 seconds
   setTimeout(() => {
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
 
   // ═══════════════════════════════════════════════════════
-  // FORM SUBMISSION - VALIDATION + GA4 TRACKING (COMBINED)
+  // FORM SUBMISSION - VALIDATION + GA4 TRACKING
   // ═══════════════════════════════════════════════════════
   productForm.addEventListener('submit', function(e) {
     const variantId = variantIdInput.value;
     const quantity = parseInt(qtyDisplay.value);
     
-    // Always sync quantity before submission
     quantityInput.value = quantity;
     
-    // Only check if variant is selected (let backend handle stock validation)
     if (!variantId || !currentSelectedVariant) {
       e.preventDefault();
-      // Show message inline instead of alert
       showInlineMessage('Please select a variant and size before proceeding.', 'error');
       return false;
     }
     
-    // Get which button was clicked
     const submitter = e.submitter;
+    const basePrice = {{ product.base_price }};
     
     // ─────────────────────────────────────────────────────
-    // GA4 TRACKING - Track "add_to_cart" event
+    // GA4: add_to_cart event
     // ─────────────────────────────────────────────────────
     if (submitter && submitter.value === 'add_to_cart' && currentSelectedVariant) {
-      const basePrice = {{ product.base_price }};
-      
-      // Track add_to_cart event
-      gtag('event', 'add_to_cart', {
-        currency: 'NPR',
-        value: basePrice * quantity,
-        items: [{
-          item_id: currentSelectedVariant.id.toString(),
-          item_name: '{{ product.product_name }}',
-          item_variant: currentSelectedVariant.variant_name,
-          item_category: '{{ product.category.category_name }}',
-          price: basePrice,
-          quantity: quantity
-        }]
-      });
-      
-      console.log('✅ GA4 Add to Cart Event Tracked:', {
-        product: '{{ product.product_name }}',
-        variant: currentSelectedVariant.variant_name,
-        size: currentSelectedVariant.size,
-        quantity: quantity,
-        total_value: basePrice * quantity
-      });
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'add_to_cart', {
+          currency: 'NPR',
+          value: basePrice * quantity,
+          items: [{
+            item_id: currentSelectedVariant.id.toString(),
+            item_name: '{{ product.product_name }}',
+            item_variant: currentSelectedVariant.variant_name,
+            item_category: '{{ product.category.category_name }}',
+            price: basePrice,
+            quantity: quantity
+          }]
+        });
+        
+        console.log('✅ GA4 add_to_cart event tracked:', {
+          product: '{{ product.product_name }}',
+          variant: currentSelectedVariant.variant_name,
+          quantity: quantity,
+          value: basePrice * quantity
+        });
+      }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // GA4: begin_checkout event
+    // ─────────────────────────────────────────────────────
+    if (submitter && submitter.value === 'buy_now' && currentSelectedVariant) {
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'begin_checkout', {
+          currency: 'NPR',
+          value: basePrice * quantity,
+          items: [{
+            item_id: currentSelectedVariant.id.toString(),
+            item_name: '{{ product.product_name }}',
+            item_variant: currentSelectedVariant.variant_name,
+            item_category: '{{ product.category.category_name }}',
+            price: basePrice,
+            quantity: quantity
+          }]
+        });
+        
+        console.log('✅ GA4 begin_checkout event tracked');
+      }
     }
     
-    // Update the action URL based on which button was clicked
+    // Update form action
     if (submitter) {
       const action = submitter.value;
       if (action === 'add_to_cart') {
@@ -338,6 +355,5 @@
       }
     }
   });
-
 </script>
 {% endblock %}
