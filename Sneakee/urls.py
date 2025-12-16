@@ -14,9 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.contrib.sitemaps.views import sitemap
+from Sneakee.sitemaps import ProductSitemap, CategorySitemap, StaticViewSitemap
+
 from django.contrib import admin
 from django.urls import path, include
 from Sneakee import views
+
+sitemaps = {
+    'products': ProductSitemap,
+    'categories': CategorySitemap,
+    'static': StaticViewSitemap,
+}
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.home, name="home"),
@@ -27,6 +37,8 @@ urlpatterns = [
     path('userdashboard/',views.userdashboard, name="userdashboard"),
     path('orderdashboard/', views.orderdashboard, name="orderdashboard"),
     path("inventorydashboard/", views.inventorydashboard, name="inventorydashboard"),
+
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),
 
     path('',include('users.urls')),
     path('',include('carts.urls')),

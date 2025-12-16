@@ -94,9 +94,7 @@
 </main>
 
 <script>
-  // ═══════════════════════════════════════════════════════
-  // GA4 VIEW_ITEM EVENT - Track when product page loads
-  // ═══════════════════════════════════════════════════════
+  // GA4 VIEW_ITEM EVENT - Track when product page loads.
   window.addEventListener('load', function() {
     if (typeof gtag !== 'undefined') {
       gtag('event', 'view_item', {
@@ -239,7 +237,6 @@
       mainDisplayImage.src = variant.main_image;
     }
     
-    // Update thumbnail images
     updateThumbnail(displayTopImage, variant.top_image);
     updateThumbnail(displayRightImage, variant.right_image);
     updateThumbnail(displayLeftImage, variant.left_image);
@@ -295,9 +292,7 @@
     document.querySelectorAll('.alert').forEach(el => el.style.display = 'none');
   }, 4000);
 
-  // ═══════════════════════════════════════════════════════
   // FORM SUBMISSION - VALIDATION + GA4 TRACKING
-  // ═══════════════════════════════════════════════════════
   productForm.addEventListener('submit', function(e) {
     const variantId = variantIdInput.value;
     const quantity = parseInt(qtyDisplay.value);
