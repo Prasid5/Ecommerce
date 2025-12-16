@@ -751,43 +751,44 @@
 </script>
 
 </body>
-</html>
-{% endblock %}
 
-{% block extra_js %}
-{% if new_order %}
+<!-- GA4 Purchase Event Tracking -->
+{% if track_order %}
 <script>
 (function() {
-  if (typeof gtag !== 'undefined') {
-    gtag('event', 'purchase', {
-      transaction_id: '{{ new_order.id }}',
-      value: {{ new_order.total_amount }},
-      currency: 'NPR',
-      tax: 0,
-      shipping: {{ new_order.shipping_fee|default:0 }},
-      items: [
-        {% for item in new_order.orderitem_set.all %}
-        {
-          item_id: '{{ item.variant.id }}',
-          item_name: '{{ item.variant.product.product_name }}',
-          item_variant: '{{ item.variant.variant_name }}',
-          item_category: '{{ item.variant.product.category.category_name|default:"Uncategorized" }}',
-          price: {{ item.price }},
-          quantity: {{ item.quantity }}
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-      ]
-    });
+  // Only track if gtag is loaded
+  if (typeof gtag === 'undefined') {
+    console.warn('⚠️ GA4 not loaded - purchase event not tracked');
+    return;
+  }
 
-    /*console.log('✅ GA4 purchase event tracked:', {
-      order_id: '{{ new_order.id }}',
-      total: {{ new_order.total_amount }},
-      items_count: {{ new_order.orderitem_set.count }}
-    });*/
-  } /*else {
-    console.error('❌ gtag not loaded - purchase event NOT tracked');
-  }*/
+  // Build items array
+  const items = [
+    {% for item in track_order.orderitem_set.all %}
+    {
+      item_id: '{{ item.variant.id }}',
+      item_name: '{{ item.variant.product.product_name|escapejs }}',
+      item_variant: '{{ item.variant.variant_name|escapejs }}',
+      item_category: '{{ item.variant.product.category.category_name|default:"Uncategorized"|escapejs }}',
+      price: {{ item.price }},
+      quantity: {{ item.quantity }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  // Fire purchase event
+  gtag('event', 'purchase', {
+    transaction_id: '{{ track_order.id }}',
+    value: {{ track_order.total_amount }},
+    currency: 'NPR',
+    tax: 0,
+    shipping: {{ track_order.shipping_fee|default:0 }},
+    items: items
+  });
+
+  console.log('✅ GA4 purchase event tracked for order #{{ track_order.id }}');
 })();
 </script>
 {% endif %}
+
 {% endblock %}

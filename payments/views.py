@@ -174,7 +174,7 @@ def make_payment(request):
             delete_user_cart(request.user)
 
             # Store order ID in session for GA4 tracking
-            request.session['new_order_id'] = order.id
+            request.session['track_purchase_order_id'] = order.id
 
             messages.success(request, "Order confirmed! Invoice generated. Payment will be collected on delivery.")
             return redirect('order_list')
@@ -319,9 +319,9 @@ def esewa_payment_success(request):
         delete_user_cart(request.user)
 
         # Store order ID for GA4 tracking before clearing session
-        request.session['new_order_id'] = order.id
+        request.session['track_purchase_order_id'] = order.id
         
-        # Clear session
+        # Clear eSewa order session
         request.session.pop('order_id', None)
 
         messages.success(request, "Payment successful! Your order has been confirmed. Invoice generated.")

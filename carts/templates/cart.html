@@ -616,7 +616,13 @@ body {
         </div>
         {% if cart_items %}
             {% for item in cart_items %}
-                <div class="cart-item">
+                <div class="cart-item"
+                    data-variant-id="{{ item.variant.id }}"
+                    data-product-name="{{ item.variant.product.product_name }}"
+                    data-variant-name="{{ item.variant.variant_name }}"
+                    data-category="{{ item.variant.product.category.category_name|default:'Uncategorized' }}"
+                    data-price="{{ item.variant.product.base_price }}"
+                    data-quantity="{{ item.quantity }}">
 
                     <!-- Product Image -->
                     

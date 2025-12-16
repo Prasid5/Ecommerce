@@ -361,16 +361,20 @@ def order_list(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    new_order_id = request.session.pop('new_order_id', None)
-    new_order = None
+    # Check if we need to track a purchase
+    track_purchase_order_id = request.session.pop('track_purchase_order_id', None)
+    track_order = None
     
-    if new_order_id:
-        new_order = Order.objects.filter(id=new_order_id, user=request.user).first()
+    if track_purchase_order_id:
+        track_order = Order.objects.filter(
+            id=track_purchase_order_id, 
+            user=request.user
+        ).first()
 
     return render(request, "orderlist.html", {
         "page_obj": page_obj, 
         "query": query,
-        "new_order": new_order
+        "track_order": track_order  # Pass order to track purchase
     })
 
 
