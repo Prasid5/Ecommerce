@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'payments.apps.PaymentsConfig',
+    'django.contrib.sitemaps',
 
     'Sneakee',
     'users',
@@ -66,7 +67,7 @@ ROOT_URLCONF = 'Sneakee.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],      # <-- empty list, or remove this line entirely
+        'DIRS': [BASE_DIR / 'templates'],      
         'APP_DIRS': True,  # important to find templates inside app folders
         'OPTIONS': {
             'context_processors': [
