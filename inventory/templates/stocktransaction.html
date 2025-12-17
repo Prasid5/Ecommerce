@@ -317,6 +317,7 @@
                     <th>ID</th>
                     <th>Variant Name</th>
                     <th>Change</th>
+                    <th>Cost</th>
                     <th>Reason</th>
                     <th>Time Stamp</th>
                     <th>Status</th>
@@ -329,6 +330,7 @@
                     <td>{{ stocktransaction.id }}</td>
                     <td>{{ stocktransaction.productvariant.variant_name }}</td>
                     <td>{{ stocktransaction.change }}</td>
+                    <td>{{ stocktransaction.productvariant.inventorystocks.cost_per_unit }}</td>
                     <td>{{ stocktransaction.reason }}</td>
                     <td>{{ stocktransaction.timestamp }}</td>
                     <td>
