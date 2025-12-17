@@ -463,30 +463,34 @@ def update_user_status(request):
                         messages.success(request, "Customer activated successfully.")
                         return redirect('customerlist')
 
-
+@never_cache
 @login_required
 def shippingaddress(request):
     """Handle shipping address management from edit profile page"""
     user = request.user
-    next_page = request.POST.get("next_page", "editprofile")
+    next_page = request.GET.get("next_page") or request.POST.get("next_page", "editprofile")
     
     phone_pattern1 = r"^98\d{8}$"
     phone_pattern2 = r"^97\d{8}$"
+
+    # CANCEL BUTTON - Handle via GET request
+    if request.method == "GET" and request.GET.get('action') == 'cancel':
+        return redirect(next_page)
 
     # SAVE BUTTON (Add or Update)
     if request.method == "POST" and 'btn-save' in request.POST:
 
         formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
 
-        contact_person = request.POST.get('contact_person').strip()
-        contact_number = request.POST.get('contact_number').strip()
-        location_of = request.POST.get('location_of').strip()
-        province = request.POST.get('province').strip()
-        district = request.POST.get('district').strip()
-        city = request.POST.get('city').strip()
-        location = request.POST.get('location').strip()
-        landmark = request.POST.get('landmark').strip()
-        location_description = request.POST.get('location_description').strip()
+        contact_person = request.POST.get('contact_person', '').strip()
+        contact_number = request.POST.get('contact_number', '').strip()
+        location_of = request.POST.get('location_of', '').strip()
+        province = request.POST.get('province', '').strip()
+        district = request.POST.get('district', '').strip()
+        city = request.POST.get('city', '').strip()
+        location = request.POST.get('location', '').strip()
+        landmark = request.POST.get('landmark', '').strip()
+        location_description = request.POST.get('location_description', '').strip()
 
         # Create a simple class to hold the data
         class ShippingAddressData:
@@ -507,6 +511,7 @@ def shippingaddress(request):
             'location_description': location_description,
         })
 
+        # Create context BEFORE validation checks
         context = {
             'shippingaddress': shipping_address_obj,
             'next_page': next_page
@@ -514,7 +519,7 @@ def shippingaddress(request):
 
         # === Validation checks ===
         if not contact_person or not contact_number or not location_of or not province or not district or not city or not location or not landmark:
-            messages.error(request, "All fields are required except landmark and location description.")
+            messages.error(request, "All fields are required except location description.")
             return render(request, 'shippingaddress.html', context)
         
         if not (re.match(phone_pattern1, contact_number) or re.match(phone_pattern2, contact_number)):
@@ -645,32 +650,40 @@ def render_buy_now_order_page(request, variant_id, quantity, user):
     })
 
 
+@never_cache
 @login_required
 def shippingaddress_order(request):
     """Handle shipping address management from order page"""
     user = request.user
-    next_page = request.POST.get("next_page", "order")
-    cart_id = request.POST.get("cart_id", "")
-    variant_id = request.POST.get("variant_id", "")
-    quantity = request.POST.get("quantity", "")
+    next_page = request.GET.get("next_page") or request.POST.get("next_page", "order")
+    cart_id = request.GET.get("cart_id") or request.POST.get("cart_id", "")
+    variant_id = request.GET.get("variant_id") or request.POST.get("variant_id", "")
+    quantity = request.GET.get("quantity") or request.POST.get("quantity", "")
     
     phone_pattern1 = r"^98\d{8}$"
     phone_pattern2 = r"^97\d{8}$"
+
+    # CANCEL BUTTON - Handle via GET request
+    if request.method == "GET" and request.GET.get('action') == 'cancel':
+        if cart_id:
+            return render_order_page(request, cart_id, user)
+        else:
+            return render_buy_now_order_page(request, variant_id, quantity, user)
 
     # SAVE BUTTON (Add or Update)
     if request.method == "POST" and 'btn-save' in request.POST:
 
         formshippingaddress_id = request.POST.get('formshippingaddress_id', '').strip()
 
-        contact_person = request.POST.get('contact_person').strip()
-        contact_number = request.POST.get('contact_number').strip()
-        location_of = request.POST.get('location_of').strip()
-        province = request.POST.get('province').strip()
-        district = request.POST.get('district').strip()
-        city = request.POST.get('city').strip()
-        location = request.POST.get('location').strip()
-        landmark = request.POST.get('landmark').strip()
-        location_description = request.POST.get('location_description').strip()
+        contact_person = request.POST.get('contact_person', '').strip()
+        contact_number = request.POST.get('contact_number', '').strip()
+        location_of = request.POST.get('location_of', '').strip()
+        province = request.POST.get('province', '').strip()
+        district = request.POST.get('district', '').strip()
+        city = request.POST.get('city', '').strip()
+        location = request.POST.get('location', '').strip()
+        landmark = request.POST.get('landmark', '').strip()
+        location_description = request.POST.get('location_description', '').strip()
 
         # Create a simple class to hold the data
         class ShippingAddressData:
@@ -691,6 +704,7 @@ def shippingaddress_order(request):
             'location_description': location_description,
         })
 
+        # Create context BEFORE validation checks
         context = {
             'shippingaddress': shipping_address_obj,
             'next_page': next_page,
@@ -701,7 +715,7 @@ def shippingaddress_order(request):
 
         # === Validation checks ===
         if not contact_person or not contact_number or not location_of or not province or not district or not city or not location or not landmark:
-            messages.error(request, "All fields are required except landmark and location description.")
+            messages.error(request, "All fields are required except location description.")
             return render(request, 'shippingaddress.html', context)
         
         if not (re.match(phone_pattern1, contact_number) or re.match(phone_pattern2, contact_number)):

@@ -106,21 +106,29 @@
 
             <!-- Landmark -->
             <div>
-                <label>Landmark</label>
+                <label>Landmark <span style="color: red;">*</span></label>
                 <input type="text" name="landmark" placeholder="Please enter" value="{% if shippingaddress and shippingaddress.landmark %}{{ shippingaddress.landmark }}{% endif %}">
             </div>
 
             <!-- Location Description -->
             <div>
                 <label>Location Description</label>
-                <textarea name="location_description" placeholder="Description">{% if shippingaddress and shippingaddress.location_description %}{{ shippingaddress.location_description }}{% endif %}</textarea>
+                <textarea name="location_description" placeholder="Location Description (Optional)">{% if shippingaddress and shippingaddress.location_description %}{{ shippingaddress.location_description }}{% endif %}</textarea>
             </div>
 
             <!-- Buttons -->
             <div class="form-actions">
-                <button type="button" class="btn-cancel" onclick="history.back();">
-                    CANCEL
-                </button>
+                {% if next_page == 'order' %}
+                    <a href="{% url 'shippingaddress_order' %}?action=cancel&next_page={{ next_page }}&cart_id={{ cart_id|default:'' }}&variant_id={{ variant_id|default:'' }}&quantity={{ quantity|default:'' }}" 
+                       class="btn-cancel" style="text-decoration:None;">
+                        CANCEL
+                    </a>
+                {% else %}
+                    <a href="{% url 'shippingaddress' %}?action=cancel&next_page={{ next_page }}" 
+                       class="btn-cancel" style="text-decoration:None;">
+                        CANCEL
+                    </a>
+                {% endif %}
                 <button type="submit" class="btn-save" name="btn-save">SAVE</button>
             </div>
 

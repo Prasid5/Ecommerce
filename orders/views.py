@@ -20,7 +20,7 @@ from products.views import backtoproductdetails
 def is_admin(user):
     return user.is_staff or user.is_superuser
 
-
+@never_cache
 def buy_now_view(request):
     if request.method == "POST" and not request.user.is_authenticated:
         request.session['post_login_action'] = 'buy_now'
@@ -29,6 +29,7 @@ def buy_now_view(request):
             'quantity': request.POST.get('quantity', 1),
         }
         return redirect('signin')
+    
     if request.method == "POST":
         variant_id = request.POST.get("variant_id")
         quantity = int(request.POST.get("quantity", 1))
@@ -72,6 +73,7 @@ def buy_now_view(request):
     return render(request, "buynoworder.html", context)
 
 
+@never_cache
 @login_required
 def create_buy_order(request):
     if request.method != "POST":
@@ -133,6 +135,7 @@ def create_buy_order(request):
     return render(request, "payment.html", {"order": order})
 
 
+@never_cache
 @login_required
 def order_view(request):
     if request.method == "POST":
@@ -168,6 +171,7 @@ def order_view(request):
         return redirect("cart_view")
 
 
+@never_cache
 @login_required
 def create_cart_order(request):
     if request.method == "POST":
@@ -226,8 +230,8 @@ def create_cart_order(request):
     return redirect("cart_view")
 
 
-@login_required
 @never_cache
+@login_required
 def cancel_order(request, order_id):
     """Handle order cancellation by customer"""
     if request.method == "POST":
@@ -286,8 +290,8 @@ def cancel_order(request, order_id):
     return redirect('order_list')
 
 
-@login_required
 @never_cache
+@login_required
 def mark_order_received(request, order_id):
     """
     Customer marks order as received (shipped → delivered)
@@ -327,7 +331,7 @@ def mark_order_received(request, order_id):
     return redirect('order_list')
 
 
-@login_required
+@never_cache
 def remove_item(request):
     if request.user.is_authenticated:
         cart_id = request.POST.get("cart_id")
@@ -342,6 +346,7 @@ def remove_item(request):
     return redirect('signin')
 
 
+@never_cache
 @login_required
 def order_list(request):
     query = request.GET.get("query", "").strip()
@@ -378,6 +383,7 @@ def order_list(request):
     })
 
 
+@never_cache
 @login_required
 def order_detail(request, order_id):
     order = Order.objects.filter(id=order_id, user=request.user).first()
@@ -419,7 +425,7 @@ def render_order_page(request, cart_id, user):
         "total_amount": total_amount,
     })
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def admin_order_list(request):
@@ -451,7 +457,7 @@ def admin_order_list(request):
         "query": query
     })
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def admin_order_detail(request, order_id):
@@ -461,7 +467,7 @@ def admin_order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, "admin_orderdetail.html", {"order": order})
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def admin_update_order_status(request, order_id):
@@ -524,7 +530,7 @@ def restore_inventory_for_order(order):
     except Exception as e:
         return False, str(e)
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def admin_cancel_order(request, order_id):
@@ -594,7 +600,7 @@ def admin_cancel_order(request, order_id):
     
     return redirect("admin_order_list")
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def monthly_report(request):

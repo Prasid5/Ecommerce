@@ -17,21 +17,25 @@ def is_admin(user):
 def search_products(request):
     query = request.GET.get('q', '').strip()
     
-    if len(query) < 2:  # Minimum 2 characters to search
+    if len(query) < 2:
         return JsonResponse({'products': []})
     
-    # Search in product name and description, only active products
+
     products = Product.objects.filter(
-        Q(product_name__icontains=query) | Q(description__icontains=query),
+        Q(product_name__icontains=query) | 
+        Q(description__icontains=query) |
+        Q(category__category_name__icontains=query) |
+        Q(category__brands__brand_name__icontains=query) |
+        Q(productvariants__variant_name__icontains=query),
         is_active=True
-    )[:5]
+    ).select_related('category').prefetch_related('category__brands').distinct()
     
     results = []
     for product in products:
         results.append({
             'name': product.product_name,
             'slug': product.slug,
-            'url': f'/product/{product.slug}/',  # Adjust URL pattern as needed
+            'url': f'/product/{product.slug}/',
         })
     
     return JsonResponse({'products': results})
@@ -41,7 +45,7 @@ def home(request):
     brands = Brand.objects.all().order_by('brand_name')
     
     casual_product = Product.objects.filter(
-        category__category_name__iexact='Casual',
+        category__category_name__iexact='Casual Shoes',
         is_active=True
     ).first()
     

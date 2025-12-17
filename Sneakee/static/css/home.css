@@ -825,3 +825,60 @@ h2 {
         height: 250px;
     }
 }
+
+/* ============================================
+   EXTRA SMALL DEVICES (max-width: 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    .hero-single {
+        height: 40vh;
+    }
+    
+    .hero-single .caption h2 {
+        font-size: 1.3rem;
+    }
+    
+    .hero-single .caption p {
+        font-size: 0.8rem;
+    }
+    
+    .brand-showcase h2,
+    .new-arrivals h2 {
+        font-size: 1.2rem;
+    }
+    
+    .brands img {
+        height: 90px;
+        width: 90px;
+    }
+    
+    /* Keep 2-column grid for New Arrivals */
+    .product-cart-container {
+        flex: 0 0 calc(50% - 0.5rem);
+        min-width: 140px;
+        max-width: 180px;
+        height: 280px;
+    }
+    
+    .product-card {
+        height: 280px;
+    }
+    
+    .product-card:hover {
+        height: 280px;
+    }
+    
+    /* Hide button on mobile */
+    .product-card .btn {
+        display: none;
+    }
+    
+    .pick-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .pick-img img {
+        height: 130px;
+    }
+}

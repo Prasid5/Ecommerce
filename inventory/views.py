@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.cache import never_cache
 from django.utils.http import urlencode
 from django.contrib import messages
 
@@ -14,7 +15,7 @@ from inventory.models import Stock, StockTransaction
 def is_admin(user):
     return user.is_staff or user.is_superuser
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def stocktracking(request):
@@ -43,6 +44,7 @@ def stocktracking(request):
     return render(request, "stocktracking.html", context)
 
 
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def addstock(request):
@@ -107,7 +109,7 @@ def addstock(request):
     return render(request, "addstock.html")
 
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def managestock(request):
@@ -189,6 +191,7 @@ def managestock(request):
     return render(request, "managestock.html", {"all_variants": all_variants})
 
 
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def stocktransaction(request):

@@ -22,6 +22,7 @@ def _get_cart(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     return cart
 
+@never_cache
 def remove_from_cart(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -34,7 +35,8 @@ def remove_from_cart(request):
         return redirect('cart_view')
 
     return redirect('signin')
-  
+
+@never_cache  
 def add_to_cart(request):
     if not request.user.is_authenticated:
         request.session['post_login_action'] = 'add_to_cart'

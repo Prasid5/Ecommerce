@@ -104,7 +104,7 @@ def delete_user_cart(user):
 # ───────────────────────────────────
 # Payment Views
 # ───────────────────────────────────
-
+@never_cache
 @login_required
 def make_payment(request):
     """Handle payment method selection and processing"""
@@ -246,8 +246,8 @@ def make_payment(request):
 
 
 
-@login_required
 @never_cache
+@login_required
 def esewa_payment_success(request):
     """Handle successful eSewa payment callback"""
     order_id = request.session.get('order_id')
@@ -337,8 +337,8 @@ def esewa_payment_success(request):
         return redirect('order_list')
 
 
-@login_required
 @never_cache
+@login_required
 def esewa_payment_failure(request):
     """Handle failed eSewa payment callback"""
     order_id = request.session.get('order_id')
@@ -615,7 +615,7 @@ def generate_invoice_pdf(order):
     relative_path = os.path.join('invoices', invoice_filename)
     return relative_path
 
-
+@never_cache
 @login_required
 def view_invoice(request, order_id):
     """
@@ -679,7 +679,7 @@ def view_invoice(request, order_id):
             return redirect('admin_order_list')
         return redirect('order_list')
 
-
+@never_cache
 @login_required
 def download_invoice(request, order_id):
     """

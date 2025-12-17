@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.cache import never_cache
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.http import urlencode
@@ -160,7 +161,9 @@ def trending_products(request):
     if query:
         trending_products = trending_products.filter(
             Q(product_name__icontains=query) |
-            Q(category__category_name__icontains=query)
+            Q(category__category_name__icontains=query) |
+            Q(category__brands__brand_name__icontains=query) |
+            Q(productvariants__variant_name__icontains=query),
         )
 
     paginator = Paginator(trending_products, 12)
@@ -172,7 +175,7 @@ def trending_products(request):
         "query": query,
     })
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def addbrand(request):
@@ -217,7 +220,7 @@ def addbrand(request):
     
     return render(request, 'addbrand.html', context)
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def addcategory(request):
@@ -271,6 +274,7 @@ def addcategory(request):
     
     return render(request, 'addcategory.html', context)
 
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def addproduct(request):
@@ -328,6 +332,7 @@ def addproduct(request):
     
     return render(request, 'addproduct.html', {'categories': categories})
 
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def addproductvariant(request):
@@ -404,6 +409,7 @@ def addproductvariant(request):
 
     return render(request, 'addproductvariant.html', {'products': products})
 
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def brandlist(request):
@@ -425,7 +431,7 @@ def brandlist(request):
     }
     return render(request, "brandlist.html", context)
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def categorylist(request, brand_slug=None):
@@ -454,7 +460,7 @@ def categorylist(request, brand_slug=None):
     }
     return render(request, "categorylist.html",context)
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def productlist(request, category_slug=None):
@@ -483,7 +489,7 @@ def productlist(request, category_slug=None):
     }
     return render(request, "productlist.html", context)
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def productvariantlist(request, product_slug=None):
@@ -543,7 +549,7 @@ def deletecategory(request):
         messages.success(request, "Category deleted successfully!")
         return redirect("categorylist")
 '''
-    
+@never_cache    
 @login_required
 @user_passes_test(is_admin)
 def update_product_status(request):
@@ -566,6 +572,7 @@ def update_product_status(request):
             return redirect("productlist")
 
 
+@never_cache
 @login_required
 @user_passes_test(is_admin)    
 def update_productvariant_status(request):
@@ -584,7 +591,7 @@ def update_productvariant_status(request):
             messages.success(request, "Product variant activated successfully.")
             return redirect("productvariantlist")
         
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def editbrand(request):
@@ -648,7 +655,7 @@ def editbrand(request):
 
     return redirect("brandlist")
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def editcategory(request):
@@ -731,7 +738,7 @@ def editcategory(request):
 
     return redirect("categorylist")
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def editproduct(request):
@@ -774,7 +781,7 @@ def editproduct(request):
 
     return redirect("productlist")
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def editproductvariant(request):
@@ -818,7 +825,7 @@ def editproductvariant(request):
 
     return redirect("productvariantlist")
 
-
+@never_cache
 @login_required
 @user_passes_test(is_admin)
 def top_products(request):

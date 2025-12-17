@@ -520,28 +520,26 @@ main {
         font-size: 12px;
     }
     
-    /* Product Grid - Single Column */
+    /* Product Grid - Keep 2 columns */
     .product-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
     
     .product-cart-container {
-        min-height: 300px;
-        max-width: 280px;
-        margin: 0 auto;
+        min-height: 280px;
     }
     
     .product-card {
-        height: 300px;
+        height: 280px;
     }
     
     .product-card:hover {
-        height: 300px;
+        height: 280px;
     }
     
     .product-image {
-        height: 170px;
+        height: 150px;
         padding: 8px;
     }
     
